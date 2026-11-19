@@ -49,7 +49,7 @@ Escopo completo e regras: [PRD.md](PRD.md).
 | Dados de voo | Cache próprio por região (coletor + adsb.lol), servido pelo Cloudflare R2 |
 | Paisagem | Blocos NASA GIBS (Landsat, GMIS, Blue/Black Marble) no Cloudflare R2 |
 
-Itens marcados como proposta (Expo Router, SQLite, Zustand, TanStack Query, Sentry, EAS) e pendências (sincronização, globo) estão em [ARCHITECTURE.md](ARCHITECTURE.md).
+Itens ainda marcados como proposta (Sentry, Maestro, EAS, entre outros) e as pendências estão em [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Estrutura de diretórios
 

@@ -81,7 +81,7 @@ flowchart LR
 | Preferências | AsyncStorage (usado no protótipo) ou MMKV | [Proposta] | Ajustes simples |
 | Estado de UI | **Zustand** | [Decidido] | Sessão ativa e estado global leve |
 | Dados remotos | **TanStack Query** | [Decidido] | Cache, idade e retentativa dos JSON de voos |
-| Mapa/globo | Globo em Skia (SkSL), em teste | [Proposta] | Ver ADR-11 e `src/globo` |
+| Mapa/globo | Globo em Skia (SkSL) com blocos da NASA GIBS | [Decidido] | Ver ADR-11 e `src/globo` |
 | Fontes | expo-font (Geist 400/500/600, Geist Pixel Grid) | [Decidido] | Tipografia do design system |
 | Desfoque | expo-blur | [Proposta] | Efeito "Glass/Blur 12" |
 | i18n | expo-localization + biblioteca de mensagens | [Proposta] | pt-BR no lançamento, en depois |
@@ -414,7 +414,7 @@ Observabilidade:
 | ADR-08 | Local-first com SQLite e livro-caixa | Decidido | Funciona offline; facilita sincronização por união. |
 | ADR-09 | Expo Router, Zustand e TanStack Query | Decidido | Padrão atual do Expo. |
 | ADR-10 | Supabase para conta e sincronização | Decidido | Postgres combina com o livro-caixa e com a sincronização por união; plano grátis suficiente para o beta (~1 a 3 mil usuários sincronizando por alguns meses; o limite é o banco de 500 MB); sem backup automático no grátis. Ver seção 8. |
-| ADR-11 | Globo em Skia (SkSL) | Proposta, em teste (v2) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada; para mais perto, usar os blocos Landsat da janela. Falta medir no aparelho e decidir. |
+| ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada; para mais perto, usar os blocos Landsat da janela. No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |
 | ADR-14 | Catálogo da coleção remoto e versionado | Proposta | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
@@ -431,7 +431,7 @@ Observabilidade:
 | Cobertura de rotas desigual por região | Baixo/Médio | Curadoria da lista; descartar rotas incoerentes |
 | Peso de Rive + Filament + Skia no APK e na memória | Médio | Medir no aparelho; carregar sob demanda |
 | Backend de sincronização não definido | Alto para RNF-10 | Decidir antes da fase de dados (ROADMAP) |
-| Globo sem biblioteca pronta | Médio | Globo em Skia em teste (ADR-11); medir fluidez, bateria e memória no M35 |
+| Globo sem biblioteca pronta | Baixo | Globo em Skia aprovado no M35 (ADR-11); falta medir bateria, memória com ferramenta e Android mais fraco |
 | Nome/marca "Termi" provisório | Médio | Confirmar com agente de PI antes de investir na identidade |
 
 ## 18. Validação técnica realizada (protótipo)
@@ -456,7 +456,9 @@ Outras medições:
 
 **App de produção, build-1 (19/11, Samsung M35):** a janela de teste manteve o desempenho do protótipo, e o **aviso de pouso tocou no horário com a tela bloqueada e o app fechado** (pendência do build-8 resolvida: alarme exato com a permissão "Alarmes e lembretes"). O catálogo do design system abriu, com ajustes visuais pedidos (ver ROADMAP, Fase 1).
 
-Falta testar: Android mais fraco que o M35; paisagem pela thread de interface.
+**App de produção, build-5 (19/11, Samsung M35):** globo v2 aprovado pelo Alberto. Blocos ficam nítidos em 2 a 3 s depois do gesto, às vezes menos; pinça, arraste e Centralizar funcionaram; nenhum travamento no uso.
+
+Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; bateria e memória do globo medidas com ferramenta.
 
 ## 19. Recursos visuais: como foram gerados
 
