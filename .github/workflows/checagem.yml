@@ -1,0 +1,32 @@
+name: Checagem
+
+# Roda a cada push e PR: tipos, lint e testes. Leva poucos minutos.
+on:
+  push:
+  pull_request:
+
+jobs:
+  checagem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          SEM_BLOCOS: '1'
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx expo lint
+
+      - name: Testes
+        run: npm test -- --ci
