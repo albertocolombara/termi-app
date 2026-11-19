@@ -36,15 +36,21 @@
 | **Companhias** | Cauda pintada com a bandeira do país; nunca logo ou pintura real | Decidido |
 | Nome | "Termi: Focus Flights" | Provisório |
 
-**[Pendente]** O laranja do Termi não é uma variável no Figma (a mala é ilustração). No protótipo, a cor da notificação e do ícone é `#F28C28`, e o token de aviso é `orange/500 #FF9F1C`. Recomendação: criar a variável `brand/termi` e não reutilizar `status.warning` para o personagem.
+**Papéis das cores de destaque (decidido em 19/11/2026):**
+
+- **Amarelo** (`yellow/500`): só ações e seleção, como a sinalização dos aeroportos.
+- **Laranja do Termi** (`#F28C28` no ícone e na notificação): só o personagem e a marca. Fica como está; um laranja mais forte se destacaria demais num avatar.
+- **Laranja internacional** (`orange-intl/500`, `#F44A22`, via `status.warning`): avisos. Referência: "Aviso · avisos desligados" no Figma (tela X8).
+
+**[Pendente]** O laranja do Termi ainda não é variável no Figma (a mala é ilustração). Recomendação: criar `brand/termi`.
 
 ## 4. Tipografia
 
-Famílias: **Geist** (400, 500, 600) e **Geist Pixel** (display, com as formas Regular, Circle, Grid, Triangle e Line, cada uma como família própria). Letter-spacing e line-height no Figma são em %; o código converte para pontos.
+Famílias: **Geist** (400, 500, 600) e **Geist Pixel Grid** (display; a forma da Geist Pixel que mais lembra um painel físico de aeroporto, decidida em 19/11/2026). Letter-spacing e line-height no Figma são em %; o código converte para pontos.
 
 | Estilo (nome do Figma) | Família | Peso | Tamanho | Espaçamento | Altura de linha | Uso |
 |---|---|---|---|---|---|---|
-| Display/Pixel 32 | Geist Pixel | 400 | 32 | −6% | 120% | Números de destaque estilo painel de aeroporto |
+| Display/Pixel 32 | Geist Pixel Grid | 400 | 32 | −6% | 120% | Números de destaque estilo painel de aeroporto |
 | Display/Data 52 | Geist | 600 | 52 | −3% | 120% | Tempo no dial, contagem grande |
 | Heading/Screen 32 | Geist | 600 | 32 | −6% | 120% | Título de tela |
 | Heading/Data 24 | Geist | 500 | 24 | −3% | 120% | Dados em destaque |
@@ -62,7 +68,7 @@ Famílias: **Geist** (400, 500, 600) e **Geist Pixel** (display, com as formas R
 | Caption/Regular 12 | Geist | 400 | 12 | −3% | 130% | Legendas |
 | Caption/Strong 12 | Geist | 600 | 12 | 0 | 130% | Legendas fortes, caixa alta de selos |
 
-As 5 formas da Geist Pixel somam ~4,2 MB no APK (medido no protótipo). Embutir só as que as telas usam.
+O app embute só a forma Grid; as outras quatro formas saíram (economia de ~3,4 MB no APK). No Figma, o estilo `Display/Pixel 32` deve usar Geist Pixel Grid.
 
 ## 5. Paleta de cores
 
@@ -73,6 +79,7 @@ As 5 formas da Geist Pixel somam ~4,2 MB no APK (medido no protótipo). Embutir 
 | `yellow/500` | `#FFC629` |
 | `yellow/900` | `#2A2416` |
 | `orange/500` | `#FF9F1C` |
+| `orange-intl/500` | `#F44A22` (laranja internacional) |
 | `green/500` | `#44CE32` |
 | `brown/950` | `#151106` |
 | `ink/950` | `#010911` |
@@ -105,7 +112,7 @@ Gradiente linear da esquerda para a direita, como no código do protótipo: `#D9
 | Acento | `accent.default` | yellow/500 | CTAs, seleção, progresso |
 | | `accent.subtle` | yellow/900 | Fundo de selos |
 | | `accent.on` | brown/950 | Conteúdo sobre o amarelo |
-| Status | `status.warning` | orange/500 | Avisos |
+| Status | `status.warning` | orange-intl/500 | Avisos |
 | | `status.success` | green/500 | Sucesso, "ao vivo" |
 | Texto | `text.primary` | white/100 | |
 | | `text.secondary` | white/a80 | |
@@ -124,7 +131,7 @@ Regra: componentes usam **só tokens semânticos**. Um primitivo novo só entra 
 
 ## 7. Espaçamento, grid e raio
 
-- **Escala de espaçamento:** 0, 2, 4, 6, 8, 10, 12, 14, 16, 20 (variáveis do Figma); 24, 32 e 40 também existem no código do protótipo (confirmar no Figma).
+- **Escala de espaçamento (variáveis do Figma):** 0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40.
 - **Largura de referência:** 412 px (Figma). Margem lateral padrão (`screenGutter`) de 16.
 - **Grid:** coluna única com margens de 16; listas e cards ocupam a largura útil.
 - **Raio:** `xs` 2, `sm` 4, `md` 6, `tile` 8, `lg` 10, `xl` 12, `2xl` 16, `screen` 28, `full` 999.
@@ -170,7 +177,7 @@ Componentes da página Design System do Figma, já em código no protótipo (PR 
 | Selo · Primeira classe | Pílula dourada; texto editável |
 | Top bar + Step progress | Onboarding e telas internas |
 | Section header | |
-| Bottom sheet | Vista da janela, motivo da viagem, confirmações |
+| Bottom sheet | Alça centralizada no topo (padrão do MD3); vista da janela, motivo da viagem, confirmações |
 | Ícones | 31 ícones de traço (`Icon/*`), incluindo `Icon/Termi Premium` |
 | Illustration/Suitcase | Mala laranja (ilustração) |
 
@@ -185,7 +192,7 @@ Composições de tela, também na página Design System e ainda não levadas par
 | Foco (teclado/leitor) | Borda `border.accent` |
 | Selecionado | `surface.default` + borda ou check amarelo |
 | Desabilitado | Opacidade reduzida; sem mudar a cor de acento |
-| Bloqueado (premium) | Badge / Premium com cadeado; toque abre o paywall **fora de voo** ou o aviso "Lembrar no pouso" **em voo** |
+| Bloqueado (premium) | Badge / Premium com cadeado; na econômica, o toque abre o paywall, dentro e fora do voo |
 | Carregando | Etapas reais descritas em texto (ex.: tela de embarque), nunca só um spinner genérico quando há etapas conhecidas |
 
 ## 11. Padrões de navegação
@@ -214,6 +221,22 @@ Composições de tela, também na página Design System e ainda não levadas par
 
 ## 14. Microinterações e animações
 
+### Tokens de movimento (Material Design 3)
+
+Mesmos valores nas transições dos componentes no Figma (Smart Animate) e em `src/ds/motion.ts`:
+
+| Elemento | Duração | Easing |
+|---|---|---|
+| Chip, rádio, checkbox, segmento, opção de lista | 200 ms | padrão `cubic-bezier(0.2, 0, 0, 1)` |
+| Toggle (bolinha desliza e trilho muda de cor juntos) | 300 ms | padrão |
+| Bottom sheet abrindo | 400 ms | enfatizado de entrada `cubic-bezier(0.05, 0.7, 0.1, 1)` |
+| Bottom sheet fechando | 300 ms | enfatizado de saída `cubic-bezier(0.3, 0, 0.8, 0.15)` |
+| Navegação para o paywall | 300 ms | padrão |
+
+No controle segmentado, o indicador do segmento ativo desliza até o segmento tocado. Com "reduzir movimento", as trocas são instantâneas.
+
+### Animações de personagem e cena
+
 | Animação | Duração | Onde |
 |---|---|---|
 | `termi_inicio_pensando` (loop: olha, balões com medalhas, volta) | 6,4 s | Início |
@@ -233,7 +256,7 @@ Controle pelo view model "Termi" no Rive: `pensando`, `novoVoo`, `esteira`, `emb
 - **Sem culpa:** "Pousou antes, sobre os Alpes", nunca "Você desistiu".
 - **Avisos do comandante** em fases reais do voo; interruptor próprio.
 - **Notificações:** pouso (com som, mesmo em silencioso), início e fim do serviço de bordo, notificação fixa com contagem.
-- **Em voo,** item exclusivo → aviso curto com "Lembrar no pouso".
+- **Item da primeira classe tocado na econômica** → paywall, a qualquer momento. Em voo, nada de oferta que o usuário não pediu.
 - **Confirmações** mostram o que acontece antes do toque (ex.: o que entra e o que não entra ao pousar antes).
 
 ## 16. Estados vazios, carregamento e erro

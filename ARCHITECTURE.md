@@ -82,7 +82,7 @@ flowchart LR
 | Estado de UI | **Zustand** | [Decidido] | Sessão ativa e estado global leve |
 | Dados remotos | **TanStack Query** | [Decidido] | Cache, idade e retentativa dos JSON de voos |
 | Mapa/globo | [Pendente] | [Pendente] | MapLibre Native ainda não tem globo; alternativa: globo em Skia |
-| Fontes | expo-font (Geist 400/500/600, Geist Pixel) | [Decidido] | Tipografia do design system |
+| Fontes | expo-font (Geist 400/500/600, Geist Pixel Grid) | [Decidido] | Tipografia do design system |
 | Desfoque | expo-blur | [Proposta] | Efeito "Glass/Blur 12" |
 | i18n | expo-localization + biblioteca de mensagens | [Proposta] | pt-BR no lançamento, en depois |
 | Testes | Jest (jest-expo) + React Native Testing Library; Maestro para E2E | [Proposta] | Seção 14 |
@@ -122,7 +122,7 @@ termi-app/
 ├── eas.json                     # Perfis de build (development, preview, production)
 ├── .env.example
 ├── assets/
-│   ├── fonts/                   # Geist Pixel (OFL); Geist vem do pacote do Google Fonts
+│   ├── fonts/                   # Geist Pixel Grid (OFL); Geist vem do pacote do Google Fonts
 │   ├── rive/                    # termi.riv
 │   ├── janela/                  # Renders mínimos embutidos (o resto vem da CDN)
 │   ├── sons/
@@ -454,7 +454,9 @@ Outras medições:
 - **Termi em Rive (19/11):** state machine testada (pensando → comemora → pensando; pensando → espera → embarcou; volta ao Início depois do embarque).
 - **Dados de voo:** ver seção 13 e o doc "validacao-dados-voos.md".
 
-Falta testar: aviso de pouso no build-8 com tela bloqueada; Android mais fraco que o M35; catálogo do design system no aparelho; paisagem pela thread de interface.
+**App de produção, build-1 (19/11, Samsung M35):** a janela de teste manteve o desempenho do protótipo, e o **aviso de pouso tocou no horário com a tela bloqueada e o app fechado** (pendência do build-8 resolvida: alarme exato com a permissão "Alarmes e lembretes"). O catálogo do design system abriu, com ajustes visuais pedidos (ver ROADMAP, Fase 1).
+
+Falta testar: Android mais fraco que o M35; paisagem pela thread de interface.
 
 ## 19. Recursos visuais: como foram gerados
 
@@ -515,7 +517,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 - **Modelagem no Blender** (`Medalhas/blender`): as formas principais viram relevo de verdade; os detalhes finos (rosto, dobras, chama) vêm do sombreado da imagem, como textura por cima. A imagem de referência não é ampliada; o desenho vai até a borda e pode ser cortado por ela.
 - **Padrão:** mesmo corpo e borda; campo em prata polida (espelho), relevo em prata jateada com bordas escurecidas; faixa lisa separada por filete curvo, com o nome do país em relevo, em arco, na fonte Bahnschrift, na forma nativa (日本 em Yu Gothic Bold).
 - **Tripo descartada:** gerava modelos pesados e irregulares entre si.
-- **Prontas:** Portugal, EUA, Brasil, Reino Unido e Japão. Prévia da vitrine: "Termi · Souvenir" (https://claude.ai/artifact/72WA1o8ii1Q7QcPLmKqY7f), com luz de estúdio escura e luz rasante; o grão jateado e o escurecimento das bordas ficam no material do app.
+- **Prontas:** Portugal, EUA, Brasil, Reino Unido, Japão e França. Prévia da vitrine: "Termi · Souvenir" (https://claude.ai/artifact/72WA1o8ii1Q7QcPLmKqY7f), com luz de estúdio escura e luz rasante; o grão jateado e o escurecimento das bordas ficam no material do app.
 - **No app [Proposta]:** exportar em glTF/GLB para o react-native-filament, com imagem 2D de reserva.
 
 ### 19.3 Termi (Rive)

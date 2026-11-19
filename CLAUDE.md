@@ -21,7 +21,7 @@ Se um documento contradiz outro, **pare e pergunte**. Não escolha sozinho.
 
 1. **O tempo focado nunca se perde.** Nenhum caminho (pousar antes, app fechado, reinício, erro, sem rede) apaga minutos, milhas, carimbos, saldo ou souvenirs.
 2. **Nunca tirar o que foi conquistado.** Um souvenir comprado continua na mala mesmo se a assinatura acabar.
-3. **Sem anúncios** e **nenhum paywall ou oferta durante uma sessão de voo.** Em voo, item premium → aviso "Lembrar no pouso".
+3. **Sem anúncios** e **nenhuma oferta que o usuário não pediu durante o voo.** Na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive em voo (RN-20).
 4. **Sair do app não tem consequência.** Não existe turbulência nem detecção de saída.
 5. **Nunca recuperar voo** pagando ou de outra forma.
 6. **Honestidade comercial:** preço, período grátis e data do lembrete visíveis antes do botão; sem contador de urgência; sem selo sem dado real.
@@ -142,7 +142,7 @@ npm test
 
 ## 14. Proibido
 
-- Anúncios; paywall ou oferta durante o voo; contador de urgência; selos sem dado real.
+- Anúncios; paywall, banner ou lembrete de assinatura que abre sozinho durante o voo; contador de urgência; selos sem dado real.
 - Penalizar saída do app; turbulência; recuperação de voo.
 - Logos ou pinturas de companhias aéreas; logo da NASA ou sugestão de apoio da NASA.
 - Consulta por usuário ao adsb.lol; segredos no app.

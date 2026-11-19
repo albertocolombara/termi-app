@@ -174,7 +174,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 **Fluxos alternativos**
 
 - **A1 — Trocar a vista da janela:** o Viajante abre "Vista da janela" e escolhe uma vista disponível no seu plano.
-- **A2 — Item exclusivo na econômica:** o Viajante toca numa vista ou som da primeira classe; o Sistema mostra um aviso curto com "Lembrar no pouso". Se ele tocar em "Lembrar no pouso", o Sistema mostra a oferta depois do pouso.
+- **A2 — Item exclusivo na econômica:** o Viajante toca numa vista, som ou outro recurso da primeira classe; o Sistema abre o paywall (UC-13). O voo segue no horário; ao fechar o paywall, o Viajante volta à tela em voo. Se assinar, o recurso é liberado na hora.
 - **A3 — Trocar o modo de câmera do globo:** seguir o avião ou visão de cima.
 - **A4 — Serviço de bordo:** no horário, segue UC-05.
 - **A5 — Pousar antes:** segue UC-06.
@@ -194,7 +194,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 - [ ] Sair do app, bloquear a tela ou usar outro app não muda nada na sessão.
 - [ ] Em segundo plano, a janela não desenha e nenhum relógio JavaScript roda.
-- [ ] Nenhum paywall abre durante a sessão.
+- [ ] Nenhum paywall abre sozinho durante a sessão; só ao toque num recurso da primeira classe.
 - [ ] O som de fundo não corta com a tela bloqueada.
 
 <a id="uc-05"></a>
@@ -453,7 +453,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Fluxos alternativos**
 
-- **A1 — Econômica toca em mês ou ano:** o Sistema mostra a etiqueta "1ª classe" e, se ele tocar, o paywall (fora de voo).
+- **A1 — Econômica toca em mês ou ano:** o Sistema abre o paywall (UC-13).
 
 **Exceções e erros:** nenhum.
 
@@ -475,7 +475,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 - **Objetivo:** assinar ou comprar o vitalício.
 - **Ator principal:** Viajante (econômica).
-- **Pré-condições:** fora de uma sessão de voo; conexão com a loja.
+- **Pré-condições:** conexão com a loja. Pode acontecer dentro ou fora de um voo; em voo, o voo segue no horário.
 - **Gatilho:** um dos pontos de entrada da RN-20.
 
 **Fluxo principal**
