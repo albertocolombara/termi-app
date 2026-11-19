@@ -42,7 +42,7 @@
 - **Laranja do Termi** (`#F28C28` no ícone e na notificação): só o personagem e a marca. Fica como está; um laranja mais forte se destacaria demais num avatar.
 - **Laranja internacional** (`orange-intl/500`, `#F44A22`, via `status.warning`): avisos. Referência: "Aviso · avisos desligados" no Figma (tela X8).
 
-**[Pendente]** O laranja do Termi ainda não é variável no Figma (a mala é ilustração). Recomendação: criar `brand/termi`.
+A variável `brand/termi` (alias de `orange/500`) existe no Figma e no código desde 19/11/2026. A ilustração da mala no Figma ainda usa a cor solta; ligar à variável quando a mala for revisada.
 
 ## 4. Tipografia
 
@@ -112,6 +112,7 @@ Gradiente linear da esquerda para a direita, como no código do protótipo: `#D9
 | Acento | `accent.default` | yellow/500 | CTAs, seleção, progresso |
 | | `accent.subtle` | yellow/900 | Fundo de selos |
 | | `accent.on` | brown/950 | Conteúdo sobre o amarelo |
+| Marca | `brand.termi` | orange/500 | Termi, marca e ícones de voo (avião, serviço de bordo) |
 | Status | `status.warning` | orange-intl/500 | Avisos |
 | | `status.success` | green/500 | Sucesso, "ao vivo" |
 | Texto | `text.primary` | white/100 | |

@@ -59,6 +59,10 @@ export const color = {
     subtle: p['yellow/900'], // fundo de selos
     on: p['brown/950'], // conteúdo sobre o amarelo
   },
+  /** Laranja do Termi: personagem, marca e ícones de voo. Nunca para avisos. */
+  brand: {
+    termi: p['orange/500'],
+  },
   status: {
     warning: p['orange-intl/500'],
     success: p['green/500'],
@@ -174,8 +178,7 @@ export const typography = {
 export type TypographyVariant = keyof typeof typography;
 
 // ───────── Efeitos ─────────
-// "Glass/Blur 12" é um desfoque de fundo: no RN precisa de expo-blur (não incluído).
-// Aqui fica só a superfície translúcida; o desfoque real entra quando o app adotar expo-blur.
+// "Glass/Blur 12" é um desfoque de fundo: está no componente `Glass` (expo-blur), não aqui.
 export const effects = {
   'Glow/Accent': { boxShadow: `0 0 6px 0 ${p['yellow/500']}` },
   'Shadow/Small': { boxShadow: '0 1px 3px 0 rgba(0,0,0,0.6)' },

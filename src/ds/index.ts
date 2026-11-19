@@ -27,4 +27,5 @@ export {
   type InfoBannerProps,
   type ListOptionProps,
 } from './content';
+export { Glass, GlassTarget, type GlassProps } from './Glass';
 export { BottomSheet, SectionHeader, StepProgress, TopBar, type BottomSheetProps, type TopBarProps } from './layout';

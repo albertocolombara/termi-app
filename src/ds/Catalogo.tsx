@@ -2,11 +2,13 @@
  * Catálogo do design system: mostra tokens e componentes no aparelho,
  * na mesma ordem das seções do Figma (página "Design System").
  */
-import React, { useState } from 'react';
+import React, { useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, StatusBar as RNStatusBar, StyleSheet, View } from 'react-native';
 import {
   ActionRow,
   BottomSheet,
+  Glass,
+  GlassTarget,
   Button,
   CheckboxItem,
   Chip,
@@ -76,6 +78,7 @@ function Swatch({ name, value }: { name: string; value: string }) {
 
 export function Catalogo({ onClose }: { onClose: () => void }) {
   const [region, setRegion] = useState('Qualquer lugar');
+  const alvoVidro = useRef<ComponentRef<typeof View>>(null);
   const [category, setCategory] = useState('Estudo');
   const [view, setView] = useState<'janela' | 'globo'>('janela');
   const [sound, setSound] = useState('motores');
@@ -263,6 +266,21 @@ export function Catalogo({ onClose }: { onClose: () => void }) {
             <StepProgress step={1} />
             <Label>Bottom sheet</Label>
             <Button label="Abrir bottom sheet" variant="secondary" size="medium" onPress={() => setSheet(true)} />
+            <Label>Glass/Blur 12</Label>
+            <View style={styles.glassDemo}>
+              <GlassTarget ref={alvoVidro} style={StyleSheet.absoluteFill}>
+                <View style={styles.glassBg}>
+                  {(['accent', 'primary', 'accent', 'primary'] as const).map((tone, i) => (
+                    <Text key={i} variant="Display/Pixel 32" tone={tone}>
+                      BCN LHR
+                    </Text>
+                  ))}
+                </View>
+              </GlassTarget>
+              <Glass target={alvoVidro} style={styles.glassCard}>
+                <Text variant="Label/Strong 14">Vidro sobre o conteúdo</Text>
+              </Glass>
+            </View>
           </Section>
         </View>
 
@@ -295,6 +313,9 @@ export function Catalogo({ onClose }: { onClose: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  glassDemo: { height: 160, borderRadius: radius.lg, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
+  glassBg: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: color.bg.flight },
+  glassCard: { paddingVertical: space[12], paddingHorizontal: space[20] },
   pad: { paddingHorizontal: screenGutter },
   section: { gap: space[16], marginTop: space[40] },
   divider: { height: 2, backgroundColor: color.accent.default },

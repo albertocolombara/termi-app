@@ -81,7 +81,7 @@ flowchart LR
 | Preferências | AsyncStorage (usado no protótipo) ou MMKV | [Proposta] | Ajustes simples |
 | Estado de UI | **Zustand** | [Decidido] | Sessão ativa e estado global leve |
 | Dados remotos | **TanStack Query** | [Decidido] | Cache, idade e retentativa dos JSON de voos |
-| Mapa/globo | [Pendente] | [Pendente] | MapLibre Native ainda não tem globo; alternativa: globo em Skia |
+| Mapa/globo | Globo em Skia (SkSL), em teste | [Proposta] | Ver ADR-11 e `src/globo` |
 | Fontes | expo-font (Geist 400/500/600, Geist Pixel Grid) | [Decidido] | Tipografia do design system |
 | Desfoque | expo-blur | [Proposta] | Efeito "Glass/Blur 12" |
 | i18n | expo-localization + biblioteca de mensagens | [Proposta] | pt-BR no lançamento, en depois |
@@ -414,7 +414,7 @@ Observabilidade:
 | ADR-08 | Local-first com SQLite e livro-caixa | Decidido | Funciona offline; facilita sincronização por união. |
 | ADR-09 | Expo Router, Zustand e TanStack Query | Decidido | Padrão atual do Expo. |
 | ADR-10 | Backend de conta e sincronização | Pendente | Ver seção 8. |
-| ADR-11 | Globo/mapa | Pendente | MapLibre sem globo; avaliar globo em Skia reaproveitando a janela. |
+| ADR-11 | Globo em Skia (SkSL) | Proposta, em teste | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"): Terra com Blue Marble mundial, detalhe da Europa e luzes noturnas pela posição do sol; rota, avião e cidades projetados com a mesma câmera; modos Planeta e Seguir; só redesenha quando a câmera ou o avião mudam. ~55 MB de textura (não fica montado junto com a janela). Prévia: `docs/imagens/globo-previa.png`. Falta medir no aparelho e decidir. Limite: abaixo de ~400 km de distância a textura mundial fica borrada fora da Europa (precisa de blocos, como a janela). |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |
 | ADR-14 | Catálogo da coleção remoto e versionado | Proposta | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
@@ -431,7 +431,7 @@ Observabilidade:
 | Cobertura de rotas desigual por região | Baixo/Médio | Curadoria da lista; descartar rotas incoerentes |
 | Peso de Rive + Filament + Skia no APK e na memória | Médio | Medir no aparelho; carregar sob demanda |
 | Backend de sincronização não definido | Alto para RNF-10 | Decidir antes da fase de dados (ROADMAP) |
-| Globo sem biblioteca pronta | Médio | Protótipo de globo em Skia antes da Fase 3 |
+| Globo sem biblioteca pronta | Médio | Globo em Skia em teste (ADR-11); medir fluidez, bateria e memória no M35 |
 | Nome/marca "Termi" provisório | Médio | Confirmar com agente de PI antes de investir na identidade |
 
 ## 18. Validação técnica realizada (protótipo)

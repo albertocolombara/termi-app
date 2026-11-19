@@ -86,7 +86,7 @@ const ICONS = {
   },
   plane: {
     box: 21,
-    color: C.status.warning,
+    color: C.brand.termi,
     draw: (c) => (
       <Path
         fill={c}
@@ -287,7 +287,7 @@ const ICONS = {
   },
   crewServiceTile: {
     box: 32,
-    color: C.status.warning,
+    color: C.brand.termi,
     draw: (c) => (
       <>
         <Rect width={32} height={32} fill={c} />
@@ -341,7 +341,7 @@ export function Icon({ name, size, color }: IconProps) {
  * Ilustração da mala (marca do app). Versão vetorial simplificada da mala laranja das telas:
  * a original no Figma é um traçado de bitmap e não exporta limpo.
  */
-export function Suitcase({ size = 48, tint = C.status.warning }: { size?: number; tint?: string }) {
+export function Suitcase({ size = 48, tint = C.brand.termi }: { size?: number; tint?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
       <Path d="M19 14V9.5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2V14" stroke={tint} strokeWidth={2.4} fill="none" />

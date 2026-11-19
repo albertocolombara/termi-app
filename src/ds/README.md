@@ -65,7 +65,7 @@ Embutidas no build pelo plugin do `expo-font` (`app.config.ts`):
 
 ## Diferenças conhecidas em relação ao Figma
 
-- **Vidro (`Glass/Blur 12`)**: só a superfície translúcida. O desfoque de fundo precisa do `expo-blur`, que ainda não está no projeto.
+- **Vidro (`Glass/Blur 12`)**: componente `Glass` (expo-blur). No Android, o desfoque só acontece sobre o conteúdo de um `GlassTarget` e a partir do Android 12; nos outros casos fica só a superfície translúcida. Sobre a janela em voo, medir bateria antes de usar.
 - **Mala laranja**: no Figma é um traçado de bitmap que não exporta limpo. `<Suitcase />` é uma versão vetorial simplificada.
 - Alguns ícones de traço (alto-falante, janela, chuva, ajuda) tiveram curvas simplificadas na conversão. O desenho é o mesmo.
 - **Ainda não estão no código**: Avatar, Termi Premium (ilustrações), Menu lateral, Início/Cabeçalho, Em voo/Painéis e Paywall. São composições de tela; entram quando essas telas forem implementadas.
