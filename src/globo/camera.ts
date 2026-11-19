@@ -80,6 +80,48 @@ export function project(lat: number, lon: number, b: Basis, w: number, h: number
   return [w / 2 + dot(v, b.right) * s, h / 2 - dot(v, b.up) * s];
 }
 
+/** Como `project`, mas devolve também a profundidade (km até o ponto, na direção da câmera). */
+export function projectZ(lat: number, lon: number, b: Basis, w: number, h: number): [number, number, number] | null {
+  'worklet';
+  const n = ecef(lat, lon);
+  const v: Vec3 = [n[0] * R - b.pos[0], n[1] * R - b.pos[1], n[2] * R - b.pos[2]];
+  if (dot(n, v) > 0) return null;
+  const z = dot(v, b.f);
+  if (z <= 1) return null;
+  const s = (K * h) / 2 / z;
+  return [w / 2 + dot(v, b.right) * s, h / 2 - dot(v, b.up) * s, z];
+}
+
+/** Ponto a uma distância (km) de outro, num rumo (graus). */
+export function destino(lat: number, lon: number, rumoGraus: number, km: number): [number, number] {
+  'worklet';
+  const d = km / R;
+  const t = rumoGraus * RAD;
+  const la = lat * RAD;
+  const lo = lon * RAD;
+  const la2 = Math.asin(Math.sin(la) * Math.cos(d) + Math.cos(la) * Math.sin(d) * Math.cos(t));
+  const lo2 = lo + Math.atan2(Math.sin(t) * Math.sin(d) * Math.cos(la), Math.cos(d) - Math.sin(la) * Math.sin(la2));
+  return [la2 / RAD, (((lo2 / RAD + 540) % 360) - 180)];
+}
+
+/** Pontos ao longo do grande círculo entre dois pontos, a cada `passoKm`. */
+export function grandeCirculo(a: [number, number], b: [number, number], passoKm: number): [number, number][] {
+  const A = ecef(a[0], a[1]);
+  const B = ecef(b[0], b[1]);
+  const om = Math.acos(Math.min(1, Math.max(-1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2])));
+  const n = Math.max(1, Math.ceil((om * R) / passoKm));
+  if (om < 1e-9) return [a, b];
+  const out: [number, number][] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const s0 = Math.sin((1 - t) * om) / Math.sin(om);
+    const s1 = Math.sin(t * om) / Math.sin(om);
+    const v = [A[0] * s0 + B[0] * s1, A[1] * s0 + B[1] * s1, A[2] * s0 + B[2] * s1];
+    out.push([Math.asin(v[2]) / RAD, Math.atan2(v[1], v[0]) / RAD]);
+  }
+  return out;
+}
+
 /** Direção do sol (vetor unitário ECEF) num instante: ponto subsolar pela posição aparente do sol. */
 export function sunEcef(ms: number): Vec3 {
   const n = ms / 864e5 + 2440587.5 - 2451545;
