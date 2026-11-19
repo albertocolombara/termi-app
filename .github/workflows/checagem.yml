@@ -1,9 +1,12 @@
 name: Checagem
 
-# Roda a cada push e PR: tipos, lint e testes. Leva poucos minutos.
+# Tipos, lint e testes (cerca de 1 min). Roda nos PRs e na main; não repete em push de branch
+# com PR aberto, para economizar minutos do repositório privado.
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   checagem:
