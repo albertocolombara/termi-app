@@ -1,0 +1,35 @@
+name: Checagem
+
+# Tipos, lint e testes (cerca de 1 min). Roda nos PRs e na main; não repete em push de branch
+# com PR aberto, para economizar minutos do repositório privado.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checagem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          SEM_BLOCOS: '1'
+
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx expo lint
+
+      - name: Testes
+        run: npm test -- --ci

@@ -4,7 +4,7 @@
 
 App de foco em que **cada sessão é um voo real que está acontecendo agora**. Você escolhe quanto tempo quer focar, embarca num avião que está no ar e pousa nesse tempo, e foca até o pouso, com pausas no serviço de bordo (Pomodoro).
 
-**Status:** documentação inicial. O código do app de produção ainda não começou neste repositório. A base técnica é o protótipo [`albertocolombara/termi-prototipo`](https://github.com/albertocolombara/termi-prototipo), que validou no Android a janela, os avisos, o desempenho e a bateria. As regras de produto vêm do [PRD.md](PRD.md).
+**Status:** Fase 1 (fundação técnica) em andamento. A base técnica é o protótipo [`albertocolombara/termi-prototipo`](https://github.com/albertocolombara/termi-prototipo), que validou no Android a janela, os avisos, o desempenho e a bateria. As regras de produto vêm do [PRD.md](PRD.md).
 
 ---
 
@@ -53,12 +53,13 @@ Itens marcados como proposta (Expo Router, SQLite, Zustand, TanStack Query, Sent
 
 ## Estrutura de diretórios
 
-O repositório contém só a documentação. Estrutura proposta para o código:
+Estrutura do código (as pastas `features/` e as telas do produto entram a partir da Fase 3):
 
 ```text
 termi-app/
-├── assets/          # fontes, Rive, renders mínimos, sons, souvenirs
-├── modules/         # código nativo (Kotlin/Swift) via Expo Modules
+├── assets/          # fontes, renders da janela, ícones (blocos de teste baixados por script)
+├── modules/         # código nativo (Kotlin/Swift) via Expo Modules: screen-state (notificação fixa)
+├── scripts/         # baixar-blocos-dev.mjs
 └── src/
     ├── app/         # rotas (Expo Router)
     ├── features/    # telas e lógica por domínio
@@ -67,6 +68,7 @@ termi-app/
     ├── services/    # avisos, áudio, compras, bloqueio
     ├── janela/      # janela ao vivo (Skia)
     ├── ds/          # design system
+    ├── config/      # variáveis de ambiente públicas
     └── i18n/
 ```
 
@@ -74,25 +76,23 @@ Detalhes em [ARCHITECTURE.md](ARCHITECTURE.md#4-estrutura-de-diretórios-propost
 
 ## Requisitos para execução
 
-> **Pendente:** valem quando o projeto Expo for criado (fase 1 do [ROADMAP.md](ROADMAP.md)).
-
-- Node.js 22 (o mesmo do CI do protótipo)
-- Java 17 (Temurin) e Android SDK, para builds locais
-- Um aparelho Android físico (recomendado; a janela e os avisos precisam ser testados no aparelho)
-- Conta Expo/EAS (se o build em nuvem for adotado)
+- Node.js 22 (o mesmo do CI)
+- Para builds locais: Java 17 (Temurin) e Android SDK
+- Um aparelho Android físico (a janela, os avisos e a bateria precisam ser testados no aparelho)
 
 ## Instalação e configuração
 
-> **Pendente.** Fluxo previsto:
-
 ```bash
-npm ci
-cp .env.example .env      # preencha os valores
-npx expo prebuild --platform android
-npx expo run:android      # development build no aparelho
+npm ci                    # instala e baixa os blocos de teste da janela (rota Barcelona → Londres)
+cp .env.example .env      # preencha os valores (opcional na Fase 1)
+npx expo run:android      # gera o projeto nativo e instala o development build no aparelho
 ```
 
 `android/` e `ios/` são gerados e não devem ser versionados nem editados à mão.
+
+**APK de teste sem ambiente local:** em GitHub → Actions → "APK Android" → "Run workflow". O APK sai em Releases. O workflow também roda a cada junção na `main`. Como o repositório é privado, cada build gasta minutos do plano (2.000/mês no grátis); a checagem de tipos, lint e testes roda a cada push e é rápida.
+
+**Ferramentas de desenvolvimento** (só fora de produção, no Início): catálogo do design system, janela de teste e teste de avisos e notificação fixa.
 
 ## Variáveis de ambiente
 
@@ -110,18 +110,16 @@ Nenhum segredo vai para o app. A chave do adsb.lol e as credenciais de escrita d
 
 ## Comandos
 
-> **Pendente** até a criação do projeto. Comandos previstos:
-
 | Comando | O que faz |
 |---|---|
 | `npx expo start` | Servidor de desenvolvimento |
-| `npx expo run:android` | Build e instalação de desenvolvimento no Android |
-| `npx expo install <pacote>` | Instala dependência na versão compatível com o SDK |
-| `npx tsc --noEmit` | Checagem de tipos |
-| `npx expo lint` | Lint |
+| `npm run android` | Build e instalação de desenvolvimento no Android |
+| `npx expo install <pacote>` | Instala dependência na versão compatível com o SDK (use `EXPO_OFFLINE=1` se a rede bloquear api.expo.dev) |
+| `npm run typecheck` | Checagem de tipos |
+| `npm run lint` | Lint |
 | `npm test` | Testes unitários (Jest) |
+| `npm run blocos:dev` | Baixa de novo os blocos de teste da janela |
 | `npx expo-doctor` | Diagnóstico de dependências |
-| `eas build --profile preview --platform android` | APK de teste (se EAS for adotado) |
 
 ## Documentação
 

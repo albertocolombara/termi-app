@@ -1,0 +1,82 @@
+name: APK Android
+
+# Repositório privado: o runner tem 2 vCPU e 8 GB, e os minutos são limitados (2.000/mês no plano grátis).
+# Por isso o APK só é gerado sob demanda (botão "Run workflow" em Actions) ou ao juntar algo na main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      APP_ENV: preview
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Liberar espaço e memória
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          sudo fallocate -l 6G /mnt/swap2 && sudo chmod 600 /mnt/swap2 && sudo mkswap /mnt/swap2 && sudo swapon /mnt/swap2
+          free -h; df -h /
+
+      - name: Instalar dependências (inclui os blocos de teste da janela)
+        run: npm ci
+
+      - name: Conferir blocos de teste da janela
+        run: npm run blocos:dev
+
+      - name: Gerar projeto Android
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Limitar memória do Gradle e do Kotlin
+        working-directory: android
+        run: |
+          sed -i '/org.gradle.jvmargs/d;/org.gradle.parallel/d' gradle.properties
+          printf '\norg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m\norg.gradle.parallel=false\nkotlin.daemon.jvmargs=-Xmx1536m\n' >> gradle.properties
+          tail -5 gradle.properties
+
+      - name: Compilar APK
+        working-directory: android
+        run: |
+          ( while true; do echo "[mem] $(free -m | awk '/Mem:/{print "usada "$3" MB livre "$7" MB"} /Swap:/{print "swap "$3" MB"}' | tr '\n' ' ')"; sleep 30; done ) &
+          ./gradlew assembleRelease --no-daemon --max-workers=1 -PreactNativeArchitectures=arm64-v8a
+        env:
+          CMAKE_BUILD_PARALLEL_LEVEL: 2
+
+      - name: Memória ao falhar
+        if: failure()
+        run: free -h; sudo dmesg | tail -20 || true
+
+      - name: Publicar APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Termi ${{ github.run_number }} (${{ github.ref_name }})
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          body: |
+            Build de teste (${{ github.ref_name }}, ${{ github.sha }}).
+            Instale o arquivo .apk no Android (permitir apps de fontes desconhecidas).
+          files: android/app/build/outputs/apk/release/app-release.apk

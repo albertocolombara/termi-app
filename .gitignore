@@ -45,3 +45,6 @@ yarn-error.*
 
 # blocos de paisagem baixados ou gerados
 /tiles/
+
+# pacotes de blocos de teste da janela (baixados por scripts/baixar-blocos-dev.mjs)
+assets/janela/pk/*.bin
