@@ -57,7 +57,7 @@ flowchart LR
 ### Decisões a fechar
 - [x] Aprovar Expo Router, expo-sqlite, Zustand e TanStack Query — aprovado pelo Alberto em 19/11/2026
 - [ ] Escolher backend de conta e sincronização (ADR-10)
-- [ ] Escolher a solução do globo (ADR-11)
+- [ ] Escolher a solução do globo (ADR-11) — teste do globo em Skia no PR "Fase 1: vidro e teste do globo"; falta testar no aparelho e decidir
 - [x] Decidir onde fica o código e o build: repositório `albertocolombara/termi-app` com APK pelo GitHub Actions — decidido em 19/11/2026
 - [ ] Criar o repositório `albertocolombara/termi-app` no GitHub
 - [ ] Definir o identificador do pacote de produção antes do primeiro envio à Play (até lá, um identificador provisório de desenvolvimento; o protótipo usa `com.albertocolombara.termiprototipo`)
@@ -69,7 +69,7 @@ flowchart LR
 - [x] Configurar `app.config.ts` lendo as variáveis de `.env` — PR #1
 - [x] Trazer `src/ds` (branch `design-system` do protótipo) e testar o catálogo no aparelho — PR #1, build-1 no M35
 - [ ] Ajustes do catálogo após o teste: sublinhado nos botões, linha no campo de texto, Geist Pixel Grid, animações MD3, alça do bottom sheet, laranja internacional nos avisos — PR "Ajustes do design system" (falta testar no aparelho)
-- [ ] Adicionar expo-blur para `Glass/Blur 12`
+- [ ] Adicionar expo-blur para `Glass/Blur 12` — componente `Glass` no PR "Fase 1: vidro e teste do globo"; falta conferir no aparelho
 - [x] Trazer `src/janela` (shader, blocos, geo) e `modules/screen-state`, mantendo o orçamento de ~150 MB de textura — PR #1; desempenho confirmado no M35 (build-1)
 - [x] Ajustar ao PRD o que diverge no protótipo: pausa máxima de 5 min também no ciclo de 50 min e folga de 10 min (`agendaDePausas`, PR #1). O botão "Desembarcar" não veio para o app; o "Pousar antes" entra com a tela em voo (Fase 3)
 - [x] Configurar i18n com pt-BR — PR #1

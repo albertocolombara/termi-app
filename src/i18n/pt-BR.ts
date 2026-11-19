@@ -10,6 +10,8 @@ export const ptBR = {
     designSystemDescricao: 'Catálogo de tokens e componentes do Figma',
     janela: 'Janela de teste',
     janelaDescricao: 'Voo Barcelona → Londres com os blocos de teste',
+    globo: 'Globo de teste',
+    globoDescricao: 'Globo em Skia para decidir a solução de mapa (ADR-11)',
     avisos: 'Avisos e notificação fixa',
     avisosDescricao: 'Alarmes exatos, serviço de bordo e pouso',
   },
@@ -39,6 +41,14 @@ export const ptBR = {
     cancelar: 'Cancelar avisos agendados',
     agendados: '{n} aviso(s) agendado(s). Pouso às {hora}.',
     cancelados: 'Avisos cancelados.',
+  },
+  globo: {
+    seguir: 'Seguir',
+    planeta: 'Planeta',
+    aproximar: 'Aproximar',
+    afastar: 'Afastar',
+    acelerar: 'Acelerar o tempo (×60)',
+    sobre: 'Rota {de} → {para} · {pct}% voado',
   },
   janela: {
     qualidade: 'Qualidade',

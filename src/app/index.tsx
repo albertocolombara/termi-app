@@ -42,6 +42,12 @@ export default function Inicio() {
             onPress={() => router.push('/dev/janela')}
           />
           <ActionRow
+            icon="globe"
+            title={t('dev.globo')}
+            description={t('dev.globoDescricao')}
+            onPress={() => router.push('/dev/globo')}
+          />
+          <ActionRow
             icon="crewServiceTile"
             title={t('dev.avisos')}
             description={t('dev.avisosDescricao')}
