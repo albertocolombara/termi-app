@@ -1,4 +1,4 @@
-import { cameraBasis, ecef, project, sunEcef } from '../camera';
+import { cameraBasis, destino, ecef, grandeCirculo, project, projectZ, sunEcef } from '../camera';
 
 const W = 400;
 const H = 800;
@@ -45,5 +45,28 @@ describe('câmera do globo', () => {
   it('ecef dá vetores unitários', () => {
     const v = ecef(51.47, -0.45);
     expect(Math.hypot(...v)).toBeCloseTo(1, 10);
+  });
+});
+
+describe('rota no globo', () => {
+  it('amostra o grande círculo no passo pedido', () => {
+    const p = grandeCirculo([41.2971, 2.0785], [51.47, -0.4543], 12);
+    expect(p.length).toBeGreaterThan(90);
+    expect(p[0][0]).toBeCloseTo(41.2971, 3);
+    expect(p[p.length - 1][1]).toBeCloseTo(-0.4543, 3);
+  });
+
+  it('acha um ponto a 111,2 km ao norte com 1 grau a mais de latitude', () => {
+    const [la, lo] = destino(10, 20, 0, 111.19);
+    expect(la).toBeCloseTo(11, 2);
+    expect(lo).toBeCloseTo(20, 6);
+  });
+
+  it('dá a profundidade maior para pontos mais longe da câmera inclinada', () => {
+    const b = cameraBasis({ lat: 46, lon: 1, dist: 700, tilt: 0.95, heading: 0 });
+    const perto = projectZ(46, 1, b, 400, 800)!;
+    const longe = projectZ(48, 1, b, 400, 800)!;
+    expect(longe[2]).toBeGreaterThan(perto[2]);
+    expect(longe[1]).toBeLessThan(perto[1]);
   });
 });

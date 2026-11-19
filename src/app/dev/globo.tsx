@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppState, ScrollView, useWindowDimensions, View } from 'react-native';
+import { AppState, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, color, screenGutter, SegmentedControl, space, Text, ToggleRow, TopBar } from '@/ds';
+import { color, screenGutter, SegmentedControl, space, Text, ToggleRow, TopBar } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { bearing, pos, progressAt, ROUTE } from '@/janela/geo';
 
 const DURACAO_TESTE_MIN = 80;
-const AMOSTRAS = 64;
 
 /**
  * Globo de teste (ferramenta de desenvolvimento): mesmo voo Barcelona → Londres da janela de teste,
@@ -23,7 +22,6 @@ export default function GloboDeTeste() {
   const [agora, setAgora] = useState(() => Date.now());
   const [ativo, setAtivo] = useState(AppState.currentState === 'active');
   const [modo, setModo] = useState<ModoGlobo>('planeta');
-  const [zoom, setZoom] = useState(1);
   const [acelerar, setAcelerar] = useState(false);
 
   useEffect(() => {
@@ -44,34 +42,23 @@ export default function GloboDeTeste() {
   const [lat, lon] = pos(progresso);
   const rumo = bearing([lat, lon], pos(Math.min(1, progresso + 0.01)));
 
-  const rota = useMemo(
-    () => Array.from({ length: AMOSTRAS + 1 }, (_, i) => {
-      const [la, lo] = pos(i / AMOSTRAS);
-      return { lat: la, lon: lo };
-    }),
-    [],
-  );
   const aviao = useMemo(() => ({ lat, lon, rumo }), [lat, lon, rumo]);
 
-  const alturaGlobo = Math.round(height * 0.62);
+  const alturaGlobo = Math.round(height * 0.66);
 
   return (
-    <ScrollView
-      style={{ backgroundColor: color.bg.flight }}
-      contentContainerStyle={{ paddingBottom: insets.bottom + space[40], gap: space[16] }}
-    >
+    // Sem rolagem: o arraste é do globo.
+    <View style={{ flex: 1, backgroundColor: color.bg.flight, paddingBottom: insets.bottom + space[16], gap: space[16] }}>
       <View>
         {ativo ? (
           <Globo
             width={width}
             height={alturaGlobo}
             aviao={aviao}
-            rota={rota}
             progresso={progresso}
             origem={{ lat: ROUTE.from.lat, lon: ROUTE.from.lon, nome: ROUTE.from.city }}
             destino={{ lat: ROUTE.to.lat, lon: ROUTE.to.lon, nome: ROUTE.to.city }}
             modo={modo}
-            zoom={zoom}
             instante={tempoDeVoo}
           />
         ) : (
@@ -94,12 +81,11 @@ export default function GloboDeTeste() {
           value={modo}
           onChange={setModo}
         />
-        <View style={{ flexDirection: 'row', gap: space[8] }}>
-          <Button variant="secondary" size="medium" label={t('globo.aproximar')} onPress={() => setZoom((z) => Math.min(8, z * 1.6))} />
-          <Button variant="secondary" size="medium" label={t('globo.afastar')} onPress={() => setZoom((z) => Math.max(0.08, z / 1.6))} />
-        </View>
+        <Text variant="Body/Small 13" tone="tertiary">
+          {t('globo.gestos')}
+        </Text>
         <ToggleRow title={t('globo.acelerar')} value={acelerar} onChange={setAcelerar} />
       </View>
-    </ScrollView>
+    </View>
   );
 }

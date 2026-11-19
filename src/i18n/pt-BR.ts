@@ -45,8 +45,8 @@ export const ptBR = {
   globo: {
     seguir: 'Seguir',
     planeta: 'Planeta',
-    aproximar: 'Aproximar',
-    afastar: 'Afastar',
+    centralizar: 'Centralizar',
+    gestos: 'Pinça para aproximar e afastar; arraste para mover o mapa.',
     acelerar: 'Acelerar o tempo (×60)',
     sobre: 'Rota {de} → {para} · {pct}% voado',
   },
