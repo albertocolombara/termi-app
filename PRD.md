@@ -241,7 +241,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
   - **Regra geral (decidida em 19/11/2026): na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive durante o voo.** Exemplos: comprar o 4º souvenir, uma vista da janela ou um som exclusivo, mês ou ano nas estatísticas, o Termi Premium no Início, o item "Primeira classe" do menu e "Conhecer a primeira classe" na mala.
   - Oferta de boas-vindas: no fim do onboarding e depois do 3º voo (mesma oferta, sem contador), sempre fora do voo.
   - **Entre o embarque e o pouso, nenhum paywall, banner ou lembrete de assinatura abre sozinho.** Só o toque do usuário abre.
-  - O dial continua mostrando a faixa acima de 3 h como "primeira classe" sem abrir o paywall (RF-09). **[Pendente]** confirmar se essa exceção continua com a regra geral.
+  - **Exceção: o dial.** A faixa acima de 3 h aparece visualmente como conteúdo da primeira classe, mas não abre o paywall, para não atrapalhar a escolha do tempo (RF-09; decidido em 19/11/2026).
 - **RN-21 — Honestidade comercial.** O desconto não muda ao tentar fechar a tela; sem contador de urgência; sem selos como "mais escolhido" ou "melhor valor" sem dado real; lembrete antes da primeira cobrança.
 - **RN-22 — O céu é sempre o real.** O premium muda só o enquadramento da janela (asa, motor, moldura) e os sons de fundo.
 - **RN-23 — Bloqueio de apps.** Só entra no paywall e no app depois de aprovado num teste na Play Store. Tem lista de apps permitidos, sem limite arbitrário, editável durante o voo, e sempre uma saída de emergência.

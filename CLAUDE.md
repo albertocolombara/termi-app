@@ -21,7 +21,7 @@ Se um documento contradiz outro, **pare e pergunte**. Não escolha sozinho.
 
 1. **O tempo focado nunca se perde.** Nenhum caminho (pousar antes, app fechado, reinício, erro, sem rede) apaga minutos, milhas, carimbos, saldo ou souvenirs.
 2. **Nunca tirar o que foi conquistado.** Um souvenir comprado continua na mala mesmo se a assinatura acabar.
-3. **Sem anúncios** e **nenhuma oferta que o usuário não pediu durante o voo.** Na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive em voo (RN-20).
+3. **Sem anúncios** e **nenhuma oferta que o usuário não pediu durante o voo.** Na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive em voo (RN-20). Exceção: no dial, a faixa acima de 3 h só aparece como primeira classe, sem abrir o paywall.
 4. **Sair do app não tem consequência.** Não existe turbulência nem detecção de saída.
 5. **Nunca recuperar voo** pagando ou de outra forma.
 6. **Honestidade comercial:** preço, período grátis e data do lembrete visíveis antes do botão; sem contador de urgência; sem selo sem dado real.

@@ -97,7 +97,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Fluxos alternativos**
 
-- **A1 — Tempo acima do plano (passo 2):** na econômica, a faixa acima de 3 h aparece como "primeira classe" e não pode ser escolhida; o paywall não abre.
+- **A1 — Tempo acima do plano (passo 2):** na econômica, a faixa acima de 3 h aparece visualmente como "primeira classe" e não pode ser escolhida; o paywall não abre, para não atrapalhar a escolha do tempo (exceção da RN-20).
 - **A2 — Nenhum voo encaixa (passo 3):** o Sistema sugere tempos próximos com voos na região escolhida ou em "Qualquer lugar".
 - **A3 — Dados de voo fora do ar (passo 3):** o Sistema oferece refazer o voo real de ontem, no mesmo horário (RN-12).
 - **A4 — Paisagem não baixa (passo 7):** o Sistema oferece "Embarcar com o globo"; a janela fica disponível quando a conexão voltar.
