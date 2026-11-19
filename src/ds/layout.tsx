@@ -1,7 +1,8 @@
 /** Navegação e estrutura (Figma: seção 09). */
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, ReduceMotion, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { motion } from './motion';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
@@ -90,7 +91,11 @@ export function BottomSheet({ visible, onClose, title, subtitle, children, foote
           <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(150)} style={StyleSheet.absoluteFill}>
             <Pressable accessibilityLabel="Fechar" style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
           </Animated.View>
-          <Animated.View entering={SlideInDown.duration(260)} exiting={SlideOutDown.duration(200)} style={styles.sheet}>
+          <Animated.View
+            entering={SlideInDown.duration(motion.duration.medium4).easing(motion.easing.emphasizedDecelerate).reduceMotion(ReduceMotion.System)}
+            exiting={SlideOutDown.duration(motion.duration.medium2).easing(motion.easing.emphasizedAccelerate).reduceMotion(ReduceMotion.System)}
+            style={styles.sheet}
+          >
             <View style={styles.handle} />
             <View style={{ gap: space[4] }}>
               <Text variant="Heading/Sheet 22" accessibilityRole="header">
@@ -137,5 +142,6 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
     gap: space[16],
   },
-  handle: { width: 40, height: 4, borderRadius: radius.xs, backgroundColor: C.surface.track },
+  // Alça centralizada no topo, como no Material Design 3.
+  handle: { width: 40, height: 4, borderRadius: radius.xs, backgroundColor: C.surface.track, alignSelf: 'center' },
 });

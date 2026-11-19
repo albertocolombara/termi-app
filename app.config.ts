@@ -17,13 +17,8 @@ const TERMI_LARANJA = '#F28C28'; // Pendente: virar a variável brand/termi no F
 
 const GEIST = './node_modules/@expo-google-fonts/geist';
 const PIXEL = './assets/fonts/geist-pixel';
-const pixelFamilies = [
-  ['Geist Pixel', 'Regular'],
-  ['Geist Pixel Circle', 'Circle'],
-  ['Geist Pixel Grid', 'Grid'],
-  ['Geist Pixel Triangle', 'Triangle'],
-  ['Geist Pixel Line', 'Line'],
-] as const;
+// Da Geist Pixel, só a forma Grid (painel de aeroporto). Ver src/ds/README.md.
+const pixelFamilies = [['Geist Pixel Grid', 'Grid']] as const;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

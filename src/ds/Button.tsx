@@ -45,7 +45,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       ]}
       {...rest}
     >
-      <Text variant="Body/Large Medium 16" style={{ color: fg }} underline numberOfLines={1}>
+      <Text variant="Body/Large Medium 16" style={{ color: fg }} underline={isLink} numberOfLines={1}>
         {label}
       </Text>
       {size === 'large' && !isLink && !isOutline && icon ? (

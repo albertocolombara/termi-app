@@ -18,7 +18,6 @@ import {
   InfoBanner,
   ListOption,
   palette,
-  pixelFamilies,
   PremiumBadge,
   radius,
   screenGutter,
@@ -33,7 +32,6 @@ import {
   ToggleRow,
   TopBar,
   typography,
-  type PixelShape,
   type TypographyVariant,
 } from './index';
 
@@ -132,15 +130,12 @@ export function Catalogo({ onClose }: { onClose: () => void }) {
                 </Text>
               </View>
             ))}
-            <Label>Geist Pixel · formas (pixelShape)</Label>
-            {(Object.keys(pixelFamilies) as PixelShape[]).map((shape) => (
-              <View key={shape} style={styles.typeRow}>
-                <Label>{pixelFamilies[shape]}</Label>
-                <Text variant="Display/Pixel 32" tone="accent" pixelShape={shape} numberOfLines={1}>
-                  Embarque aberto
-                </Text>
-              </View>
-            ))}
+            <Label>Geist Pixel Grid · painel de aeroporto</Label>
+            <View style={styles.typeRow}>
+              <Text variant="Display/Pixel 32" tone="accent" numberOfLines={1}>
+                Embarque aberto
+              </Text>
+            </View>
           </Section>
 
           <Section n="03" title="Espaçamento e raio">
