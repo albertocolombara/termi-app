@@ -33,14 +33,14 @@ flowchart LR
 |---|---|---|
 | Visão do produto (28 versões) | Doc "visao-do-produto.md" | Decisões consolidadas; pendências listadas no PRD §16 |
 | Telas no Figma | Arquivo "Termi: Focus Flights", seções v2 (Onboarding, Início, Menu lateral, Estados do voo, Erros, Premium) | Desenhadas |
-| Design system no Figma e em código | Página "Design System" (variáveis, componentes, 31 ícones); PR #1 de `termi-prototipo` (tokens, 20 componentes, 30 ícones) | Código ainda não testado no aparelho |
-| Protótipo técnico Android (base técnica) | `termi-prototipo`, build-8: janela Skia com renders do Blender e blocos Landsat, serviço de bordo, notificação fixa, avisos como alarme exato | build-6 aprovado no M35; aviso de pouso com tela bloqueada a confirmar no build-8 |
+| Design system no Figma e em código | Página "Design System" (variáveis, componentes, 31 ícones); `src/ds` trazido do protótipo | Catálogo testado no M35 (build-1, 19/11): ajustes de sublinhado, linha do campo, Geist Grid e animações no PR "Ajustes do design system" |
+| Protótipo técnico Android (base técnica) | `termi-prototipo`, build-8: janela Skia com renders do Blender e blocos Landsat, serviço de bordo, notificação fixa, avisos como alarme exato | Base confirmada no app: build-1 do `termi-app` (19/11) com a janela no mesmo desempenho e o aviso de pouso tocando com a tela bloqueada e o app fechado |
 | Medições de bateria e memória | Doc "prototipo-tecnico.md" | ~1% em 25 min com tela bloqueada; limite de ~150 MB de textura |
 | Validação dos dados de voo | Doc "validacao-dados-voos.md" (~17 h de coleta mundial) | Disponibilidade resolvida; previsão ruim acima de ~1h30 |
 | Infraestrutura e políticas | Doc "infra-e-politicas.md" | Plano de R2, coletor, custos e riscos da Play |
 | Animações do Termi | Arquivo Rive (nuvem), 5 animações e state machine testada | Falta exportar `.riv` e nomear o arquivo |
 | Janela no Blender | Renders atrás da asa (3 luzes) | Faltam "Com asa" e "Asa e motor" |
-| Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão | Coleção atual de 13 países: faltam 8 e o verso; novos países em breve |
+| Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
 **Lacunas que bloqueiam decisões estruturais:** backend de conta/sincronização, solução de globo, previsão de pouso para voos longos, aprovação da Play para alarmes exatos e bloqueio de apps.
 
@@ -64,16 +64,17 @@ flowchart LR
 - [ ] Resolver as inconsistências listadas no fim deste documento
 
 ### Tarefas
-- [ ] Criar o projeto Expo SDK 58 com TypeScript na estrutura proposta
-- [ ] Configurar lint, `tsc --noEmit`, Jest (jest-expo) e scripts no `package.json`
-- [ ] Configurar `app.config.ts` lendo as variáveis de `.env`
-- [ ] Trazer `src/ds` (branch `design-system` do protótipo), conferir com o Figma e testar o catálogo no aparelho
+- [x] Criar o projeto Expo SDK 58 com TypeScript na estrutura proposta — PR #1
+- [x] Configurar lint, `tsc --noEmit`, Jest (jest-expo) e scripts no `package.json` — PR #1
+- [x] Configurar `app.config.ts` lendo as variáveis de `.env` — PR #1
+- [x] Trazer `src/ds` (branch `design-system` do protótipo) e testar o catálogo no aparelho — PR #1, build-1 no M35
+- [ ] Ajustes do catálogo após o teste: sublinhado nos botões, linha no campo de texto, Geist Pixel Grid, animações MD3, alça do bottom sheet, laranja internacional nos avisos — PR "Ajustes do design system" (falta testar no aparelho)
 - [ ] Adicionar expo-blur para `Glass/Blur 12`
-- [ ] Trazer `src/janela` (shader, blocos, geo) e `modules/screen-state`, mantendo o orçamento de ~150 MB de textura
-- [ ] Ajustar ao PRD o que diverge no protótipo: "Desembarcar" → "Pousar antes"; pausa máxima de 5 min também no ciclo de 50 min
-- [ ] Configurar i18n com pt-BR
-- [ ] Criar o esquema SQLite inicial e as migrações
-- [ ] CI: tipos, lint, testes e build de teste a cada push
+- [x] Trazer `src/janela` (shader, blocos, geo) e `modules/screen-state`, mantendo o orçamento de ~150 MB de textura — PR #1; desempenho confirmado no M35 (build-1)
+- [x] Ajustar ao PRD o que diverge no protótipo: pausa máxima de 5 min também no ciclo de 50 min e folga de 10 min (`agendaDePausas`, PR #1). O botão "Desembarcar" não veio para o app; o "Pousar antes" entra com a tela em voo (Fase 3)
+- [x] Configurar i18n com pt-BR — PR #1
+- [x] Criar o esquema SQLite inicial e as migrações — PR #1
+- [x] CI: tipos, lint e testes nos PRs e na `main`; APK sob demanda e na `main` — PR #1 (build-1 em 23 min)
 
 ---
 
@@ -153,7 +154,7 @@ flowchart LR
 - [ ] Estatísticas (semana; mês e ano na primeira classe)
 - [ ] RevenueCat: produtos, direitos, compra, restauração
 - [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5
-- [ ] Gatilhos do paywall (RN-20) e aviso "Lembrar no pouso"
+- [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo
 - [ ] Vistas da janela por plano; sons premium
 - [ ] Backup do progresso e conta opcional
 - [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7)
@@ -171,7 +172,7 @@ flowchart LR
 - **Critérios de conclusão:** nenhuma vista ou medalha da v1 usa placeholder.
 
 - [ ] Renderizar "Com asa" e "Asa e motor" nos três horários, com moldura grafite
-- [ ] Medalhas dos 8 países restantes dos 13 (falta a referência do Uruguai) e o verso padrão
+- [ ] Medalhas dos 7 países restantes dos 13 (falta a referência do Uruguai) e o verso padrão
 - [ ] Definir e produzir os próximos países da coleção
 - [ ] Desenhar os 7 adesivos do Termi, os carimbos de nível e a medalha rara do Nômade
 - [ ] Exportar o `.riv` final (nomear o arquivo; trocar o ícone provisório das moedas)

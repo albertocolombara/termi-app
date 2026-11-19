@@ -23,20 +23,23 @@ Letter-spacing e line-height vêm do Figma em %, e `tokens.ts` converte para pon
 
 ## Fontes
 
-Embutidas no build pelo plugin do `expo-font` (`app.json`):
+Embutidas no build pelo plugin do `expo-font` (`app.config.ts`):
 
 - **Geist** 400/500/600 (`@expo-google-fonts/geist`). Use `fontWeight` com a família `Geist`; o Android escolhe o arquivo pelo peso.
-- **Geist Pixel** (`assets/fonts/geist-pixel/`, licença OFL). A fonte original é variável, com o eixo "Element Shape". Cada forma foi gerada como um arquivo estático e registrada como uma família própria, porque o RN não escolhe eixos de fonte variável de forma confiável no Android:
+- **Geist Pixel Grid** (`assets/fonts/geist-pixel/GeistPixel-Grid.ttf`, licença OFL), família `Geist Pixel Grid`, usada pelo estilo `Display/Pixel 32`. É a forma que mais lembra um painel físico de aeroporto (decidido em 19/11/2026). A fonte original é variável, com o eixo "Element Shape"; a forma Grid foi gerada como arquivo estático, porque o RN não escolhe eixos de fonte variável de forma confiável no Android. As outras formas saíram do app.
 
-| Forma | Família | No código |
+## Movimento
+
+`motion.ts` traz os tokens de movimento do Material Design 3, os mesmos das transições dos componentes no Figma:
+
+| Uso | Duração | Easing |
 | --- | --- | --- |
-| Regular (padrão do `Display/Pixel 32`) | `Geist Pixel` | `<Text variant="Display/Pixel 32" />` |
-| Circle | `Geist Pixel Circle` | `pixelShape="circle"` |
-| Grid | `Geist Pixel Grid` | `pixelShape="grid"` |
-| Triangle | `Geist Pixel Triangle` | `pixelShape="triangle"` |
-| Line | `Geist Pixel Line` | `pixelShape="line"` |
+| Chip, rádio, checkbox, segmento, opção de lista | 200 ms (`short4`) | padrão `cubic-bezier(0.2, 0, 0, 1)` |
+| Toggle | 300 ms (`medium2`) | padrão |
+| Bottom sheet abrindo | 400 ms (`medium4`) | enfatizado de entrada `cubic-bezier(0.05, 0.7, 0.1, 1)` |
+| Bottom sheet fechando | 300 ms (`medium2`) | enfatizado de saída `cubic-bezier(0.3, 0, 0.8, 0.15)` |
 
-A forma Square ficou de fora porque é quase idêntica à Regular (fica a 1 de 100 no eixo). As 5 somam cerca de 4,2 MB no APK. Se o app usar só uma ou duas, dá para tirar as outras do `app.json` e de `pixelFamilies`.
+`useStateProgress(ativo)` dá um progresso de 0 a 1 para interpolar cor e posição. Com "reduzir movimento" ligado no aparelho, a troca é instantânea.
 
 ## Componentes
 

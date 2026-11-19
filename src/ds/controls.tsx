@@ -1,5 +1,5 @@
 /** Controles de seleção e entrada (Figma: seção 07 · Seleção e entrada). */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   PanResponder,
   Pressable,
@@ -11,8 +11,10 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
+import Animated, { interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { Icon, type IconName } from './Icon';
+import { motion, timing, useStateProgress } from './motion';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space, typography } from './tokens';
 
@@ -25,23 +27,25 @@ export type ChipProps = {
   onPress?: () => void;
 };
 
-/** Filtro/categoria de seleção única. */
+/** Filtro/categoria de seleção única. Fundo e texto mudam juntos em 200 ms (MD3). */
 export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
+  const p = useStateProgress(!!selected);
+  const fundo = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(p.value, [0, 1], [C.surface.default, C.accent.default]),
+  }));
+  const texto = useAnimatedStyle(() => ({
+    color: interpolateColor(p.value, [0, 1], [C.text.secondary, C.text.onAccent]),
+  }));
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.chip,
-        size === 'large' ? styles.chipLarge : styles.chipSmall,
-        { backgroundColor: selected ? C.accent.default : C.surface.default },
-        pressed && { opacity: 0.8 },
-      ]}
+      style={({ pressed }) => [styles.chipHit, pressed && { opacity: 0.8 }]}
     >
-      <Text variant={selected ? 'Label/Strong 14' : 'Label/Medium 14'} tone={selected ? 'onAccent' : 'secondary'}>
-        {label}
-      </Text>
+      <Animated.View style={[styles.chip, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
+        <Animated.Text style={[typography[selected ? 'Label/Strong 14' : 'Label/Medium 14'], texto]}>{label}</Animated.Text>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -49,7 +53,10 @@ export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
 // ───────── Segmented control ─────────
 export type Segment<T extends string> = { value: T; label: string; icon?: IconName };
 
-/** Alterna entre vistas (ex.: Janela / Globo). Superfície translúcida para ficar sobre a vista do voo. */
+/**
+ * Alterna entre vistas (ex.: Janela / Globo). Superfície translúcida para ficar sobre a vista do voo.
+ * O indicador do segmento ativo desliza até o segmento tocado (200 ms, MD3).
+ */
 export function SegmentedControl<T extends string>({
   segments,
   value,
@@ -59,51 +66,102 @@ export function SegmentedControl<T extends string>({
   value: T;
   onChange: (v: T) => void;
 }) {
+  const [layouts, setLayouts] = useState<Record<string, { x: number; width: number }>>({});
+  const ativo = layouts[value];
+  const x = useSharedValue(0);
+  const w = useSharedValue(0);
+  const primeiraVez = useRef(true);
+
+  useEffect(() => {
+    if (!ativo) return;
+    if (primeiraVez.current) {
+      // Posição inicial sem animação.
+      x.value = ativo.x;
+      w.value = ativo.width;
+      primeiraVez.current = false;
+      return;
+    }
+    x.value = withTiming(ativo.x, timing());
+    w.value = withTiming(ativo.width, timing());
+  }, [ativo, x, w]);
+
+  const indicador = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }], width: w.value }));
+
   return (
     <View style={styles.segmented} accessibilityRole="tablist">
-      {segments.map((s) => {
-        const active = s.value === value;
-        return (
-          <Pressable
-            key={s.value}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            onPress={() => onChange(s.value)}
-            style={[styles.segment, active && styles.segmentActive]}
-          >
-            {s.icon ? <Icon name={s.icon} size={16} color={active ? C.accent.default : C.text.secondary} /> : null}
-            <Text variant="Body/Medium 14" tone={active ? 'primary' : 'secondary'}>
-              {s.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+      {ativo ? <Animated.View pointerEvents="none" style={[styles.segmentIndicator, indicador]} /> : null}
+      {segments.map((s) => (
+        <SegmentItem
+          key={s.value}
+          segment={s}
+          active={s.value === value}
+          onPress={() => onChange(s.value)}
+          onLayout={(e: LayoutChangeEvent) => {
+            const { x: lx, width } = e.nativeEvent.layout;
+            setLayouts((l) => (l[s.value]?.x === lx && l[s.value]?.width === width ? l : { ...l, [s.value]: { x: lx, width } }));
+          }}
+        />
+      ))}
     </View>
+  );
+}
+
+function SegmentItem<T extends string>({
+  segment,
+  active,
+  onPress,
+  onLayout,
+}: {
+  segment: Segment<T>;
+  active: boolean;
+  onPress: () => void;
+  onLayout: (e: LayoutChangeEvent) => void;
+}) {
+  const p = useStateProgress(active);
+  const texto = useAnimatedStyle(() => ({
+    color: interpolateColor(p.value, [0, 1], [C.text.secondary, C.text.primary]),
+  }));
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      onLayout={onLayout}
+      style={styles.segment}
+    >
+      {segment.icon ? <Icon name={segment.icon} size={16} color={active ? C.accent.default : C.text.secondary} /> : null}
+      <Animated.Text style={[typography['Body/Medium 14'], texto]}>{segment.label}</Animated.Text>
+    </Pressable>
   );
 }
 
 // ───────── Radio ─────────
+/** O anel engrossa do contorno até o centro ao selecionar (200 ms, MD3). */
 export function Radio({ selected }: { selected?: boolean }) {
-  return (
-    <View
-      style={[
-        styles.radio,
-        selected ? { borderWidth: 7, borderColor: C.border.accent } : { borderWidth: 2, borderColor: C.border.control },
-      ]}
-    />
-  );
+  const p = useStateProgress(!!selected);
+  const anel = useAnimatedStyle(() => ({
+    borderWidth: interpolate(p.value, [0, 1], [2, 7]),
+    borderColor: interpolateColor(p.value, [0, 1], [C.border.control, C.border.accent]),
+  }));
+  return <Animated.View style={[styles.radio, anel]} />;
 }
 
 // ───────── Checkbox ─────────
+/** Preenche e mostra o check crescendo do centro (200 ms, MD3). */
 export function Checkbox({ checked }: { checked?: boolean }) {
+  const p = useStateProgress(!!checked);
+  const fundo = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(p.value, [0, 1], ['transparent', C.accent.default]),
+  }));
+  const check = useAnimatedStyle(() => ({ opacity: p.value, transform: [{ scale: interpolate(p.value, [0, 1], [0.6, 1]) }] }));
   return (
-    <View style={[styles.checkbox, checked && { backgroundColor: C.accent.default }]}>
-      {checked ? (
+    <Animated.View style={[styles.checkbox, fundo]}>
+      <Animated.View style={check}>
         <Svg width={18} height={18} viewBox="0 0 18 18">
           <Path d="M4 9.5 7.5 13 14 5.5" stroke={C.accent.on} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
         </Svg>
-      ) : null}
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -126,19 +184,28 @@ export function CheckboxItem({ label, checked, onChange }: { label: string; chec
 }
 
 // ───────── Toggle ─────────
+const TOGGLE_CURSO = 48 - 3 * 2 - 22; // largura − padding − bolinha
+
+/** A bolinha desliza e o trilho muda de cor juntos (300 ms, MD3). */
 export function Toggle({ value, onChange }: { value: boolean; onChange?: (v: boolean) => void }) {
+  const p = useStateProgress(value, motion.duration.medium2);
+  const trilho = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(p.value, [0, 1], [C.surface.track, C.accent.default]),
+  }));
+  const bolinha = useAnimatedStyle(() => ({
+    transform: [{ translateX: p.value * TOGGLE_CURSO }],
+    backgroundColor: interpolateColor(p.value, [0, 1], [C.surface.inverse, C.accent.on]),
+  }));
   return (
     <Pressable
       accessibilityRole="switch"
       accessibilityState={{ checked: value }}
       hitSlop={hitSlop}
       onPress={() => onChange?.(!value)}
-      style={[
-        styles.toggle,
-        { backgroundColor: value ? C.accent.default : C.surface.track, justifyContent: value ? 'flex-end' : 'flex-start' },
-      ]}
     >
-      <View style={[styles.knob, { backgroundColor: value ? C.accent.on : C.surface.inverse }]} />
+      <Animated.View style={[styles.toggle, trilho]}>
+        <Animated.View style={[styles.knob, bolinha]} />
+      </Animated.View>
     </Pressable>
   );
 }
@@ -243,6 +310,8 @@ export function TextField({ style, ...rest }: TextInputProps) {
       placeholderTextColor={C.text.tertiary}
       selectionColor={C.accent.default}
       cursorColor={C.accent.default}
+      // Sem isso o Android desenha uma linha embaixo de todo campo de texto.
+      underlineColorAndroid="transparent"
       {...rest}
       onFocus={(e) => {
         setFocused(true);
@@ -258,7 +327,8 @@ export function TextField({ style, ...rest }: TextInputProps) {
 }
 
 const styles = StyleSheet.create({
-  chip: { borderRadius: radius.sm, alignSelf: 'flex-start' },
+  chipHit: { alignSelf: 'flex-start' },
+  chip: { borderRadius: radius.sm },
   chipLarge: { paddingVertical: 9, paddingHorizontal: space[14] },
   chipSmall: { paddingVertical: 7, paddingHorizontal: space[12] },
   segmented: { flexDirection: 'row', alignSelf: 'flex-start', backgroundColor: C.surface.strong, borderRadius: radius.md },
@@ -272,7 +342,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  segmentActive: { backgroundColor: C.surface.sunken, borderColor: C.border.subtle },
+  segmentIndicator: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: C.surface.sunken,
+    borderColor: C.border.subtle,
+    borderWidth: 1,
+    borderRadius: radius.md,
+  },
   radio: { width: 22, height: 22, borderRadius: 11 },
   checkbox: {
     width: 18,

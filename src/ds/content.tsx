@@ -1,9 +1,11 @@
 /** Conteúdo e ações compactas (Figma: seções 06 · Ações e 08 · Conteúdo). */
 import React from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, { interpolateColor, useAnimatedStyle } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Icon, Suitcase, type IconName } from './Icon';
 import { Radio } from './controls';
+import { useStateProgress } from './motion';
 import { Text } from './Text';
 import { color as C, gold, radius, space } from './tokens';
 
@@ -89,15 +91,25 @@ export type ListOptionProps = {
   onPress?: () => void;
 };
 
-/** Opção selecionável com ícone, título, descrição e rádio (ex.: sons da cabine). */
+/**
+ * Opção selecionável com ícone, título, descrição e rádio (ex.: sons da cabine). Fundo em 200 ms (MD3).
+ * Bloqueada (`locked`) na econômica: o toque continua chegando ao `onPress`, que deve abrir o paywall
+ * (regra: tocar em algo da primeira classe abre o paywall, a qualquer momento).
+ */
 export function ListOption({ icon, title, description, selected, locked, onPress }: ListOptionProps) {
+  const p = useStateProgress(!!selected);
+  const fundo = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(p.value, [0, 1], ['transparent', C.surface.default]),
+  }));
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected: !!selected, disabled: !!locked }}
+      accessibilityState={{ selected: !!selected }}
+      accessibilityHint={locked ? 'Primeira classe' : undefined}
       onPress={onPress}
-      style={({ pressed }) => [styles.option, selected && { backgroundColor: C.surface.default }, pressed && { opacity: 0.85 }]}
+      style={({ pressed }) => [pressed && { opacity: 0.85 }]}
     >
+      <Animated.View style={[styles.option, fundo]}>
       <View style={styles.tile}>
         <Icon name={icon} />
       </View>
@@ -112,6 +124,7 @@ export function ListOption({ icon, title, description, selected, locked, onPress
         ) : null}
       </View>
       {locked ? <PremiumBadge /> : <Radio selected={selected} />}
+      </Animated.View>
     </Pressable>
   );
 }

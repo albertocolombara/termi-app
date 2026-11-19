@@ -65,7 +65,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 1. **O tempo focado nunca se perde.** Pausar ou pousar antes nunca apaga minutos.
 2. **Nunca tirar do grátis o que já foi conquistado.** Um souvenir comprado é do usuário para sempre.
-3. **Sem anúncios. Nunca.** E nenhuma oferta de premium durante uma sessão.
+3. **Sem anúncios. Nunca.** E nenhuma oferta que o usuário não pediu durante uma sessão. Se ele tocar num recurso da primeira classe, o paywall abre: foi ele quem pediu.
 4. **Honestidade comercial.** Preço visível antes do trial, lembrete antes da cobrança, cancelamento fácil, sem contador falso nem selo sem dado real.
 5. **Liberdade, não vigilância.** Sair do app não tem consequência.
 6. **O mundo real é a base.** O céu é sempre o real; o premium muda o enquadramento, nunca a paisagem.
@@ -84,7 +84,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | Início e navegação | Início com Termi, menu lateral, perfil | Desenhado no Figma |
 | Escolher e embarcar | Dial, painel de partidas, cartão de embarque, caminho rápido, tela de embarque | Desenhado no Figma |
 | Em voo | Janela ao vivo, globo, sons, serviço de bordo, Pousar antes, estados | Janela, serviço de bordo, avisos e bateria validados no protótipo |
-| Pouso e coleção | Pouso, loja do destino, mala, souvenir 3D, passaporte, status de viajante | Desenhado; 5 de 13 medalhas prontas |
+| Pouso e coleção | Pouso, loja do destino, mala, souvenir 3D, passaporte, status de viajante | Desenhado; 6 de 13 medalhas prontas |
 | Histórico | Diário de bordo, estatísticas | Desenhado no Figma |
 | Monetização | Paywall, oferta de boas-vindas, assinatura, vitalício | Desenhado no Figma |
 | Conta e dados | Uso sem conta, sincronização opcional, exportar e apagar | Definição técnica pendente |
@@ -129,7 +129,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RF-22** Durante o voo deve existir uma notificação fixa com contagem regressiva até o pouso (Android) e, no iOS, uma Live Activity.
 - **RF-23** O botão "Pousar antes" deve abrir uma confirmação que mostra o que entra e o que não entra (RN-10), com "Continuar voando" como ação principal.
 - **RF-24** A mensagem de boas-vindas do voo deve dizer que o usuário pode sair do app à vontade e pedir para não ligar o modo avião.
-- **RF-25** Tocar numa vista ou som da primeira classe durante o voo deve mostrar só um aviso curto com "Lembrar no pouso", nunca o paywall.
+- **RF-25** Na econômica, tocar numa vista, som ou qualquer outro recurso da primeira classe durante o voo deve abrir o paywall, como fora do voo (RN-20). O voo segue no horário com o paywall aberto; fechar volta ao voo.
 - **RF-26** O app deve tratar os estados: Sem sinal do radar, Em espera, Sem internet (antes e durante o voo) e Dados fora do ar (seção 9).
 
 #### Pouso e coleção
@@ -237,7 +237,11 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 - **RN-18 — Sem anúncios**, nunca.
 - **RN-19 — Planos (Brasil, lançamento):** Mensal R$ 14,90; Anual R$ 89,90 (7 dias grátis, "Economize 50%"); Vitalício R$ 179,90 (compra única). Oferta de boas-vindas: 1º ano do anual por R$ 59,90 (−33%), com os 7 dias grátis. O período grátis existe só no anual.
-- **RN-20 — Quando o paywall abre:** fim do onboarding (oferta de boas-vindas); depois do 3º voo (mesma oferta, sem contador); ao tentar comprar o 4º souvenir; ao tocar numa vista ou som exclusivo **fora** de um voo; pelo Termi Premium no Início, pelo item "Primeira classe" do menu ou por "Conhecer a primeira classe" na mala. **Nunca durante uma sessão de foco.**
+- **RN-20 — Quando o paywall abre:**
+  - **Regra geral (decidida em 19/11/2026): na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive durante o voo.** Exemplos: comprar o 4º souvenir, uma vista da janela ou um som exclusivo, mês ou ano nas estatísticas, o Termi Premium no Início, o item "Primeira classe" do menu e "Conhecer a primeira classe" na mala.
+  - Oferta de boas-vindas: no fim do onboarding e depois do 3º voo (mesma oferta, sem contador), sempre fora do voo.
+  - **Entre o embarque e o pouso, nenhum paywall, banner ou lembrete de assinatura abre sozinho.** Só o toque do usuário abre.
+  - **Exceção: o dial.** A faixa acima de 3 h aparece visualmente como conteúdo da primeira classe, mas não abre o paywall, para não atrapalhar a escolha do tempo (RF-09; decidido em 19/11/2026).
 - **RN-21 — Honestidade comercial.** O desconto não muda ao tentar fechar a tela; sem contador de urgência; sem selos como "mais escolhido" ou "melhor valor" sem dado real; lembrete antes da primeira cobrança.
 - **RN-22 — O céu é sempre o real.** O premium muda só o enquadramento da janela (asa, motor, moldura) e os sons de fundo.
 - **RN-23 — Bloqueio de apps.** Só entra no paywall e no app depois de aprovado num teste na Play Store. Tem lista de apps permitidos, sem limite arbitrário, editável durante o voo, e sempre uma saída de emergência.
@@ -323,7 +327,8 @@ Critérios por caso de uso ficam em [CASOS_DE_USO.md](CASOS_DE_USO.md). Critéri
 - [ ] Um usuário novo consegue embarcar num voo real em até 3 toques depois do onboarding (dial → caminho rápido → embarque).
 - [ ] Nenhum caminho de encerramento (pouso, pousar antes, em espera, sem sinal, app fechado, reinício do aparelho) apaga minutos já focados.
 - [ ] O aviso de pouso toca no horário com a tela bloqueada e o app fechado num Android 14+.
-- [ ] Nenhuma tela de oferta aparece entre o embarque e o pouso.
+- [ ] Entre o embarque e o pouso, nenhuma oferta aparece sem o usuário tocar num recurso da primeira classe.
+- [ ] Na econômica, todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo.
 - [ ] Os preços, o período grátis e a data do lembrete aparecem antes do botão de compra.
 - [ ] Um souvenir comprado continua na mala depois de cancelar a assinatura, reinstalar o app ou restaurar o backup.
 - [ ] Com "reduzir movimento" ligado, as animações do Termi e os pulsos da janela param.
@@ -395,7 +400,7 @@ Testes de preço: dois preços na Play via RevenueCat.
 | Loja do destino depois do pouso | [Pendente] O usuário pode voltar à loja mais tarde ou só na tela de pouso? E se pousar num país sem medalha na v1? |
 | Status de viajante | Desenhar os 7 adesivos, os carimbos de nível e a medalha rara. |
 | Widgets | Conteúdo e fase. |
-| Medalhas | 8 dos 13 países faltando (falta a referência do Uruguai), o verso padrão e a lista dos próximos países. |
+| Medalhas | 7 dos 13 países faltando (falta a referência do Uruguai), o verso padrão e a lista dos próximos países. |
 | Avatar de perfil | Foto ou personalização. |
 | Balão de pensamento do Início | Medalhas genéricas ou souvenirs reais que faltam ao usuário. |
 | Ajuste de cor da terra por estação | Pendente. |

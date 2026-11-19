@@ -11,6 +11,8 @@ export const palette = {
   'yellow/500': '#FFC629',
   'yellow/900': '#2A2416',
   'orange/500': '#FF9F1C',
+  /** Laranja internacional (aviação): avisos. */
+  'orange-intl/500': '#F44A22',
   'green/500': '#44CE32',
   'brown/950': '#151106',
   'ink/950': '#010911',
@@ -58,7 +60,7 @@ export const color = {
     on: p['brown/950'], // conteúdo sobre o amarelo
   },
   status: {
-    warning: p['orange/500'],
+    warning: p['orange-intl/500'],
     success: p['green/500'],
   },
   text: {
@@ -126,21 +128,12 @@ export const radius = {
 } as const;
 
 // ───────── Tipografia ─────────
-// As fontes são embutidas pelo plugin do expo-font (app.json): "Geist" (400/500/600) e a Geist Pixel.
-// A Geist Pixel é uma fonte variável (eixo "Element Shape"); cada forma vira um arquivo estático e
-// uma família própria, porque o RN não escolhe eixos de fonte variável de forma confiável no Android.
-export const pixelFamilies = {
-  regular: 'Geist Pixel',
-  circle: 'Geist Pixel Circle',
-  grid: 'Geist Pixel Grid',
-  triangle: 'Geist Pixel Triangle',
-  line: 'Geist Pixel Line',
-} as const;
-export type PixelShape = keyof typeof pixelFamilies;
-
+// As fontes são embutidas pelo plugin do expo-font (app.config.ts): "Geist" (400/500/600) e a Geist Pixel.
+// Da Geist Pixel o app usa só a forma Grid, a que mais lembra um painel físico de aeroporto
+// (decidido em 19/11/2026). Ela é um arquivo estático próprio, família "Geist Pixel Grid".
 export const fontFamily = {
   sans: 'Geist',
-  pixel: pixelFamilies.regular,
+  pixel: 'Geist Pixel Grid',
 } as const;
 
 type Weight = '400' | '500' | '600';
