@@ -92,8 +92,9 @@ flowchart LR
 - [ ] Fechar o contrato do JSON por região (versão, `coletadoEm`, campos)
 - [ ] Mapear companhia → país da bandeira (base de companhias)
 - [ ] Guardar a trilha do dia anterior para o "voo de ontem"
-- [ ] Subir o coletor na Oracle Cloud Always Free
-- [ ] Configurar Cloudflare R2 com domínio próprio e cache
+- [ ] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
+- [ ] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub
+- [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
 - [ ] Gerar e enviar os blocos do mundo (~13 GB; avaliar corte para < 10 GB)
 - [ ] Gerar texturas comprimidas (KTX2/Basis) [Proposta]
 - [ ] Monitorar o uso da cota do adsb.lol
@@ -227,6 +228,8 @@ flowchart LR
 - **Critérios de conclusão:** app aprovado e publicado; compras reais funcionando; créditos e avisos legais completos.
 
 - [ ] Confirmar o nome com agente de propriedade industrial; registrar marca mista (classes 9 e 41)
+- [ ] Tirar o coletor do GitHub Actions: Oracle Cloud grátis (configuração automática) ou Cloudflare Workers pago (US$ 5/mês), antes do teste fechado
+- [ ] Definir o identificador do pacote de produção
 - [ ] Play Console: declaração de alarmes exatos (tentar USE_EXACT_ALARM com argumento de timer); `specialUse` se houver bloqueio
 - [ ] Produtos e preços no Play Console e no RevenueCat (R$ 14,90 / R$ 89,90 / R$ 179,90; oferta R$ 59,90)
 - [ ] Ficha da loja, capturas e vídeo
