@@ -289,7 +289,7 @@ Funções puras em `src/domain`:
 | Firebase (Auth + Firestore) | Login com Google simples no Android | Modelo de documentos; lock-in |
 | Só Android Auto Backup + login da loja | Zero servidor | Não sincroniza entre aparelhos; iOS diferente |
 
-  **Recomendação [Proposta]:** login com Google (e Apple no iOS) e um backend com Postgres (Supabase), sincronizando por eventos acrescentados (sessões, lançamentos, souvenirs), com união em vez de sobrescrita.
+  **Decidido (19/11/2026): Supabase** (Postgres + Auth), projeto `eavuayeisrnzzpdbpugt`, região São Paulo. Plano grátis no desenvolvimento e no teste fechado; Pro no lançamento, pelos backups diários **[Proposta]**. Configuração: Data API ligada, sem exposição automática de tabelas novas e RLS ligado em toda tabela nova (cada usuário só lê e grava as próprias linhas). Só a chave publicável vai para o app; a chave secreta nunca sai do painel. Login: Google (e Apple no iOS) **[Proposta]**. Sincronização por eventos acrescentados (sessões, lançamentos, souvenirs), com união em vez de sobrescrita.
 - **Autorização de recursos pagos:** decidida no app pelo direito do RevenueCat. Os recursos premium são locais (duração, vistas, sons, estatísticas), então não há API a proteger. A integridade do saldo é local; como a moeda não vale dinheiro real, o risco de fraude é aceito.
 
 ## 9. Integrações e serviços externos
@@ -413,7 +413,7 @@ Observabilidade:
 | ADR-07 | Blocos e assets em Cloudflare R2 + CDN | Decidido | GIBS sem garantia; saída grátis. |
 | ADR-08 | Local-first com SQLite e livro-caixa | Decidido | Funciona offline; facilita sincronização por união. |
 | ADR-09 | Expo Router, Zustand e TanStack Query | Decidido | Padrão atual do Expo. |
-| ADR-10 | Backend de conta e sincronização | Pendente | Ver seção 8. |
+| ADR-10 | Supabase para conta e sincronização | Decidido | Postgres combina com o livro-caixa e com a sincronização por união; plano grátis suficiente para o beta (~1 a 3 mil usuários sincronizando por alguns meses; o limite é o banco de 500 MB); sem backup automático no grátis. Ver seção 8. |
 | ADR-11 | Globo em Skia (SkSL) | Proposta, em teste | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"): Terra com Blue Marble mundial, detalhe da Europa e luzes noturnas pela posição do sol; rota, avião e cidades projetados com a mesma câmera; modos Planeta e Seguir; só redesenha quando a câmera ou o avião mudam. ~55 MB de textura (não fica montado junto com a janela). Prévia: `docs/imagens/globo-previa.png`. Falta medir no aparelho e decidir. Limite: abaixo de ~400 km de distância a textura mundial fica borrada fora da Europa (precisa de blocos, como a janela). |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |

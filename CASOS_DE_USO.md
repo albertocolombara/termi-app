@@ -545,7 +545,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 <a id="uc-15"></a>
 ### UC-15 — Criar conta e sincronizar
 
-> **[Pendente]** O provedor de conta e o mecanismo de sincronização não foram escolhidos (ver ARCHITECTURE.md).
+> Provedor: **Supabase** (ADR-10). Método de entrada (Google; Apple no iOS) ainda é proposta.
 
 - **Objetivo:** proteger o progresso e usá-lo em outro aparelho.
 - **Ator principal:** Viajante.

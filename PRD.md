@@ -396,7 +396,7 @@ Testes de preço: dois preços na Play via RevenueCat.
 | Tema | Situação |
 |---|---|
 | Nome final | "Termi: Focus Flights" é provisório; registro sugerido como marca mista nas classes 9 e 41, a confirmar com agente de PI. |
-| Mecanismo de backup e conta | Não definido (ver ARCHITECTURE.md, ADR pendente). |
+| Mecanismo de backup e conta | Supabase decidido (ADR-10). Falta confirmar o login (proposta: Google) e o plano no lançamento (proposta: Pro, pelos backups). |
 | Loja do destino depois do pouso | [Pendente] O usuário pode voltar à loja mais tarde ou só na tela de pouso? E se pousar num país sem medalha na v1? |
 | Status de viajante | Desenhar os 7 adesivos, os carimbos de nível e a medalha rara. |
 | Widgets | Conteúdo e fase. |

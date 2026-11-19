@@ -20,6 +20,9 @@ jobs:
     timeout-minutes: 75
     env:
       APP_ENV: preview
+      # Valores públicos por definição (vão dentro do APK). A chave secreta do Supabase nunca entra aqui.
+      EXPO_PUBLIC_SUPABASE_URL: https://eavuayeisrnzzpdbpugt.supabase.co
+      EXPO_PUBLIC_SUPABASE_KEY: sb_publishable_LWkoWcQreAFqWhdXD1ZCog_PNZcsnGK
     steps:
       - uses: actions/checkout@v5
 

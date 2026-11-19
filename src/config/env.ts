@@ -6,6 +6,8 @@ export const env = {
   flightCacheUrl: process.env.EXPO_PUBLIC_FLIGHT_CACHE_URL ?? '',
   tilesBaseUrl: process.env.EXPO_PUBLIC_TILES_BASE_URL ?? '',
   assetsBaseUrl: process.env.EXPO_PUBLIC_ASSETS_BASE_URL ?? '',
+  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? '',
+  supabaseKey: process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '',
   flightCacheMaxAgeMin: Number(process.env.EXPO_PUBLIC_FLIGHT_CACHE_MAX_AGE_MIN ?? 45),
 };
 

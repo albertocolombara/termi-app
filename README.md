@@ -105,6 +105,7 @@ Veja [.env.example](.env.example). Resumo:
 | `EXPO_PUBLIC_TILES_BASE_URL` | Sim | Base dos blocos da paisagem |
 | `EXPO_PUBLIC_ASSETS_BASE_URL` | Sim | Renders, sons e modelos 3D |
 | `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | Sim (chave pública do SDK) | Compras no Android |
+| `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_KEY` | Sim (chave publicável) | Conta e sincronização |
 
 Nenhum segredo vai para o app. A chave do adsb.lol e as credenciais de escrita do R2 ficam só no coletor de voos.
 
