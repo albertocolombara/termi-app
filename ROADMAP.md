@@ -60,7 +60,7 @@ flowchart LR
 - [x] Escolher a solução do globo (ADR-11) — globo em Skia com blocos da NASA GIBS, aprovado pelo Alberto em 19/11/2026 no build-5 (PR #5): blocos em 2 a 3 s, sem travamentos no M35
 - [x] Decidir onde fica o código e o build: repositório `albertocolombara/termi-app` com APK pelo GitHub Actions — decidido em 19/11/2026
 - [x] Criar o repositório `albertocolombara/termi-app` no GitHub — criado pelo Alberto em 19/11/2026
-- [ ] Definir o identificador do pacote de produção — adiado pelo Alberto para a fase antes do lançamento (Fase 6); até lá, `com.albertocolombara.termiapp.dev`
+- [ ] Definir o identificador do pacote de produção — adiado pelo Alberto para a preparação do lançamento (Fase 8); até lá, `com.albertocolombara.termiapp.dev`
 - [x] Resolver as inconsistências listadas no fim deste documento — as que bloqueavam a Fase 1 foram resolvidas; as restantes (#1, #3, #4) ficam com a fase indicada na tabela
 
 ### Tarefas
