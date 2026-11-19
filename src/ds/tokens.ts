@@ -95,6 +95,15 @@ export const gold = {
   ],
   border: 'rgba(255,242,196,0.70)',
   ink: '#2A1A04',
+  /** Brilho dourado sob os selos (Figma: drop shadow amarelo). */
+  glow: 'rgba(245,186,51,0.25)',
+  /** Selo · Primeira classe: vidro dourado translúcido, borda clara e texto branco. */
+  seal: {
+    from: 'rgba(255,218,118,0.20)',
+    to: 'rgba(255,198,41,0)',
+    border: '#FFF2C4',
+    glow: 'rgba(245,186,51,0.30)',
+  },
 } as const;
 
 // ───────── Espaçamento (coleção "Espaçamento") ─────────
