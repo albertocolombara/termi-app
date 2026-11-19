@@ -319,6 +319,40 @@ const ICONS = {
       </>
     ),
   },
+  /** Figma: Termi Premium / Tamanho=Quadrado (mala com etiqueta). Usado no Selo · Primeira classe. */
+  termiPremiumQuadrado: {
+    box: 128,
+    color: gold.stops[3].color,
+    draw: () => (
+      <>
+        <Defs>
+          <LinearGradient id="tpqMala" x1="16" y1="38.29" x2="89.27" y2="120.08" gradientUnits="userSpaceOnUse">
+            {gold.stops.map((g) => (
+              <Stop key={g.offset} offset={g.offset} stopColor={g.color} />
+            ))}
+          </LinearGradient>
+          <LinearGradient id="tpqEtiqueta" x1="95.05" y1="32.57" x2="124.74" y2="61.5" gradientUnits="userSpaceOnUse">
+            {gold.stops.map((g) => (
+              <Stop key={g.offset} offset={g.offset} stopColor={g.color} />
+            ))}
+          </LinearGradient>
+        </Defs>
+        <Path d="M52 16H62.29C66.86 16 69.14 18.29 69.14 22.86V39.14H61.86V23.71H52.43V39.14H45.14V22.86C45.14 18.29 47.43 16 52 16Z" fill={gold.stops[3].color} />
+        <Path d="M23.71 38.29H90.57C95.71 38.29 98.29 40.86 98.29 46V104.29C98.29 109.43 95.71 112 90.57 112H23.71C18.57 112 16 109.43 16 104.29V46C16 40.86 18.57 38.29 23.71 38.29Z" fill="url(#tpqMala)" />
+        <Rect x={40} y={60.57} width={7.71} height={17.14} rx={3.86} fill={gold.ink} />
+        <Rect x={66.57} y={60.57} width={7.71} height={17.14} rx={3.86} fill={gold.ink} />
+        <Path
+          d="M100.04 33.81L113.34 37.13L116.68 45.02L109.21 74.97C108.66 77.18 107.27 78.02 105.05 77.46L88.42 73.32C86.2 72.76 85.37 71.38 85.92 69.16L93.39 39.22L100.04 33.81Z"
+          fill="url(#tpqEtiqueta)"
+          stroke={gold.ink}
+          strokeWidth={2.5}
+          strokeLinejoin="round"
+        />
+        <Circle cx={105.03} cy={42.12} r={2.57} fill={gold.ink} />
+        <Path d="M102.75 51.27L103.54 56.59L108.62 58.21L103.8 60.54L103.78 65.93L100.06 62.08L94.96 63.73L97.48 58.97L94.31 54.64L99.55 55.6L102.75 51.27Z" fill={gold.ink} />
+      </>
+    ),
+  },
 } satisfies Record<string, IconDef>;
 
 export type IconName = keyof typeof ICONS;

@@ -9,46 +9,59 @@ import { useStateProgress } from './motion';
 import { Text } from './Text';
 import { color as C, gold, radius, space } from './tokens';
 
-// ───────── Superfície dourada (selos de 1ª classe) ─────────
-function GoldFill({ r }: { r: number }) {
+// ───────── Superfícies douradas (selos de 1ª classe) ─────────
+function Fill({ r, stops, id }: { r: number; id: string; stops: readonly { offset: number; color: string }[] }) {
   return (
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
       <Defs>
-        <LinearGradient id="goldH" x1="0" y1="0" x2="1" y2="0">
-          {gold.stops.map((s) => (
+        <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+          {stops.map((s) => (
             <Stop key={s.offset} offset={s.offset} stopColor={s.color} />
           ))}
         </LinearGradient>
       </Defs>
-      <Rect width="100%" height="100%" rx={r} ry={r} fill="url(#goldH)" />
+      <Rect width="100%" height="100%" rx={r} ry={r} fill={`url(#${id})`} />
     </Svg>
   );
 }
+
+const SEAL_STOPS = [
+  { offset: 0, color: gold.seal.from },
+  { offset: 1, color: gold.seal.to },
+] as const;
 
 /** Selo "1ª classe" para conteúdo premium bloqueado (Figma: Badge / Premium). */
 export function PremiumBadge({ label = '1ª classe' }: { label?: string }) {
   return (
     <View style={styles.badge}>
-      <GoldFill r={radius.md} />
-      <View>
-        <Icon name="lock" color={gold.ink} />
-      </View>
-      <Text variant="Caption/Strong 12" style={styles.goldText}>
+      <Fill r={radius.md} stops={gold.stops} id="goldBadge" />
+      <Icon name="lock" color={gold.ink} />
+      <Text variant="Caption/Strong 12" style={[styles.goldText, styles.badgeText]}>
         {label}
       </Text>
     </View>
   );
 }
 
-/** Selo de assinante (Figma: Selo · Primeira classe). */
-export function FirstClassSeal({ label = 'Primeira classe' }: { label?: string }) {
+export type FirstClassSealVariant = 'default' | 'menor' | 'texto';
+
+/**
+ * Selo de assinante (Figma: Selo · Primeira classe).
+ * `default`: ícone 24 e texto 12; `menor`: ícone 16 e texto 8; `texto`: só o texto.
+ */
+export function FirstClassSeal({
+  label = 'Primeira classe',
+  variant = 'default',
+}: {
+  label?: string;
+  variant?: FirstClassSealVariant;
+}) {
+  const menor = variant === 'menor';
   return (
-    <View style={styles.seal}>
-      <GoldFill r={17} />
-      <View style={styles.sealIcon}>
-        <Icon name="termiPremium" size={18} />
-      </View>
-      <Text variant="Caption/Strong 12" style={[styles.goldText, { letterSpacing: 0.96, textTransform: 'uppercase' }]}>
+    <View style={[styles.seal, variant === 'texto' ? styles.sealTexto : menor ? styles.sealMenor : null]}>
+      <Fill r={radius.md} stops={SEAL_STOPS} id="goldSeal" />
+      {variant !== 'texto' && <Icon name="termiPremiumQuadrado" size={menor ? 16 : 24} />}
+      <Text variant="Caption/Strong 12" style={[styles.sealText, menor && styles.sealTextMenor]}>
         {label}
       </Text>
     </View>
@@ -204,22 +217,26 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: gold.border,
-    overflow: 'hidden',
+    boxShadow: `0 2px 8px ${gold.glow}`,
   },
+  badgeText: { textTransform: 'uppercase', letterSpacing: 12 * 0.06 },
   seal: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: 7,
-    paddingVertical: 3,
-    paddingLeft: 3,
+    gap: space[4],
+    paddingVertical: space[4],
+    paddingLeft: 6,
     paddingRight: space[12],
-    borderRadius: radius.full,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: gold.border,
-    overflow: 'hidden',
+    borderColor: gold.seal.border,
+    boxShadow: `0 3px 12px ${gold.seal.glow}`,
   },
-  sealIcon: { width: 26, height: 26, borderRadius: 13, backgroundColor: gold.ink, alignItems: 'center', justifyContent: 'center' },
+  sealMenor: { height: 24 },
+  sealTexto: { paddingVertical: 6, paddingLeft: space[12] },
+  sealText: { color: C.text.primary, textTransform: 'uppercase', letterSpacing: 12 * 0.08, lineHeight: 16 },
+  sealTextMenor: { fontSize: 8, letterSpacing: 8 * 0.08 },
   iconButton: {
     width: 44,
     height: 44,

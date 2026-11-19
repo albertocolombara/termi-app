@@ -258,6 +258,10 @@ export function Catalogo({ onClose }: { onClose: () => void }) {
               <PremiumBadge />
               <FirstClassSeal />
             </View>
+            <View style={styles.row}>
+              <FirstClassSeal variant="texto" />
+              <FirstClassSeal variant="menor" />
+            </View>
           </Section>
 
           <Section n="08" title="Navegação e estrutura">
