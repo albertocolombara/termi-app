@@ -56,7 +56,7 @@ flowchart LR
 
 ### Decisões a fechar
 - [x] Aprovar Expo Router, expo-sqlite, Zustand e TanStack Query — aprovado pelo Alberto em 19/11/2026
-- [ ] Escolher backend de conta e sincronização (ADR-10)
+- [x] Escolher backend de conta e sincronização (ADR-10) — Supabase, decidido em 19/11/2026; projeto criado pelo Alberto
 - [ ] Escolher a solução do globo (ADR-11) — teste do globo em Skia no PR "Fase 1: vidro e teste do globo"; falta testar no aparelho e decidir
 - [x] Decidir onde fica o código e o build: repositório `albertocolombara/termi-app` com APK pelo GitHub Actions — decidido em 19/11/2026
 - [ ] Criar o repositório `albertocolombara/termi-app` no GitHub
