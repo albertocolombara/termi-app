@@ -42,7 +42,7 @@ flowchart LR
 | Janela no Blender | Renders atrás da asa (3 luzes) | Faltam "Com asa" e "Asa e motor" |
 | Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
-**Lacunas que bloqueiam decisões estruturais:** backend de conta/sincronização, solução de globo, previsão de pouso para voos longos, aprovação da Play para alarmes exatos e bloqueio de apps.
+**Lacunas que bloqueiam decisões estruturais:** previsão de pouso para voos longos, aprovação da Play para alarmes exatos e bloqueio de apps.
 
 ---
 
@@ -57,7 +57,7 @@ flowchart LR
 ### Decisões a fechar
 - [x] Aprovar Expo Router, expo-sqlite, Zustand e TanStack Query — aprovado pelo Alberto em 19/11/2026
 - [x] Escolher backend de conta e sincronização (ADR-10) — Supabase, decidido em 19/11/2026; projeto criado pelo Alberto
-- [ ] Escolher a solução do globo (ADR-11) — teste do globo em Skia no PR "Fase 1: vidro e teste do globo"; falta testar no aparelho e decidir
+- [x] Escolher a solução do globo (ADR-11) — globo em Skia com blocos da NASA GIBS, aprovado pelo Alberto em 19/11/2026 no build-5 (PR #5): blocos em 2 a 3 s, sem travamentos no M35
 - [x] Decidir onde fica o código e o build: repositório `albertocolombara/termi-app` com APK pelo GitHub Actions — decidido em 19/11/2026
 - [ ] Criar o repositório `albertocolombara/termi-app` no GitHub
 - [ ] Definir o identificador do pacote de produção antes do primeiro envio à Play (até lá, um identificador provisório de desenvolvimento; o protótipo usa `com.albertocolombara.termiprototipo`)
