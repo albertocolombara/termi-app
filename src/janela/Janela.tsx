@@ -17,7 +17,7 @@ import {
   useImage,
   vec,
 } from '@shopify/react-native-skia';
-import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
+import { useDerivedValue, useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { ATLAS_PX, SKSL, uniformArray } from './shader';
 import { makeAtlas, AtlasState } from './tiles';
@@ -46,7 +46,10 @@ const sm = (a: number, b: number, x: number) => {
   x = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return x * x * (3 - 2 * x);
 };
-const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
+const ease = (x: number) => {
+  'worklet';
+  return 0.5 - 0.5 * Math.cos(Math.PI * x);
+};
 
 function texShader(img: SkImage | null): SkShader {
   return img
@@ -58,10 +61,18 @@ type Props = {
   width: number;
   /** Posição do avião agora (graus) e rumo (graus a partir do norte). */
   posicao: { lat: number; lon: number; rumo: number };
-  /** Instante usado para o sol (ms). */
+  /** Instante da `posicao` e do `driftKm` (ms). Também usado para o sol. */
   time: number;
+  /**
+   * Posição 1 s depois de `time`. Entre uma leitura e outra (a tela atualiza a cada 1 s), a janela
+   * interpola o caminho quadro a quadro na thread de interface. Sem ela, a paisagem anda em degraus de 1 s.
+   */
+  posicaoSeguinte?: { lat: number; lon: number };
   /** Quanto o avião já andou desde o embarque (km), para as nuvens passarem. */
   driftKm: number;
+  /** Velocidade das nuvens (km por segundo), para a interpolação entre leituras. */
+  driftKmPorS?: number;
+  /** Quadros por segundo da paisagem (2 em economia, 10 padrão, 30 na janela fluida). */
   fps: number;
   quality: number;
   satClouds: boolean;
@@ -77,8 +88,10 @@ type Props = {
 export function Janela({
   width,
   posicao,
+  posicaoSeguinte,
   time,
   driftKm,
+  driftKmPorS = 0,
   fps,
   quality,
   satClouds,
@@ -129,15 +142,22 @@ export function Janela({
     return () => sub.remove();
   }, []);
 
-  // Relógio da janela: só redesenha no ritmo escolhido (10 quadros/s por padrão).
-  const [tick, setTick] = useState(0);
-  const meter = useRef({ draws: 0, drawFps: 0, last: Date.now(), js: 0, jsFrames: 0, jsLast: Date.now() });
+  // Relógio da janela, na thread de interface: avança no ritmo escolhido (fps) sem passar pelo JavaScript.
+  // Cada avanço redesenha só a paisagem (useDerivedValue abaixo); a tela React não renderiza de novo.
+  const relogio = useSharedValue(Date.now());
+  const intervalo = useSharedValue(1000 / fps);
+  useEffect(() => {
+    intervalo.set(1000 / fps);
+  }, [fps, intervalo]);
+  useFrameCallback(() => {
+    'worklet';
+    const agora = Date.now();
+    if (agora - relogio.value >= intervalo.value - 4) relogio.value = agora;
+  });
+  const desenhos = useSharedValue(0);
+  const meter = useRef({ js: 0, jsFrames: 0, jsLast: Date.now(), drawsLast: 0 });
   const [meterText, setMeterText] = useState('');
   const [uiFps, setUiFps] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 1000 / fps);
-    return () => clearInterval(id);
-  }, [fps]);
   // Quadros na tela, medidos na thread de interface (o que o usuário sente).
   const uiN = useSharedValue(0);
   const uiT = useSharedValue(0);
@@ -160,16 +180,20 @@ export function Janela({
       m.jsFrames++;
       const now = Date.now();
       if (now - m.jsLast >= 1000) {
-        m.js = Math.round((m.jsFrames * 1000) / (now - m.jsLast));
+        const segundos = (now - m.jsLast) / 1000;
+        m.js = Math.round(m.jsFrames / segundos);
+        const d = desenhos.get();
+        const drawFps = Math.round((d - m.drawsLast) / segundos);
+        m.drawsLast = d;
         m.jsFrames = 0;
         m.jsLast = now;
-        setMeterText(`JS ${m.js} · paisagem ${showLandscape ? m.drawFps : 0} fps · ${Math.round(lw * dpr)}×${Math.round(lh * dpr)} px`);
+        setMeterText(`JS ${m.js} · paisagem ${showLandscape ? drawFps : 0} fps · ${Math.round(lw * dpr)}×${Math.round(lh * dpr)} px`);
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [showMeter, lw, lh, dpr, showLandscape]);
+  }, [showMeter, lw, lh, dpr, showLandscape, desenhos]);
 
   const { lat: la, lon: lo, rumo: hd } = posicao;
   const s = sun(time, la, lo);
@@ -184,64 +208,64 @@ export function Janela({
     aImp.update(la, lo);
   }, [la, lo, q.near]);
 
-  const picture = useMemo(() => {
-    if (!effect || !showLandscape) return null;
-    const m = meter.current;
-    m.draws++;
-    const now = Date.now();
-    if (now - m.last >= 1000) {
-      m.drawFps = m.draws;
-      m.draws = 0;
-      m.last = now;
-    }
+  // Quanto a posição anda em 1 s (para a interpolação). Sem a posição seguinte, fica parada entre leituras.
+  const dLa = posicaoSeguinte ? posicaoSeguinte.lat - la : 0;
+  let dLo = posicaoSeguinte ? posicaoSeguinte.lon - lo : 0;
+  if (dLo > 180) dLo -= 360;
+  if (dLo < -180) dLo += 360;
+  const sunV = s.v;
+  const hq = q.hq;
+  const bNear = near.image && q.near ? near.b : OFF;
+  const bMid = mid.image ? mid.b : OFF;
+  const bImp = imp.image ? imp.b : OFF;
+  const filhos = [base.bD, base.bN, base.dN, base.cl, atlasShaders.near, atlasShaders.mid, atlasShaders.imp];
+
+  // Um quadro da paisagem, montado na thread de interface a cada avanço do relógio.
+  const picture = useDerivedValue(() => {
+    // Segundos desde a última leitura; até 2 s de folga se a próxima leitura atrasar.
+    const k = Math.min(2, Math.max(0, (relogio.value - time) / 1000));
+    desenhos.set(desenhos.get() + 1);
     const uniforms = uniformArray({
       res: [lw, lh],
-      sunD: s.v,
-      lat0: la,
-      lon0: lo,
+      sunD: sunV,
+      lat0: la + dLa * k,
+      lon0: lo + dLo * k,
       hd: (hd * Math.PI) / 180,
       cover: 0.45,
-      drift: driftKm,
+      drift: driftKm + driftKmPorS * k,
       useSat: satClouds ? 1 : 0,
-      hq: q.hq,
-      bNear: near.image && q.near ? near.b : OFF,
-      bMid: mid.image ? mid.b : OFF,
-      bImp: imp.image ? imp.b : OFF,
+      hq,
+      bNear,
+      bMid,
+      bImp,
     });
-    const shader = effect.makeShaderWithChildren(uniforms, [
-      base.bD,
-      base.bN,
-      base.dN,
-      base.cl,
-      atlasShaders.near,
-      atlasShaders.mid,
-      atlasShaders.imp,
-    ]);
     const rec = Skia.PictureRecorder();
     const canvas = rec.beginRecording(Skia.XYWHRect(0, 0, lw, lh));
-    const paint = Skia.Paint();
-    paint.setShader(shader);
-    canvas.drawRect(Skia.XYWHRect(0, 0, lw, lh), paint);
+    if (effect) {
+      const paint = Skia.Paint();
+      paint.setShader(effect.makeShaderWithChildren(uniforms, filhos));
+      canvas.drawRect(Skia.XYWHRect(0, 0, lw, lh), paint);
+    }
     return rec.finishRecordingAsPicture();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick, lw, lh, quality, satClouds, base, atlasShaders, showLandscape]);
+  });
 
   // Beacon vermelho da fuselagem: pulso lento a cada 3,6 s, só ao entardecer e à noite.
-  const bk = 0.32 * wn + 0.1 * wt;
-  let beacon = 0;
-  if (!reduceMotion && bk > 0.005) {
-    const ph = (Date.now() % 3600) / 3600;
-    beacon = ph < 0.15 ? ease(ph / 0.15) * bk : ph < 0.3 ? (1 - ease((ph - 0.15) / 0.15)) * bk : 0;
-  }
+  // Anda com o mesmo relógio da paisagem, na thread de interface.
+  const bk = reduceMotion ? 0 : Math.round((0.32 * wn + 0.1 * wt) * 50) / 50;
+  const beacon = useDerivedValue(() => {
+    if (bk <= 0.005) return 0;
+    const ph = (relogio.value % 3600) / 3600;
+    return ph < 0.15 ? ease(ph / 0.15) * bk : ph < 0.3 ? (1 - ease((ph - 0.15) / 0.15)) * bk : 0;
+  });
   const r2 = (x: number) => Math.round(x * 50) / 50;
 
   return (
     <View style={[styles.view, { width, height }]}>
       <View style={{ width: lw, height: lh, transform: [{ scale }], transformOrigin: 'top left' }}>
-        <Canvas style={{ width: lw, height: lh }}>{picture && <Picture picture={picture} />}</Canvas>
+        <Canvas style={{ width: lw, height: lh }}>{showLandscape ? <Picture picture={picture} /> : null}</Canvas>
       </View>
       {showOverlay && (
-        <Overlay width={width} height={height} wt={r2(wt)} wn={r2(wn)} beacon={r2(beacon)} glow={r2(wn * 0.75 + wt * 0.25)} asa={asa} moldura={moldura} />
+        <Overlay width={width} height={height} wt={r2(wt)} wn={r2(wn)} beacon={beacon} piscando={bk > 0.005} glow={r2(wn * 0.75 + wt * 0.25)} asa={asa} moldura={moldura} />
       )}
       {!bD && <Text style={styles.loading}>Preparando a janela…</Text>}
       {showMeter && (
@@ -263,6 +287,7 @@ const Overlay = memo(function Overlay({
   wt,
   wn,
   beacon,
+  piscando,
   glow,
   asa,
   moldura,
@@ -271,7 +296,8 @@ const Overlay = memo(function Overlay({
   height: number;
   wt: number;
   wn: number;
-  beacon: number;
+  beacon: SharedValue<number>;
+  piscando: boolean;
   glow: number;
   asa: boolean;
   moldura: boolean;
@@ -296,7 +322,7 @@ const Overlay = memo(function Overlay({
         </SkiaImage>
       )}
       {asa && img(asaNoite, wn)}
-      {asa && asaBeacon && beacon > 0.001 && (
+      {asa && asaBeacon && piscando && (
         <SkiaImage
           image={asaBeacon}
           x={0}

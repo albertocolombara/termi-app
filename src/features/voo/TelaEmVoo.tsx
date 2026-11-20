@@ -16,7 +16,7 @@ import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { useIndicesQueVoltaram, useVoltouAoFoco } from '@/data/sessoes/voltouAoFoco';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
-import { indiceDaQualidade, useAjustes } from '@/data/preferencias/ajustes';
+import { indiceDaQualidade, quadrosDaJanela, useAjustes } from '@/data/preferencias/ajustes';
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import { useVistaDaJanela } from '@/data/preferencias/vistaDaJanela';
 import { useTrilha } from '@/data/voos/useTrilha';
@@ -95,6 +95,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   useBlocosDoVoo(voo, ativo);
   const pos = projetar(voo, agora);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
+  // Onde o avião estará daqui a 1 s: a janela interpola o caminho entre as leituras do relógio.
+  const seguinte = projetar(voo, agora + 1000);
+  const posicaoSeguinte = useMemo(() => ({ lat: seguinte.lat, lon: seguinte.lon }), [seguinte.lat, seguinte.lon]);
   const pausas = useMemo(
     () => agendaDePausas(Math.round((pousoPrevistoEm - embarcouEm) / 60_000), sessao.intervaloServico),
     [embarcouEm, pousoPrevistoEm, sessao.intervaloServico],
@@ -109,7 +112,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const origem = nomeDoLugar(voo.origem);
   const destino = nomeDoLugar(voo.destino);
   // Quanto o avião andou desde o embarque, para as nuvens passarem na janela.
-  const deslocamentoKm = ((agora - embarcouEm) / 3_600_000) * (voo.velocidadeNos ?? 450) * 1.852;
+  const velocidadeKmh = (voo.velocidadeNos ?? 450) * 1.852;
+  const deslocamentoKm = ((agora - embarcouEm) / 3_600_000) * velocidadeKmh;
 
   // A paisagem ocupa tudo acima do painel inferior e passa um pouco por trás dele, sob o degradê.
   const alturaDaPaisagem = Math.max(320, height - alturaDoPainel + SOBREPOSICAO);
@@ -141,9 +145,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             <Janela
               width={larguraDaJanela}
               posicao={posicao}
+              posicaoSeguinte={posicaoSeguinte}
               time={agora}
               driftKm={deslocamentoKm}
-              fps={ajustes.economiaDeBateria ? 2 : 10}
+              driftKmPorS={velocidadeKmh / 3600}
+              fps={quadrosDaJanela(ajustes)}
               quality={indiceDaQualidade(ajustes.qualidadeDaJanela)}
               satClouds
               showMeter={false}

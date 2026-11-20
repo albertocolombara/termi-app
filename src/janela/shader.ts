@@ -166,6 +166,7 @@ export function uniformArray(u: {
   bMid: number[];
   bImp: number[];
 }): number[] {
+  'worklet';
   return [
     ...u.res,
     ...u.sunD,

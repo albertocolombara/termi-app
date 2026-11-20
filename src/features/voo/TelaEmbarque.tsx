@@ -25,10 +25,8 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const [pulou, setPulou] = useState(false);
   // O Termi cabe no espaço que sobra entre a rota e as etapas (em telas baixas os elementos se encostavam, build-26).
   const { width } = useWindowDimensions();
-  const [alturaDoMeio, setAlturaDoMeio] = useState(0);
-  const tamanhoDoTermi = alturaDoMeio
-    ? Math.round(Math.max(TERMI_MIN, Math.min(TERMI_MAX, width - 2 * screenGutter, alturaDoMeio - ALTURA_DOS_TEXTOS)))
-    : 0;
+  const [espacoDoTermi, setEspacoDoTermi] = useState(0);
+  const tamanhoDoTermi = espacoDoTermi ? Math.round(Math.max(TERMI_MIN, Math.min(TERMI_MAX, width - 2 * screenGutter, espacoDoTermi))) : 0;
 
   // Embarcou: o Termi faz o pulinho e sai pela esteira até o fim (2,6 s) antes de abrir o voo.
   // Tocar na tela pula a animação; com "reduzir movimento", abre direto (CLAUDE.md §9).
@@ -84,19 +82,19 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
         ) : null}
       </View>
 
-      <View
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: space[16], overflow: 'hidden' }}
-        onLayout={(e) => setAlturaDoMeio(e.nativeEvent.layout.height)}
-      >
-        <Pressable
-          disabled={etapa.tipo !== 'embarcou'}
-          onPress={() => setPulou(true)}
-          accessibilityHint={etapa.tipo === 'embarcou' ? t('embarque.pularAnimacao') : undefined}
-        >
-          {tamanhoDoTermi ? (
-            <TermiAnimado esteira embarcou={etapa.tipo === 'embarcou'} tamanho={tamanhoDoTermi} rotulo={t('embarque.termiNaEsteira')} />
-          ) : null}
-        </Pressable>
+      {/* Os textos ficam com a altura deles; só o Termi encolhe para caber no que sobra (build-27). */}
+      <View style={{ flex: 1, gap: space[16] }}>
+        <View style={styles.espacoDoTermi} onLayout={(e) => setEspacoDoTermi(e.nativeEvent.layout.height)}>
+          <Pressable
+            disabled={etapa.tipo !== 'embarcou'}
+            onPress={() => setPulou(true)}
+            accessibilityHint={etapa.tipo === 'embarcou' ? t('embarque.pularAnimacao') : undefined}
+          >
+            {tamanhoDoTermi ? (
+              <TermiAnimado esteira embarcou={etapa.tipo === 'embarcou'} tamanho={tamanhoDoTermi} rotulo={t('embarque.termiNaEsteira')} />
+            ) : null}
+          </Pressable>
+        </View>
         <View style={{ alignItems: 'center', gap: space[8] }}>
           <Text variant="Heading/Data 24" style={{ fontWeight: '600' }} accessibilityRole="header">
             {t('embarque.titulo')}
@@ -205,8 +203,6 @@ function progressoTotal(e: EtapaDoEmbarque): number {
 
 const TERMI_MAX = 300;
 const TERMI_MIN = 140;
-/** Título + subtítulo abaixo do Termi, com os espaços entre eles. */
-const ALTURA_DOS_TEXTOS = 88;
 
 const ICONE: Record<Estado, IconName> = { feita: 'checkStep', atual: 'loadingStep', pendente: 'pendingStep' };
 
@@ -245,6 +241,7 @@ function Girando() {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.flight, paddingHorizontal: screenGutter, gap: space[16] },
   rota: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
+  espacoDoTermi: { flex: 1, minHeight: TERMI_MIN, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   etapas: { backgroundColor: color.surface.subtle, borderRadius: radius.md, padding: space[16], gap: space[14] },
   etapa: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
   trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },

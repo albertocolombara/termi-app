@@ -171,6 +171,9 @@ export const ptBR = {
     telaEBateria: 'Tela e bateria',
     economiaDeBateria: 'Economia de bateria',
     economiaDeBateriaDescricao: 'Janela a 2 quadros por segundo',
+    janelaFluida: 'Janela a 30 quadros por segundo',
+    janelaFluidaDescricao: 'Paisagem mais suave. Gasta mais bateria.',
+    janelaFluidaEconomia: 'Desligado enquanto a economia de bateria estiver ligada.',
     qualidadeDaJanela: 'Qualidade da janela',
     qualidadeSubtitulo: 'A asa e a moldura ficam sempre nítidas; muda a paisagem lá fora',
     qualidade: {
