@@ -4,7 +4,7 @@
 #   504724 flood-mix, "Embraer 175 approach and landing"     → motores (0:20 a 5:00: só a aproximação, antes do pouso)
 #   412003 triadtravelogues, "Airplane from Beijing to Moscow" → cabine
 #   645922 BonnyOrbit, "Heavy rain getting stronger under a roof" → chuva (abafada, misturada com a cabine)
-#   ruído branco: gerado aqui, sem licença.
+#   ruído branco e voo de cruzeiro (ruído marrom com o ar da cabine): gerados aqui, sem licença.
 # Cada som é normalizado (-20 LUFS) e vira um loop sem emenda: o fim faz crossfade de 6 s com o começo.
 # Uso: scripts/preparar-sons.sh <pasta dos originais>
 set -euo pipefail
@@ -21,11 +21,18 @@ ffmpeg -y -v error -i "$S/412003__triadtravelogues__airplane-from-beijing-to-mos
 prep "$T/chuva_mix.wav" "" 2 "$T/chuva.wav"
 ffmpeg -y -v error -f lavfi -i "anoisesrc=color=white:amplitude=0.4:duration=66:seed=7" -af "lowpass=f=9000" -c:a pcm_s16le "$T/ruido.wav"
 prep "$T/ruido.wav" "" 1 "$T/ruido-branco.wav"
+# Voo de cruzeiro (som grátis desde 20/11/2026): ruído marrom (ronco grave e constante) com um pouco de
+# ruído rosa abafado (o ar da ventilação) e o grave entre 80 e 160 Hz realçado, como dentro da cabine.
+ffmpeg -y -v error -f lavfi -i "anoisesrc=color=brown:amplitude=0.8:duration=66:seed=11" -f lavfi -i "anoisesrc=color=pink:amplitude=0.12:duration=66:seed=5" \
+  -filter_complex "[0:a]highpass=f=25,lowpass=f=1100,equalizer=f=120:t=q:w=1:g=4[m];[1:a]highpass=f=300,lowpass=f=3500[ar];[m][ar]amix=inputs=2:normalize=0[o]" \
+  -map "[o]" -c:a pcm_s16le "$T/cruzeiro_bruto.wav"
+prep "$T/cruzeiro_bruto.wav" "" 1 "$T/cruzeiro.wav"
 
 mkdir -p assets/sons
 loop "$T/motores.wav" assets/sons/motores.m4a 6 64k
 loop "$T/cabine.wav" assets/sons/cabine.m4a 6 64k
 loop "$T/chuva.wav" assets/sons/chuva.m4a 6 96k
 loop "$T/ruido-branco.wav" assets/sons/ruido-branco.m4a 6 48k
+loop "$T/cruzeiro.wav" assets/sons/cruzeiro.m4a 6 48k
 rm -rf "$T"
 ls -la assets/sons

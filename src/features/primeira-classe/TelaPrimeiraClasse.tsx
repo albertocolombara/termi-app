@@ -176,6 +176,7 @@ const FOTO: Record<string, number> = {
 };
 
 const SONS: { icone: IconName; nome: ChaveDeTexto }[] = [
+  { icone: 'soundEngine', nome: 'sons.motores.nome' },
   { icone: 'soundCabin', nome: 'sons.cabine.nome' },
   { icone: 'soundRain', nome: 'sons.chuva.nome' },
   { icone: 'soundLofi', nome: 'sons.lofi.nome' },
@@ -203,7 +204,7 @@ function Ilustracao({ id, largura }: { id: string; largura: number }) {
           {SONS.map((s) => (
             <View key={s.icone} style={styles.som}>
               <Icon name={s.icone} size={32} color={color.accent.default} />
-              <Text variant="Caption/Medium 12" tone="secondary" numberOfLines={1}>
+              <Text variant="Caption/Medium 12" tone="secondary" numberOfLines={2} style={styles.centro}>
                 {t(s.nome)}
               </Text>
             </View>
@@ -233,6 +234,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     paddingVertical: space[6],
   },
-  sons: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[16] },
-  som: { width: 88, height: 104, borderRadius: radius.xl, backgroundColor: color.surface.default, alignItems: 'center', justifyContent: 'center', gap: space[10] },
+  sons: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[10] },
+  som: { width: 80, height: 112, paddingHorizontal: space[4], borderRadius: radius.xl, backgroundColor: color.surface.default, alignItems: 'center', justifyContent: 'center', gap: space[10] },
 });

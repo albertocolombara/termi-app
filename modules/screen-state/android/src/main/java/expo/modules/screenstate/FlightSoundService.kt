@@ -10,8 +10,17 @@ import android.os.Looper
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import java.io.File
 
 /**
  * Som de fundo do voo com a tela bloqueada e o app fechado, sem controle de mídia do Android
@@ -25,6 +34,9 @@ import androidx.media3.exoplayer.ExoPlayer
  *   encerra o serviço, como pede o Android 17 ("Background audio hardening"); o som volta quando o
  *   Termi é aberto de novo, num serviço novo iniciado com o app à vista.
  * - Entra com fade e para sozinho no horário do pouso, com fade, mesmo com o app fechado.
+ * - Playlist (lofi): faixas do servidor tocadas embaralhadas, em streaming, com cache de 60 MB no
+ *   aparelho (as já ouvidas não baixam de novo) e buffer longo (uma faixa inteira à frente), para
+ *   seguir tocando com a tela bloqueada mesmo se a rede oscilar. Faixa que falha é pulada.
  */
 class FlightSoundService : Service() {
   private val handler = Handler(Looper.getMainLooper())
@@ -32,6 +44,7 @@ class FlightSoundService : Service() {
   private var targetVolume = 1f
   private var fade: Runnable? = null
   private var lastStartId = 0
+  private var falhasSeguidas = 0
   private val landing = Runnable { fadeTo(0f, FADE_OUT_MS) { finish(removeNotification = true) } }
 
   override fun onBind(intent: Intent?): IBinder? = null
@@ -43,7 +56,8 @@ class FlightSoundService : Service() {
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     lastStartId = startId
-    val uri = intent?.getStringExtra(EXTRA_URI)
+    val uris = intent?.getStringArrayListExtra(EXTRA_URIS)?.takeIf { it.isNotEmpty() }
+    val playlist = intent?.getBooleanExtra(EXTRA_PLAYLIST, false) ?: false
     val endAt = intent?.getLongExtra(EXTRA_END_AT, 0L) ?: 0L
     val title = intent?.getStringExtra(EXTRA_TITLE) ?: ""
     val text = intent?.getStringExtra(EXTRA_TEXT) ?: ""
@@ -54,33 +68,65 @@ class FlightSoundService : Service() {
     } else {
       startForeground(FlightNotification.NOTIFICATION_ID, notification)
     }
-    if (uri == null || endAt <= System.currentTimeMillis()) {
-      finish(removeNotification = uri != null)
+    if (uris == null || endAt <= System.currentTimeMillis()) {
+      finish(removeNotification = uris != null)
       return START_NOT_STICKY
     }
     val volume = intent?.getFloatExtra(EXTRA_VOLUME, 1f) ?: 1f
     val fadeInMs = intent?.getLongExtra(EXTRA_FADE_IN_MS, 0L) ?: 0L
-    play(uri, volume, fadeInMs, endAt)
+    play(uris, playlist, volume, fadeInMs, endAt)
     return START_NOT_STICKY
   }
 
-  private fun play(uri: String, volume: Float, fadeInMs: Long, endAt: Long) {
+  private fun play(uris: List<String>, playlist: Boolean, volume: Float, fadeInMs: Long, endAt: Long) {
     handler.removeCallbacks(landing)
     cancelFade()
     player?.release()
     targetVolume = volume
+    falhasSeguidas = 0
     val attributes = AudioAttributes.Builder()
       .setUsage(C.USAGE_MEDIA)
       .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
       .build()
-    val p = ExoPlayer.Builder(this).build()
+    val builder = ExoPlayer.Builder(this)
+    if (playlist) {
+      val fonte = CacheDataSource.Factory()
+        .setCache(cache(this))
+        .setUpstreamDataSourceFactory(DefaultDataSource.Factory(this))
+      builder.setMediaSourceFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(fonte))
+      // Buffer de até 10 min à frente (~7 MB): uma faixa inteira já baixada.
+      builder.setLoadControl(DefaultLoadControl.Builder().setBufferDurationsMs(240_000, 600_000, 2_500, 5_000).build())
+    }
+    val p = builder.build()
     p.setAudioAttributes(attributes, true)
-    p.repeatMode = Player.REPEAT_MODE_ONE
-    p.setMediaItem(MediaItem.fromUri(uri))
+    if (playlist) {
+      p.setMediaItems(uris.map { MediaItem.fromUri(it) })
+      p.shuffleModeEnabled = true
+      p.repeatMode = Player.REPEAT_MODE_ALL
+    } else {
+      p.setMediaItem(MediaItem.fromUri(uris[0]))
+      p.repeatMode = Player.REPEAT_MODE_ONE
+    }
     p.addListener(object : Player.Listener {
       override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS) {
           // A notificação do voo fica, com a contagem até o pouso.
+          finish(removeNotification = false)
+        }
+      }
+
+      override fun onIsPlayingChanged(isPlaying: Boolean) {
+        if (isPlaying) falhasSeguidas = 0
+      }
+
+      override fun onPlayerError(error: PlaybackException) {
+        // Sem rede, uma faixa fora do cache falha: pula para a próxima (as do cache tocam).
+        val q = player ?: return
+        falhasSeguidas++
+        if (playlist && falhasSeguidas < q.mediaItemCount) {
+          q.seekToNextMediaItem()
+          q.prepare()
+        } else {
           finish(removeNotification = false)
         }
       }
@@ -162,7 +208,8 @@ class FlightSoundService : Service() {
   }
 
   companion object {
-    const val EXTRA_URI = "uri"
+    const val EXTRA_URIS = "uris"
+    const val EXTRA_PLAYLIST = "playlist"
     const val EXTRA_VOLUME = "volume"
     const val EXTRA_END_AT = "endAt"
     const val EXTRA_TITLE = "title"
@@ -170,6 +217,17 @@ class FlightSoundService : Service() {
     const val EXTRA_FADE_IN_MS = "fadeInMs"
     private const val FADE_OUT_MS = 1500L
     private const val FADE_STEP_MS = 50L
+
+    private var cacheDeMusica: SimpleCache? = null
+
+    /** Um só cache por processo (o SimpleCache não aceita duas instâncias na mesma pasta). */
+    @Synchronized
+    fun cache(ctx: android.content.Context): SimpleCache =
+      cacheDeMusica ?: SimpleCache(
+        File(ctx.cacheDir, "musica"),
+        LeastRecentlyUsedCacheEvictor(60L * 1024 * 1024),
+        StandaloneDatabaseProvider(ctx),
+      ).also { cacheDeMusica = it }
 
     /** O serviço em execução (só no processo do app, acessado na thread principal). */
     @Volatile
