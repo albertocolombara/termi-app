@@ -11,7 +11,8 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Classe } from '@/domain/sessao/duracao';
 import { DURACAO_MAXIMA_ECONOMICA_MIN, DURACAO_MAXIMA_PRIMEIRA_MIN, DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { anguloDoTempo, PASSO_DIAL_MIN, rotuloDoTempo, tempoDoAngulo, type BarraDoDial } from '@/domain/voos/dial';
-import { color, FirstClassSeal, gold, space, Suitcase, Text } from '@/ds';
+import { color, FirstClassSeal, gold, space, Text } from '@/ds';
+import { TermiAnimado } from '@/features/termi/TermiAnimado';
 import { t } from '@/i18n';
 
 const TAM = 358;
@@ -25,6 +26,12 @@ const R_MIOLO = 105.3;
 const R_BOTAO = 14.5;
 
 const rad = (g: number) => (g * Math.PI) / 180;
+/** O artboard do Termi tem 400 × 400 e o corpo ocupa ~37% da altura: 172 dá um Termi de ~64. */
+const TERMI_RIVE = 172;
+/** Quanto os olhos andam (unidades do artboard). */
+const OLHAR_X = 14;
+const OLHAR_Y = 9;
+
 const ponto = (r: number, g: number) => ({ x: C + r * Math.sin(rad(g)), y: C - r * Math.cos(rad(g)) });
 
 function arco(r: number, fim: number) {
@@ -128,7 +135,15 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
           pointerEvents="none"
           style={{ position: 'absolute', left: C - 100, top: C - 100, width: 200, height: 200, alignItems: 'center', justifyContent: 'center', gap: space[12] }}
         >
-          <Suitcase size={64} />
+          {/* O Termi fica curioso: os olhos acompanham o botão do dial enquanto o dedo gira. */}
+          <View style={{ width: 64, height: 64 }}>
+            <TermiAnimado
+              tamanho={TERMI_RIVE}
+              olhar={{ x: Math.sin(rad(angulo)) * OLHAR_X, y: -Math.cos(rad(angulo)) * OLHAR_Y }}
+              rotulo={t('dial.termi')}
+              style={{ position: 'absolute', left: 32 - TERMI_RIVE * 0.47, top: 32 - TERMI_RIVE * 0.59 }}
+            />
+          </View>
           <Text variant="Display/Pixel 32" style={{ fontSize: 48, lineHeight: 48, letterSpacing: -2.88 }}>
             {rotuloDoTempo(minutos)}
           </Text>

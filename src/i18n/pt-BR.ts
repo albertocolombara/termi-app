@@ -23,6 +23,7 @@ export const ptBR = {
     voosDescricao: 'Dados ao vivo do R2 e voos elegíveis por tempo',
   },
   dial: {
+    termi: 'O Termi, curioso, acompanha o tempo que você escolhe',
     titulo: 'Quanto tempo de foco?',
     subtitulo: 'Vamos achar um voo no ar agora para acompanhar seu foco',
     dica: 'Gire ou toque para escolher',
