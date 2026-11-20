@@ -37,10 +37,13 @@ export function PaywallPlano({ nome, preco, periodo, selecionado, etiqueta, acce
         {periodo}
       </Text>
       {etiqueta ? (
-        <View style={styles.etiqueta}>
-          <Text variant="Caption/Strong 12" style={styles.textoDaEtiqueta} numberOfLines={1}>
-            {etiqueta}
-          </Text>
+        // A etiqueta pode passar das bordas do card (em telas estreitas o card tem ~110 px e o texto era cortado).
+        <View style={styles.faixaDaEtiqueta} pointerEvents="none">
+          <View style={styles.etiqueta}>
+            <Text variant="Caption/Strong 12" style={styles.textoDaEtiqueta} numberOfLines={1}>
+              {etiqueta}
+            </Text>
+          </View>
         </View>
       ) : null}
     </Pressable>
@@ -72,10 +75,8 @@ const styles = StyleSheet.create({
   normal: { backgroundColor: C.surface.default, borderWidth: 1, borderColor: C.border.default },
   selecionado: { backgroundColor: C.accent.subtle, borderWidth: 2, borderColor: C.accent.default },
   preco: { fontSize: 20, lineHeight: 26 },
+  faixaDaEtiqueta: { position: 'absolute', top: -13, left: -space[24], right: -space[24], alignItems: 'center' },
   etiqueta: {
-    position: 'absolute',
-    top: -13,
-    alignSelf: 'center',
     backgroundColor: C.accent.default,
     borderRadius: radius.full,
     paddingHorizontal: space[8],

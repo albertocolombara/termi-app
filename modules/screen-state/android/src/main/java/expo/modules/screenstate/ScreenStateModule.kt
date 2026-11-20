@@ -96,10 +96,12 @@ class ScreenStateModule : Module() {
 
     // Som de fundo sem controle de mídia (FlightSoundService). Só chamar com o app aberto:
     // o Android não deixa iniciar serviço em primeiro plano a partir do segundo plano.
-    Function("startFlightSound") { uri: String, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
+    // `uris`: um arquivo em loop, ou várias faixas (`playlist`) tocadas embaralhadas em sequência.
+    Function("startFlightSound") { uris: List<String>, playlist: Boolean, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
       val ctx = context
       val intent = Intent(ctx, FlightSoundService::class.java).apply {
-        putExtra(FlightSoundService.EXTRA_URI, uri)
+        putStringArrayListExtra(FlightSoundService.EXTRA_URIS, ArrayList(uris))
+        putExtra(FlightSoundService.EXTRA_PLAYLIST, playlist)
         putExtra(FlightSoundService.EXTRA_VOLUME, volume.toFloat())
         putExtra(FlightSoundService.EXTRA_END_AT, endAt.toLong())
         putExtra(FlightSoundService.EXTRA_TITLE, title)

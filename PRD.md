@@ -251,7 +251,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Marca e dados
 
 - **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real.
-- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo vêm do Freesound em CC0 (domínio público, sem crédito obrigatório); o Termi credita os autores mesmo assim (flood-mix, triadtravelogues, BonnyOrbit).
+- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
 
 ### Comparativo de planos
 
@@ -261,7 +261,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | Serviço de bordo | Sim | Sim |
 | Carimbos no passaporte | Sim | Sim |
 | Souvenirs | Até 3 de amostra | Todos |
-| Sons de fundo | Motores e ruído branco | Também cabine, chuva e lofi |
+| Sons de fundo | Voo de cruzeiro (ruído marrom gerado) e ruído branco | Também motores (gravação real), cabine, chuva e lofi (playlist) |
 | Vista da janela | Só a janela | Todas as vistas |
 | Bloqueio de apps | — | Sim (condicionado, RN-23) |
 | Estatísticas | Semana | Também mês e ano |

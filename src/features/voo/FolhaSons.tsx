@@ -13,6 +13,7 @@ import { BottomSheet, ListOption, Slider, space, Text, type IconName } from '@/d
 import { t, type ChaveDeTexto } from '@/i18n';
 
 const ICONE: Record<Som, IconName> = {
+  cruzeiro: 'plane',
   motores: 'soundEngine',
   'ruido-branco': 'soundWhiteNoise',
   cabine: 'soundCabin',

@@ -8,7 +8,7 @@ type ScreenStateNative = {
   lastScreenOnAt(): number;
   showFlightNotification(title: string, text: string, endAt: number): void;
   hideFlightNotification(): void;
-  startFlightSound(uri: string, volume: number, endAt: number, title: string, text: string, fadeInMs: number): void;
+  startFlightSound(uris: string[], playlist: boolean, volume: number, endAt: number, title: string, text: string, fadeInMs: number): void;
   setFlightSoundVolume(volume: number): void;
   resumeFlightSound(): void;
   isFlightSoundRunning(): boolean;
@@ -27,7 +27,7 @@ export const ScreenState: ScreenStateNative & { available: boolean } = {
   lastScreenOnAt: () => native?.lastScreenOnAt() ?? 0,
   showFlightNotification: (t, x, e) => native?.showFlightNotification(t, x, e),
   hideFlightNotification: () => native?.hideFlightNotification(),
-  startFlightSound: (u, v, e, t, x, f) => native?.startFlightSound(u, v, e, t, x, f),
+  startFlightSound: (u, l, v, e, t, x, f) => native?.startFlightSound(u, l, v, e, t, x, f),
   setFlightSoundVolume: (v) => native?.setFlightSoundVolume(v),
   resumeFlightSound: () => native?.resumeFlightSound(),
   isFlightSoundRunning: () => native?.isFlightSoundRunning() ?? false,
