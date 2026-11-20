@@ -59,17 +59,17 @@ flowchart LR
 - [x] Escolher backend de conta e sincronização (ADR-10) — Supabase, decidido em 19/11/2026; projeto criado pelo Alberto
 - [x] Escolher a solução do globo (ADR-11) — globo em Skia com blocos da NASA GIBS, aprovado pelo Alberto em 19/11/2026 no build-5 (PR #5): blocos em 2 a 3 s, sem travamentos no M35
 - [x] Decidir onde fica o código e o build: repositório `albertocolombara/termi-app` com APK pelo GitHub Actions — decidido em 19/11/2026
-- [ ] Criar o repositório `albertocolombara/termi-app` no GitHub
-- [ ] Definir o identificador do pacote de produção antes do primeiro envio à Play (até lá, um identificador provisório de desenvolvimento; o protótipo usa `com.albertocolombara.termiprototipo`)
-- [ ] Resolver as inconsistências listadas no fim deste documento
+- [x] Criar o repositório `albertocolombara/termi-app` no GitHub — criado pelo Alberto em 19/11/2026
+- [ ] Definir o identificador do pacote de produção — adiado pelo Alberto para a preparação do lançamento (Fase 8); até lá, `com.albertocolombara.termiapp.dev`
+- [x] Resolver as inconsistências listadas no fim deste documento — as que bloqueavam a Fase 1 foram resolvidas; as restantes (#1, #3, #4) ficam com a fase indicada na tabela
 
 ### Tarefas
 - [x] Criar o projeto Expo SDK 58 com TypeScript na estrutura proposta — PR #1
 - [x] Configurar lint, `tsc --noEmit`, Jest (jest-expo) e scripts no `package.json` — PR #1
 - [x] Configurar `app.config.ts` lendo as variáveis de `.env` — PR #1
 - [x] Trazer `src/ds` (branch `design-system` do protótipo) e testar o catálogo no aparelho — PR #1, build-1 no M35
-- [ ] Ajustes do catálogo após o teste: sublinhado nos botões, linha no campo de texto, Geist Pixel Grid, animações MD3, alça do bottom sheet, laranja internacional nos avisos — PR "Ajustes do design system" (falta testar no aparelho)
-- [ ] Adicionar expo-blur para `Glass/Blur 12` — componente `Glass` no PR "Fase 1: vidro e teste do globo"; falta conferir no aparelho
+- [x] Ajustes do catálogo após o teste: sublinhado nos botões, linha no campo de texto, Geist Pixel Grid, animações MD3, alça do bottom sheet, laranja internacional nos avisos — PR #2, aprovado pelo Alberto no build-4. Selos de primeira classe novos no PR #7 (build-6)
+- [x] Adicionar expo-blur para `Glass/Blur 12` — componente `Glass`, aprovado pelo Alberto no M35 em 19/11/2026
 - [x] Trazer `src/janela` (shader, blocos, geo) e `modules/screen-state`, mantendo o orçamento de ~150 MB de textura — PR #1; desempenho confirmado no M35 (build-1)
 - [x] Ajustar ao PRD o que diverge no protótipo: pausa máxima de 5 min também no ciclo de 50 min e folga de 10 min (`agendaDePausas`, PR #1). O botão "Desembarcar" não veio para o app; o "Pousar antes" entra com a tela em voo (Fase 3)
 - [x] Configurar i18n com pt-BR — PR #1
@@ -262,13 +262,13 @@ flowchart LR
 
 | # | Inconsistência | Onde | Recomendação |
 |---|---|---|---|
-| 1 | Moedas do balão de pensamento "prata e bronze" (Rive) × níquel e cobre (coleção) | Arquivo Rive × visao-do-produto | Alinhar ao níquel e cobre |
-| 2 | Laranja do Termi: sem variável no Figma; `#F28C28` no ícone e na notificação do protótipo × `orange/500 #FF9F1C` | Figma × protótipo | Criar a variável `brand/termi` |
+| 1 | Moedas do balão de pensamento "prata e bronze" (Rive) × níquel e cobre (coleção) | Arquivo Rive × visao-do-produto | Alinhar ao níquel e cobre antes de exportar o `.riv` (Fase 3) |
 | 3 | Voos de até 6 h oferecidos × previsão com 35% de acerto em 3–6 h | visao-do-produto × validacao-dados-voos | Condicionar faixas à revalidação (Fase 2) |
 | 4 | Frequência do cache "10 a 20 min" × coleta atual de cada região a cada 30 min | visao-do-produto × validacao-dados-voos | Ajustar o rodízio dentro da cota de 1.000 chamadas/dia (9 regiões a cada 15 min = 864 chamadas) |
 
 **Resolvidas em 19/11/2026:**
 
+- Laranja do Termi: variável `brand/termi` (alias de `orange/500`) no Figma e no código; avisos usam o laranja internacional (`status/warning`).
 - Tempo de foco mínimo: **15 min**.
 - Pausa do serviço de bordo: **no máximo 5 min**, no intervalo de 25 ou de 50 min.
 - Folga mínima depois da pausa: **10 min** de voo (não há pausa se sobrar menos que isso até o pouso).
