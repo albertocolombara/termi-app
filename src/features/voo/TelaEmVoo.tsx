@@ -31,7 +31,6 @@ import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, InfoBanner, ra
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
-import { useSomQueToca } from '@/services/audio';
 import { useClasse } from '@/services/compras';
 
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
@@ -76,9 +75,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const vistaDaJanela = vistaEmUso(escolhida, classe);
   const [escolhendoSom, setEscolhendoSom] = useState(false);
   const som = useSomDeFundo();
+  // O som em si toca no layout raiz (SomDoVoo), também com a tela bloqueada.
   const somAtual = somEmUso(som.escolhido, classe);
-  // Toca com a tela do voo aberta e na frente; para no pouso (a tela sai) e em segundo plano.
-  useSomQueToca(somAtual, som.volume, ativo);
   const encerrar = useEncerrar(sessao);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;

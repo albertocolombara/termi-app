@@ -150,7 +150,8 @@ export const ptBR = {
   },
   sons: {
     titulo: 'Som da cabine',
-    subtitulo: 'Toca junto com o voo enquanto a tela está aberta',
+    subtitulo: 'Toca durante o voo, mesmo com a tela bloqueada',
+    tituloNaNotificacao: 'Termi · {voo}',
     botao: 'Som da cabine',
     motores: { nome: 'Motores', descricao: 'Ronco contínuo do avião em voo' },
     'ruido-branco': { nome: 'Ruído branco', descricao: 'Som neutro para bloquear distrações' },

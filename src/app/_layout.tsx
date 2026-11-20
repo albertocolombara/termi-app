@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { migrar } from '@/data/db/migracoes';
 import { queryClient } from '@/data/remote/queryClient';
 import { color } from '@/ds';
+import { SomDoVoo } from '@/features/voo/SomDoVoo';
 import { configurarAvisos } from '@/services/avisos';
 
 export default function RootLayout() {
@@ -22,6 +23,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <SQLiteProvider databaseName="termi.db" onInit={(db) => migrar(db).then(() => undefined)}>
             <StatusBar style="light" />
+            <SomDoVoo />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg.app } }} />
           </SQLiteProvider>
         </QueryClientProvider>

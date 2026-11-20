@@ -73,7 +73,7 @@ flowchart LR
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
 | Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
 | Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo |
-| Sons de fundo | **expo-audio** (módulo do Expo), loops AAC em `assets/sons` | [Decidido] só com o app aberto (20/11/2026, PR #29); tocar em segundo plano é [Pendente] | Motores, ruído branco, cabine e chuva (seção 10) |
+| Sons de fundo | **expo-audio** (módulo do Expo), loops AAC em `assets/sons` | [Decidido] (20/11/2026; em segundo plano a partir do PR #30) | Motores, ruído branco, cabine e chuva (seção 10) |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
 | Live Activity (iOS) | expo-widgets ou módulo Swift | [Proposta] | Fase iOS |
 | Assinaturas | **RevenueCat** (Google Play Billing) | [Decidido] | Planos, vitalício, restauração, testes de preço |
@@ -366,8 +366,8 @@ Funções puras em `src/domain`:
 - **Dados pessoais mínimos:** sem nome obrigatório, sem telefone, sem anúncios, sem SDK de rastreamento publicitário. Motivos da viagem e tarefas ficam no aparelho (e no backend de sincronização, se o usuário criar conta).
 - **Localização aproximada**, opcional, usada só no aparelho para escolher a região padrão.
 - **LGPD:** exportar e apagar dados (UC-16); política de privacidade em Sobre o Termi.
-- **Permissões Android:** `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `VIBRATE`, `ACCESS_COARSE_LOCATION`; para o bloqueio de apps (condicionado), "Acesso ao uso" e serviço em primeiro plano `specialUse`. **Proibidos:** serviço de Acessibilidade para bloqueio e `QUERY_ALL_PACKAGES`. O `expo-audio` traz `MODIFY_AUDIO_SETTINGS` (permissão normal, sem pedido ao usuário); o `RECORD_AUDIO` que ele pede por padrão está bloqueado no `app.config.ts`.
-- **Som em segundo plano [Pendente]:** para o som continuar com a tela bloqueada (visão §9, item 10), o Android exige um serviço em primeiro plano do tipo `mediaPlayback` (`FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_MEDIA_PLAYBACK`) e controles de mídia na notificação; sem isso o som para em ~3 min. É um tipo aceito pela Play para áudio. Hoje o som toca só com a tela do voo aberta (`enableBackgroundPlayback: false`).
+- **Permissões Android:** `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `VIBRATE`, `ACCESS_COARSE_LOCATION`, `FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (som de fundo, abaixo); para o bloqueio de apps (condicionado), "Acesso ao uso" e serviço em primeiro plano `specialUse`. **Proibidos:** serviço de Acessibilidade para bloqueio e `QUERY_ALL_PACKAGES`. O `expo-audio` traz `MODIFY_AUDIO_SETTINGS` (permissão normal, sem pedido ao usuário); o `RECORD_AUDIO` que ele pede por padrão está bloqueado no `app.config.ts`.
+- **Som em segundo plano [Decidido em 20/11/2026 pelo Alberto]:** o som continua com a tela bloqueada (visão §9, item 10) pelo serviço de mídia do expo-audio, um serviço em primeiro plano do tipo `mediaPlayback` (`FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, tipo aceito pela Play para áudio), com controle de mídia na notificação ("Termi · voo", origem → destino). Sem esse controle o Android corta o som em ~3 min. O serviço existe só enquanto o som toca: do embarque ao pouso, e nunca com "Sem som". Na Play, declarar o uso do serviço de mídia.
 
 ## 11. Validação e tratamento de erros
 

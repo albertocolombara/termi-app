@@ -65,9 +65,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['expo-notifications', { color: TERMI_LARANJA }],
     'expo-asset',
     'expo-sqlite',
-    // Sons de fundo. Por enquanto só com o app aberto: tocar em segundo plano pede serviço em primeiro plano
-    // do tipo mediaPlayback (permissão nova, ARCHITECTURE §10), que espera a aprovação do Alberto.
-    ['expo-audio', { enableBackgroundPlayback: false, recordAudioAndroid: false, microphonePermission: false }],
+    // Sons de fundo, também com a tela bloqueada: o plugin declara o serviço de mídia (FOREGROUND_SERVICE e
+    // FOREGROUND_SERVICE_MEDIA_PLAYBACK). Aprovado pelo Alberto em 20/11/2026 (ARCHITECTURE §10).
+    ['expo-audio', { enableBackgroundPlayback: true, recordAudioAndroid: false, microphonePermission: false }],
     'expo-localization',
     [
       'expo-font',
