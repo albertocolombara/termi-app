@@ -33,3 +33,4 @@ export { Glass, GlassTarget, type GlassProps } from './Glass';
 export { BottomSheet, SectionHeader, StepProgress, TopBar, type BottomSheetProps, type TopBarProps } from './layout';
 export { Cauda } from './bandeiras/Cauda';
 export { CabecalhoDoPainel, LinhaDoPainel, type LinhaDoPainelProps } from './PainelDeVoos';
+export { EmVooRota } from './EmVooRota';

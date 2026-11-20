@@ -21,7 +21,7 @@ import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { ATLAS_PX, SKSL, uniformArray } from './shader';
 import { makeAtlas, AtlasState } from './tiles';
-import { bearing, pos, sun } from './geo';
+import { sun } from './geo';
 
 const effect = Skia.RuntimeEffect.Make(SKSL);
 const EMPTY = Skia.Shader.MakeColor(Skia.Color('transparent'));
@@ -56,8 +56,8 @@ function texShader(img: SkImage | null): SkShader {
 
 type Props = {
   width: number;
-  /** Trecho da rota (0 a 1). */
-  progress: number;
+  /** Posição do avião agora (graus) e rumo (graus a partir do norte). */
+  posicao: { lat: number; lon: number; rumo: number };
   /** Instante usado para o sol (ms). */
   time: number;
   /** Quanto o avião já andou desde o embarque (km), para as nuvens passarem. */
@@ -73,7 +73,7 @@ type Props = {
 
 export function Janela({
   width,
-  progress,
+  posicao,
   time,
   driftKm,
   fps,
@@ -166,8 +166,7 @@ export function Janela({
     return () => cancelAnimationFrame(raf);
   }, [showMeter, lw, lh, dpr, showLandscape]);
 
-  const [la, lo] = pos(progress);
-  const hd = bearing([la, lo], pos(Math.min(progress + 0.01, 1))) || bearing(pos(0.98), [51.47, -0.4543]);
+  const { lat: la, lon: lo, rumo: hd } = posicao;
   const s = sun(time, la, lo);
   const el = (s.el * 180) / Math.PI;
   const wt = 1 - sm(3, 15, el);

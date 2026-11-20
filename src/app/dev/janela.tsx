@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Chip, color, screenGutter, space, Text, ToggleRow, TopBar } from '@/ds';
 import { t } from '@/i18n';
-import { place, pos, progressAt, ROUTE } from '@/janela/geo';
+import { bearing, place, pos, progressAt, ROUTE } from '@/janela/geo';
 import { Janela, QUALITY } from '@/janela/Janela';
 
 const DURACAO_TESTE_MIN = 80;
@@ -41,6 +41,7 @@ export default function JanelaDeTeste() {
   const fim = inicio + DURACAO_TESTE_MIN * 60_000;
   const progresso = progressAt(agora, inicio, fim);
   const [lat, lon] = pos(progresso);
+  const rumo = bearing([lat, lon], pos(Math.min(progresso + 0.01, 1))) || bearing(pos(0.98), [ROUTE.to.lat, ROUTE.to.lon]);
   const deslocamentoKm = ((agora - inicio) / 3_600_000) * ROUTE.speedKmh;
   const larguraJanela = Math.min(width - screenGutter * 2, 440);
 
@@ -56,7 +57,7 @@ export default function JanelaDeTeste() {
       {ativo ? (
         <Janela
           width={larguraJanela}
-          progress={progresso}
+          posicao={{ lat, lon, rumo }}
           time={agora}
           driftKm={deslocamentoKm}
           fps={quadros}

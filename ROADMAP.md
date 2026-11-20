@@ -126,7 +126,7 @@ flowchart LR
 ### Dados
 - [x] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query — `data/voos`, PR #18 (falta conferir no aparelho pela tela "Voos do cache")
 - [x] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12) — `data/voos`, PR #18
-- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; falta a janela seguir a rota do voo (hoje segue Barcelona → Londres) e tirar os pacotes do APK
+- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; a janela segue a rota do voo da sessão no PR #24; falta tirar os pacotes do APK
 
 ### Telas e serviços
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
@@ -137,7 +137,7 @@ flowchart LR
 - [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22 (vai para o SQLite no embarque; falta conferir no aparelho)
 - [x] Caminho rápido no dial — "Embarcar no voo mais próximo" vai direto ao embarque, sem motivo da viagem (UC-03), PR #23
 - [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa (falta conferir no aparelho; a tela em voo ainda é provisória)
-- [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas
+- [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; faltam os botões de vista da janela e de som (com os sons) e conferir no aparelho
 - [ ] Sons de fundo e avisos por fase (áudio em segundo plano)
 - [ ] Serviço de bordo com avisos agendados como alarme exato
 - [ ] Notificação fixa com contagem
