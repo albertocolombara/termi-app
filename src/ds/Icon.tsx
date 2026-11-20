@@ -7,7 +7,8 @@ import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-na
 import { color as C, gold } from './tokens';
 
 type Draw = (c: string) => React.ReactNode;
-type IconDef = { box: number; color: string; draw: Draw };
+/** `size`: tamanho padrão em dp quando o desenho usa uma caixa grande (ex.: 128). */
+type IconDef = { box: number; size?: number; color: string; draw: Draw };
 
 const stroke = (c: string, w = 1.58333) => ({
   stroke: c,
@@ -322,6 +323,7 @@ const ICONS = {
   /** Figma: Termi Premium / Tamanho=Quadrado (mala com etiqueta). Usado no Selo · Primeira classe. */
   termiPremiumQuadrado: {
     box: 128,
+    size: 24,
     color: gold.stops[3].color,
     draw: () => (
       <>
@@ -363,7 +365,7 @@ export type IconProps = { name: IconName; size?: number; color?: string };
 /** Ícone do sistema. `size` padrão = tamanho original do Figma. */
 export function Icon({ name, size, color }: IconProps) {
   const def: IconDef = ICONS[name];
-  const s = size ?? def.box;
+  const s = size ?? def.size ?? def.box;
   return (
     <Svg width={s} height={s} viewBox={`0 0 ${def.box} ${def.box}`}>
       <G>{def.draw(color ?? def.color)}</G>

@@ -2,7 +2,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { interpolateColor, useAnimatedStyle } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Icon, Suitcase, type IconName } from './Icon';
 import { Radio } from './controls';
 import { useStateProgress } from './motion';
@@ -10,31 +9,21 @@ import { Text } from './Text';
 import { color as C, gold, radius, space } from './tokens';
 
 // ───────── Superfícies douradas (selos de 1ª classe) ─────────
-function Fill({ r, stops, id }: { r: number; id: string; stops: readonly { offset: number; color: string }[] }) {
-  return (
-    <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
-      <Defs>
-        <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
-          {stops.map((s) => (
-            <Stop key={s.offset} offset={s.offset} stopColor={s.color} />
-          ))}
-        </LinearGradient>
-      </Defs>
-      <Rect width="100%" height="100%" rx={r} ry={r} fill={`url(#${id})`} />
-    </Svg>
-  );
-}
+// Gradiente nativo do React Native (CSS `linear-gradient`), da esquerda para a direita como no Figma.
+// Antes era um <Svg> por trás do selo, que no Android saía com tamanho errado e ignorava a transparência.
+const gradiente = (stops: readonly { offset: number; color: string }[]) =>
+  `linear-gradient(90deg, ${stops.map((s) => `${s.color} ${Math.round(s.offset * 100)}%`).join(', ')})`;
 
-const SEAL_STOPS = [
+const GOLD_GRADIENT = gradiente(gold.stops);
+const SEAL_GRADIENT = gradiente([
   { offset: 0, color: gold.seal.from },
   { offset: 1, color: gold.seal.to },
-] as const;
+]);
 
 /** Selo "1ª classe" para conteúdo premium bloqueado (Figma: Badge / Premium). */
 export function PremiumBadge({ label = '1ª classe' }: { label?: string }) {
   return (
     <View style={styles.badge}>
-      <Fill r={radius.md} stops={gold.stops} id="goldBadge" />
       <Icon name="lock" color={gold.ink} />
       <Text variant="Caption/Strong 12" style={[styles.goldText, styles.badgeText]}>
         {label}
@@ -59,7 +48,6 @@ export function FirstClassSeal({
   const menor = variant === 'menor';
   return (
     <View style={[styles.seal, variant === 'texto' ? styles.sealTexto : menor ? styles.sealMenor : null]}>
-      <Fill r={radius.md} stops={SEAL_STOPS} id="goldSeal" />
       {variant !== 'texto' && <Icon name="termiPremiumQuadrado" size={menor ? 16 : 24} />}
       <Text variant="Caption/Strong 12" style={[styles.sealText, menor && styles.sealTextMenor]}>
         {label}
@@ -217,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: gold.border,
+    backgroundImage: GOLD_GRADIENT,
     boxShadow: `0 2px 8px ${gold.glow}`,
   },
   badgeText: { textTransform: 'uppercase', letterSpacing: 12 * 0.06 },
@@ -231,6 +220,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: gold.seal.border,
+    backgroundImage: SEAL_GRADIENT,
     boxShadow: `0 3px 12px ${gold.seal.glow}`,
   },
   sealMenor: { height: 24 },
