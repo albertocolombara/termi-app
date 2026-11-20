@@ -91,7 +91,7 @@ flowchart LR
 - [ ] Definir quais faixas de duração entram na v1 conforme o resultado — [Pendente] confirmar com o Alberto (PRD §12)
 - [ ] Fechar o contrato do JSON por região (versão, `coletadoEm`, campos) — formato em teste no R2 (ARCHITECTURE §9); falta a aprovação do Alberto
 - [x] Mapear companhia → país da bandeira (base de companhias) — OpenFlights (ODbL) + 15 correções manuais; 99% dos voos acompanhados (PR #3 do coletor, 20/11/2026)
-- [ ] Guardar a trilha do dia anterior para o "voo de ontem"
+- [x] Guardar a trilha do dia anterior para o "voo de ontem" — histórico por faixa de 20 min no R2 (PR #4 do coletor, 20/11/2026); o uso no app entra com a RN-12
 - [x] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026; `voos/<regiao>.json` e `voos/indice.json`); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
 - [x] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub — bucket `termi-dados`, publicação desde 20/11/2026 00:20 UTC (PR #1 do coletor)
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)

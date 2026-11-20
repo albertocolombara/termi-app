@@ -354,7 +354,7 @@ Funções puras em `src/domain`:
 - **Frescor:** o app mostra os voos com a posição projetada a partir de `coletadoEm`. Região que veio sem nenhum avião não é publicada (falha do provedor); o arquivo anterior continua valendo.
 - **País da companhia:** OpenFlights (ODbL) com correções manuais no coletor; cobre 99% dos voos acompanhados.
 
-Para o "voo de ontem" (RN-12), o coletor precisa guardar também a trilha do dia anterior **[Pendente]**.
+**Voo de ontem (RN-12) [Proposta, em teste desde 20/11/2026]:** a cada coleta, o arquivo da região também vai para `/historico/{regiao}/{HHMM}.json`, onde HHMM é a faixa de 20 min do dia em UTC (`0000` a `2340`). Cada faixa é sobrescrita 24 h depois; se a coleta parar, o arquivo continua sendo o de ontem. Com os dados ao vivo fora do ar, o app lê a faixa do horário atual, confere que o `coletadoEm` tem entre ~23 h e ~25 h e oferece os voos como se fosse ontem: a posição é projetada a partir do `coletadoEm` + 24 h e o pouso previsto também ganha 24 h. Custo: 864 arquivos fixos e ~860 gravações a mais por dia, dentro do plano grátis do R2.
 
 **Catálogo da coleção [Proposta]** (`/colecao/catalogo.json`): `versao`, `atualizadoEm` e a lista de souvenirs (campos da seção 5.1), com URLs dos modelos 3D e imagens 2D. O app guarda a última versão e funciona offline com ela.
 
