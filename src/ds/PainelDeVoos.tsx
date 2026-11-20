@@ -7,6 +7,7 @@ import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Cauda } from './bandeiras/Cauda';
+import { Letreiro, useAlternancia } from './Letreiro';
 import { Text } from './Text';
 import { color as C, fontFamily, space } from './tokens';
 
@@ -37,6 +38,8 @@ export type LinhaDoPainelProps = {
   companhia: string | null;
   pais: string | null;
   destino: string;
+  /** Rota curta ("BCN → LHR"). A linha de baixo do voo alterna entre a companhia e a rota. */
+  rota?: string;
   tempo: string;
   alternado?: boolean;
   selecionado?: boolean;
@@ -64,16 +67,12 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
             <Text style={[pixel(14), { color: C.text.primary }]} numberOfLines={1}>
               {p.codigo}
             </Text>
-            {p.companhia ? (
-              <Text style={[pixel(12), { color: C.text.secondary }]} numberOfLines={1}>
-                {p.companhia}
-              </Text>
-            ) : null}
+            <LinhaQueAlterna companhia={p.companhia} rota={p.rota} />
           </View>
         </View>
-        <Text style={[pixel(20), { color: C.text.accent, flex: 1 }]} numberOfLines={1}>
-          {p.destino}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Letreiro texto={p.destino} style={[pixel(20), { color: C.text.accent }]} />
+        </View>
         <Text variant="Heading/Data 24" style={{ fontSize: 20, letterSpacing: -0.6 }}>
           {p.tempo}
         </Text>
@@ -81,6 +80,14 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
     </Pressable>
   );
 });
+
+/** Companhia e rota se revezam a cada 4 s, todas as linhas juntas, com o mesmo giro do letreiro. */
+function LinhaQueAlterna({ companhia, rota }: { companhia: string | null; rota?: string }) {
+  const opcoes = [companhia, rota].filter((x): x is string => !!x);
+  const i = useAlternancia(4000, Math.max(1, opcoes.length));
+  if (opcoes.length === 0) return null;
+  return <Letreiro texto={opcoes[i % opcoes.length]} style={[pixel(12), { color: C.text.secondary }]} />;
+}
 
 const styles = StyleSheet.create({
   cabecalho: {
