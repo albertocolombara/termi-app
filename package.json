@@ -48,8 +48,10 @@
     "@types/react": "~19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^58.0.4",
+    "flagpack-core": "^2.1.0",
     "jest": "^30.5.2",
     "jest-expo": "^58.0.15",
+    "svgo": "^3.3.5",
     "typescript": "~6.0.3"
   },
   "jest": {
