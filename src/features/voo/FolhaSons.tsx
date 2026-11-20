@@ -27,6 +27,7 @@ export function FolhaSons({
   volume,
   onEscolher,
   onVolume,
+  onPrimeiraClasse,
   onFechar,
 }: {
   visivel: boolean;
@@ -35,12 +36,17 @@ export function FolhaSons({
   volume: number;
   onEscolher: (s: Som | 'nenhum') => void;
   onVolume: (v: number) => void;
+  /** Som com cadeado na econômica: abre o paywall (RN-20, RF-25). */
+  onPrimeiraClasse: () => void;
   onFechar: () => void;
 }) {
   const [aviso, setAviso] = useState<ChaveDeTexto | null>(null);
   const tocar = (s: Som) => {
     if (!SOM_PRONTO[s]) return setAviso('sons.emBreveAviso');
-    if (!somLiberado(s, classe)) return setAviso('sons.daPrimeiraClasse');
+    if (!somLiberado(s, classe)) {
+      setAviso(null);
+      return onPrimeiraClasse();
+    }
     setAviso(null);
     onEscolher(s);
   };

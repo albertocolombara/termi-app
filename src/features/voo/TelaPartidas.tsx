@@ -15,7 +15,7 @@ import { CabecalhoDoPainel, Chip, color, InfoBanner, LinhaDoPainel, screenGutter
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
-import { codigoDoLugar, nomeDoLugar } from './formato';
+import { codigoDoLugar, duracao, duracaoPorExtenso, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
 const ROTULO: Record<FiltroDeRegiao, ChaveDeTexto> = {
@@ -121,13 +121,13 @@ export function TelaPartidas() {
               pais={item.voo.companhiaPais}
               destino={destino}
               rota={`${codigoDoLugar(item.voo.origem)} → ${codigoDoLugar(item.voo.destino)}`}
-              tempo={`${item.minutosAtePouso} min`}
+              tempo={duracao(item.minutosAtePouso)}
               alternado={index % 2 === 1}
               accessibilityLabel={t('partidas.linhaAcessivel', {
                 voo: item.voo.callsign,
                 destino,
                 codigo: codigoDoLugar(item.voo.destino),
-                min: item.minutosAtePouso,
+                tempo: duracaoPorExtenso(item.minutosAtePouso),
               })}
               onPress={() => escolher(item.voo.hex)}
             />

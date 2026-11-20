@@ -3,7 +3,7 @@
  * O Termi (Rive) anda na esteira enquanto as etapas reais acontecem e, no fim, faz o "embarcou" até o final.
  */
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,12 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
 
   const reduzirMovimento = useReducedMotion();
   const [pulou, setPulou] = useState(false);
+  // O Termi cabe no espaço que sobra entre a rota e as etapas (em telas baixas os elementos se encostavam, build-26).
+  const { width } = useWindowDimensions();
+  const [alturaDoMeio, setAlturaDoMeio] = useState(0);
+  const tamanhoDoTermi = alturaDoMeio
+    ? Math.round(Math.max(TERMI_MIN, Math.min(TERMI_MAX, width - 2 * screenGutter, alturaDoMeio - ALTURA_DOS_TEXTOS)))
+    : 0;
 
   // Embarcou: o Termi faz o pulinho e sai pela esteira até o fim (2,6 s) antes de abrir o voo.
   // Tocar na tela pula a animação; com "reduzir movimento", abre direto (CLAUDE.md §9).
@@ -78,13 +84,18 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
         ) : null}
       </View>
 
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: space[24] }}>
+      <View
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: space[16], overflow: 'hidden' }}
+        onLayout={(e) => setAlturaDoMeio(e.nativeEvent.layout.height)}
+      >
         <Pressable
           disabled={etapa.tipo !== 'embarcou'}
           onPress={() => setPulou(true)}
           accessibilityHint={etapa.tipo === 'embarcou' ? t('embarque.pularAnimacao') : undefined}
         >
-          <TermiAnimado esteira embarcou={etapa.tipo === 'embarcou'} tamanho={300} rotulo={t('embarque.termiNaEsteira')} />
+          {tamanhoDoTermi ? (
+            <TermiAnimado esteira embarcou={etapa.tipo === 'embarcou'} tamanho={tamanhoDoTermi} rotulo={t('embarque.termiNaEsteira')} />
+          ) : null}
         </Pressable>
         <View style={{ alignItems: 'center', gap: space[8] }}>
           <Text variant="Heading/Data 24" style={{ fontWeight: '600' }} accessibilityRole="header">
@@ -112,7 +123,7 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
         </View>
       </View>
 
-      <View style={{ minHeight: 48, justifyContent: 'center', paddingTop: space[40] }}>
+      <View style={{ minHeight: 48, justifyContent: 'center', paddingTop: space[16] }}>
         {podeCancelar ? (
           <Button variant="secondary" size="mini" label={t('embarque.cancelar')} onPress={cancelarEmbarque} style={{ alignSelf: 'center' }} />
         ) : null}
@@ -191,6 +202,11 @@ function progressoTotal(e: EtapaDoEmbarque): number {
       return 0;
   }
 }
+
+const TERMI_MAX = 300;
+const TERMI_MIN = 140;
+/** Título + subtítulo abaixo do Termi, com os espaços entre eles. */
+const ALTURA_DOS_TEXTOS = 88;
 
 const ICONE: Record<Estado, IconName> = { feita: 'checkStep', atual: 'loadingStep', pendente: 'pendingStep' };
 

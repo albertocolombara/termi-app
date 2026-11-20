@@ -139,7 +139,7 @@ flowchart LR
 - [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa (falta conferir no aparelho; a tela em voo ainda é provisória)
 - [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); botão e folha de som (04D) no PR #29; falta conferir no aparelho
 - [ ] Sons de fundo e avisos por fase (áudio em segundo plano) — sons de fundo (motores, ruído branco, cabine, chuva) com o app aberto no PR #29; som em segundo plano com controle de mídia no PR #30; faltam lofi, avisos por fase e conferir no aparelho com a tela bloqueada
-- [ ] Serviço de bordo com avisos agendados como alarme exato
+- [ ] Serviço de bordo com avisos agendados como alarme exato — estados E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") na tela em voo no PR do retorno da build-26; falta conferir no aparelho
 - [ ] Notificação fixa com contagem
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
 - [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo
@@ -167,8 +167,8 @@ flowchart LR
 - [ ] Diário de bordo com filtro e detalhe
 - [ ] Estatísticas (semana; mês e ano na primeira classe)
 - [ ] RevenueCat: produtos, direitos, compra, restauração
-- [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5
-- [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo
+- [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR do retorno da build-26 (planos, condições, carrossel com os benefícios que já existem), sem compra: em builds de teste o botão liga a primeira classe de teste; faltam RevenueCat, Restaurar compras, Termos e Privacidade
+- [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR do retorno da build-26
 - [ ] Vistas da janela por plano; sons premium
 - [ ] Backup do progresso e conta opcional
 - [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste), aberto por uma engrenagem no Início até o menu lateral existir; faltam os itens que dependem de recursos ainda não feitos

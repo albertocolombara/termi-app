@@ -21,3 +21,41 @@ export function proximaPausa(embarcouEm: number, pausas: PausaPlanejada[], agora
   }
   return null;
 }
+
+/**
+ * A pausa do serviço de bordo em andamento agora (E2), com o que falta dela; `null` fora das pausas.
+ * `voltouAntes` lista os índices em que o usuário tocou em "Voltar ao foco" (RN-06): essas pausas acabam ali.
+ */
+export function pausaEmAndamento(
+  embarcouEm: number,
+  pausas: PausaPlanejada[],
+  agora: number,
+  voltouAntes: readonly number[] = [],
+): { indice: number; fimEm: number; restanteMs: number } | null {
+  for (let i = 0; i < pausas.length; i++) {
+    const inicio = embarcouEm + pausas[i].inicioMin * 60_000;
+    const fimEm = embarcouEm + pausas[i].fimMin * 60_000;
+    if (agora >= inicio && agora < fimEm && !voltouAntes.includes(i)) return { indice: i, fimEm, restanteMs: fimEm - agora };
+  }
+  return null;
+}
+
+/** A pausa que terminou há menos de `janelaMs` (para o aviso "De volta ao foco", E1); `null` se nenhuma. */
+export function pausaRecemTerminada(
+  embarcouEm: number,
+  pausas: PausaPlanejada[],
+  agora: number,
+  janelaMs: number,
+): { indice: number; fimEm: number } | null {
+  for (let i = pausas.length - 1; i >= 0; i--) {
+    const fimEm = embarcouEm + pausas[i].fimMin * 60_000;
+    if (agora >= fimEm && agora - fimEm < janelaMs) return { indice: i, fimEm };
+  }
+  return null;
+}
+
+/** Contagem regressiva no formato m:ss (ex.: 4:12). */
+export function relogioRegressivo(restanteMs: number): string {
+  const s = Math.max(0, Math.ceil(restanteMs / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
