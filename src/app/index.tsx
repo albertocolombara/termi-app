@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { mostrarFerramentasDev } from '@/config/env';
+import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { ActionRow, Button, color, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
@@ -12,6 +13,7 @@ import { t } from '@/i18n';
  */
 export default function Inicio() {
   const insets = useSafeAreaInsets();
+  const sessao = useSessaoEmAndamento();
   return (
     <ScrollView
       style={{ backgroundColor: color.bg.app }}
@@ -25,6 +27,9 @@ export default function Inicio() {
       </View>
 
       <Button label={t('inicio.novoVoo')} onPress={() => router.push('/voo')} />
+      {sessao.data ? (
+        <ActionRow icon="plane" title={t('inicio.vooEmAndamento')} description={t('inicio.vooEmAndamentoDescricao')} onPress={() => router.push('/voo/em-voo')} />
+      ) : null}
 
       {mostrarFerramentasDev && (
         <View style={{ gap: space[8] }}>

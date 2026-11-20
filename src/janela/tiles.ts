@@ -1,9 +1,9 @@
 import { Asset } from 'expo-asset';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { Skia, SkImage } from '@shopify/react-native-skia';
 
-// Blocos Landsat empacotados por faixa de latitude: o índice diz pacote, início e tamanho de cada bloco.
-// No app final, os blocos da rota são baixados no embarque; aqui vêm junto com o APK.
+// Blocos da rota: primeiro os baixados do R2 no embarque; senão, os pacotes do protótipo
+// (Barcelona → Londres), que ainda vêm no APK para a tela de teste e saem antes do lançamento.
 const INDEX: Record<string, [string, number, number]> = require('../../assets/janela/pk/index.json');
 
 const PACKS: Record<string, number> = {
@@ -46,7 +46,28 @@ function packFile(name: string) {
   return packFiles.get(name)!;
 }
 
+const decodificar = (bytes: Uint8Array) => Skia.Image.MakeImageFromEncoded(Skia.Data.fromBytes(bytes));
+
+/**
+ * Bloco baixado no embarque (data/blocos), em `cache/blocos/{camada}/{linha}/{coluna}.webp`.
+ * Arquivo vazio = oceano (404 no R2). `undefined` = não baixado: cai nos pacotes do protótipo.
+ */
+async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
+  const [camada, rc] = key.split('/');
+  const [linha, coluna] = rc.split('_');
+  const f = new File(Paths.cache, `blocos/${camada}/${linha}/${coluna}.webp`);
+  if (!f.exists) return undefined;
+  if (f.size === 0) return null;
+  try {
+    return decodificar(await f.bytes());
+  } catch {
+    return null;
+  }
+}
+
 async function tile(key: string): Promise<SkImage | null> {
+  const baixado = await blocoBaixado(key);
+  if (baixado !== undefined) return baixado;
   const ix = INDEX[key];
   if (!ix) return null;
   const [p, offset, length] = ix;
@@ -57,7 +78,7 @@ async function tile(key: string): Promise<SkImage | null> {
     h.offset = offset;
     const bytes = await h.readBytes(length);
     h.close();
-    return Skia.Image.MakeImageFromEncoded(Skia.Data.fromBytes(bytes));
+    return decodificar(bytes);
   } catch {
     return null;
   }

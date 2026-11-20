@@ -98,6 +98,14 @@ export const color = {
     criacao: '#FF92BE',
     outro: '#B3B1BA',
   },
+  /** Esteira de bagagem da tela de embarque (Figma "05 · Embarcando"; cores locais da ilustração). */
+  esteira: {
+    lona: '#24222B',
+    emenda: '#0F0E13',
+    base: '#17151C',
+    brilho: p['white/a08'],
+    sombra: 'rgba(0,0,0,0.45)',
+  },
   /** Dial de tempo (Figma: "Dial de tempo / com voos"; cores locais do componente, sem variável). */
   dial: {
     barra: '#5B5F68', // voos no ar naquele tempo

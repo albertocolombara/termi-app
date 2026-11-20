@@ -87,7 +87,7 @@ export function TelaTempoDeFoco() {
               label={t('dial.maisProximo', { min: maisProximo.minutosAtePouso })}
               onPress={() => {
                 setVoo(maisProximo.voo.hex);
-                router.push('/voo/cartao'); // vai direto ao embarque quando a tela 05 existir
+                router.push('/voo/embarque?rapido=1'); // UC-03: sem partidas e sem cartão
               }}
             />
           ) : null}
