@@ -129,7 +129,8 @@ flowchart LR
 - [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque
 
 ### Telas e serviços
-- [ ] Telas de Em espera e Em solo no Figma (Alberto) **[Pendente]**
+- [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
+- [ ] Render da janela com o avião no solo (taxiando ou no portão) para o estado Em solo **[Pendente]**
 - [ ] Dial (15 min–6 h; faixa premium marcada)
 - [ ] Painel de partidas com filtros de região e cauda com bandeira
 - [ ] Sem voo: tempos próximos; dados fora do ar: voo de ontem

@@ -262,7 +262,14 @@ Controle pelo view model "Termi" no Rive: `pensando`, `novoVoo`, `esteira`, `emb
 
 ## 16. Estados vazios, carregamento e erro
 
-Telas no Figma: "Estados do voo · v2" (E1–E7) e "Erros e estados vazios · v2". O estado Em solo (E8, PRD RN-09b) e o novo Em espera (RN-09a) ainda não têm tela **[Pendente]**.
+Telas no Figma: "Estados do voo · v2" (E1–E8 e E5b) e "Erros e estados vazios · v2". Atualizadas em 20/11/2026 para a regra do tempo do usuário (PRD RN-09):
+
+- **E5 · Em espera:** "Seu tempo de foco acabou"; pouso completo garantido; "Pousar agora" (principal) e "Continuar até o pouso" (secundário), com a linha "os minutos a mais também contam".
+- **E5b · Continuando até o pouso:** tela em voo com aviso de tempo extra, "~N min" no topo, "Tempo extra +N min" no rodapé e "Pousar agora" no lugar de "Pousar antes".
+- **E8 · Em solo:** aviso "O avião pousou em [cidade]", "Foco termina em N min", altitude 0 m e "Em solo em [IATA]"; "Pousar antes" continua, porque o tempo do usuário não acabou.
+- **Janela com o avião no solo (taxiando ou no portão):** render ainda não existe **[Pendente]** (Blender).
+
+**Em voo / Rota** (componente, página Design System): barra de rota do painel inferior, com variantes `Progresso` = 0, 25, 50, 75, 90, 100. No app o avião anda de forma contínua pela fração do voo entre o embarque e o pouso; trecho voado em laranja, restante em branco 65%.
 
 | Situação | Padrão |
 |---|---|
