@@ -570,4 +570,5 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 - Arquivo no Rive (nuvem): https://editor.rive.app/file/untitled/2737902 (ainda "Untitled"), artboard "Termi" de 400 × 400, fundo transparente, feito a partir das referências em `Mascote/Animações do Termi` (feitas no HyperFrames).
 - Animações e view model descritos em DESIGN.md §14. Halo laranja atrás do Termi (desligado na esteira) e sombra no chão que encolhe quando ele pula.
-- Pendências: nomear o arquivo, trocar o ícone provisório das moedas e exportar o `.riv`.
+- Arquivo renomeado para "Termi Animações". Exportado em 20/11/2026 para `assets/rive/termi.riv` (20 KB) e tocado no app com **rive-react-native 9.8.6** (runtime Android 11.10), por data binding: `AutoBind(true)` e os hooks `useRiveBoolean`/`useRiveTrigger` no view model "Termi" (`src/features/termi/TermiAnimado.tsx`). Primeiro uso: a esteira do embarque (`espera` → `embarcou` até o fim, pulável com um toque).
+- Pendências: trocar o ícone provisório das moedas; parâmetro de direção do olhar para o Termi curioso no dial; medir peso do runtime no APK e na memória.
