@@ -81,6 +81,7 @@ export const ptBR = {
     verPartidas: 'Ver partidas',
     acessivel: 'Cartão de embarque do voo {voo}, de {origem} para {destino}, {min} minutos de foco',
     adicionarMotivo: 'Adicionar motivo da viagem',
+    pularImpressao: 'Toque para ver o bilhete pronto',
     adicionarMotivoDescricao: 'Categoria, foco e tarefas · opcional',
     editarMotivo: 'Motivo da viagem',
   },

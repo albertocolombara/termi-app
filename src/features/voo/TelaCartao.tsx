@@ -17,6 +17,7 @@ import { t } from '@/i18n';
 
 import { CodigoDeBarras } from './CodigoDeBarras';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
+import { ImpressaoDoBilhete } from './ImpressaoDoBilhete';
 import { codigoDoLugar, duracao, horaLocal, km, metros, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
@@ -70,6 +71,7 @@ export function TelaCartao() {
                 {voo.callsign}
               </Text>
             </View>
+            <ImpressaoDoBilhete dica={t('cartao.pularImpressao')}>
             <View style={[styles.papel, styles.papelDeCima]}>
               <View style={styles.linha}>
                 <Lugar cidade={nomeDoLugar(voo.origem)} codigo={codigoDoLugar(voo.origem)} />
@@ -104,6 +106,7 @@ export function TelaCartao() {
               </View>
               <CodigoDeBarras texto={voo.callsign} largura={largura} />
             </View>
+            </ImpressaoDoBilhete>
           </View>
           <ActionRow
             title={motivoVazio(motivo) ? t('cartao.adicionarMotivo') : t('cartao.editarMotivo')}
