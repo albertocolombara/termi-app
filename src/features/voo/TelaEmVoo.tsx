@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
 import { useTrilha } from '@/data/voos/useTrilha';
 import { useVoosDisponiveis } from '@/data/voos/useVoos';
 import { agendaDePausas } from '@/domain/sessao/pausas';
@@ -22,12 +23,13 @@ import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
 import { progressoNaRota, type Amostra } from '@/domain/voos/trilha';
-import { Button, color, EmVooRota, Icon, InfoBanner, radius, screenGutter, SegmentedControl, space, Suitcase, Text, type IconName } from '@/ds';
+import { BottomSheet, Button, color, EmVooRota, Icon, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
 
-import { codigoDoLugar, horaLocal, kmh, metros, nomeDoLugar } from './formato';
+import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
+import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
 import { useEncerrar } from './useEncerrar';
 import { useRelogio } from './useRelogio';
@@ -59,11 +61,13 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [alturaDoTopo, setAlturaDoTopo] = useState(170);
   const [confirmando, setConfirmando] = useState(false);
   const [boasVindasFechada, setBoasVindasFechada] = useState(false);
+  const [explicandoServico, setExplicandoServico] = useState(false);
   const encerrar = useEncerrar(sessao);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
   const voo = useVooAtualizado(sessao.voo);
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
+  useBlocosDoVoo(voo, ativo);
   const pos = projetar(voo, agora);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
   const pausas = useMemo(
@@ -96,7 +100,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       {/* Paisagem: janela ou globo. Desmontados em segundo plano. */}
       <View style={[styles.paisagem, { height: alturaDaPaisagem }]}>
         {ativo && vista === 'janela' ? (
-          <View style={{ position: 'absolute', top: 0, left: (width - larguraDaJanela) / 2 }}>
+          <View style={{ position: 'absolute', top: DESCIDA_DA_JANELA, left: (width - larguraDaJanela) / 2 }}>
             <Janela
               width={larguraDaJanela}
               posicao={posicao}
@@ -156,12 +160,12 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               />
             </View>
           </View>
-          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { min: minutosAte(pousoPrevistoEm, agora), hora: horaLocal(pousoPrevistoEm) })}>
+          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoPrevistoEm, agora)), hora: horaLocal(pousoPrevistoEm) })}>
             <Text variant="Body/Medium 14" tone="secondary">
               {t('emVoo.pousaEm')}
             </Text>
             <Text variant="Heading/Screen 32" style={{ fontWeight: '500', letterSpacing: -1 }}>
-              {t('emVoo.minutos', { min: minutosAte(pousoPrevistoEm, agora) })}
+              {duracao(minutosAte(pousoPrevistoEm, agora))}
             </Text>
             <Text variant="Body/Medium 14" tone="secondary">
               {horaLocal(pousoPrevistoEm)}
@@ -170,22 +174,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         </View>
       </View>
 
-      <View style={{ flex: 1 }} pointerEvents="box-none" />
+      <View style={{ flex: 1 }} pointerEvents="box-none">
+        {mostrarBoasVindas ? (
+          <View style={{ paddingHorizontal: screenGutter, paddingTop: space[16] }}>
+            <AvisoDeBoasVindas voo={voo.callsign} origem={origem} destino={destino} onFechar={() => setBoasVindasFechada(true)} />
+          </View>
+        ) : null}
+      </View>
 
       {/* Boas-vindas: só no começo do voo, por cima da paisagem, sem tirar espaço dela. */}
-      {mostrarBoasVindas ? (
-        <Pressable
-          onPress={() => setBoasVindasFechada(true)}
-          accessibilityRole="button"
-          accessibilityHint={t('emVoo.fecharBoasVindas')}
-          style={[styles.boasVindas, { marginHorizontal: screenGutter, marginBottom: space[12] }]}
-        >
-          <Suitcase size={36} />
-          <Text variant="Caption/Medium 12" tone="secondary" style={{ flex: 1 }}>
-            {t('emVoo.boasVindas', { voo: voo.callsign, origem, destino })}
-          </Text>
-        </Pressable>
-      ) : null}
 
       {vista === 'globo' ? (
         <View style={[styles.modosDoGlobo, { marginHorizontal: screenGutter }]} accessibilityRole="radiogroup">
@@ -212,13 +209,54 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         <View style={[styles.linha, { minHeight: 48 }]}>
           <Button variant="secondary" size="mini" label={t('emVoo.pousarAntes')} onPress={() => setConfirmando(true)} disabled={tempoAcabou} />
           {pausa ? (
-            <View style={styles.servico} accessible accessibilityLabel={t('emVoo.servicoEm', { min: pausa.emMin })}>
+            <Pressable
+              style={({ pressed }) => [styles.servico, pressed && { opacity: 0.8 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('emVoo.servicoEm', { min: pausa.emMin })}
+              accessibilityHint={t('servico.dica')}
+              hitSlop={8}
+              onPress={() => setExplicandoServico(true)}
+            >
               <Icon name="crewServiceTile" />
               <Text variant="Caption/Medium 12">{t('emVoo.servicoEm', { min: pausa.emMin })}</Text>
-            </View>
-          ) : null}
+            </Pressable>
+          ) : sessao.intervaloServico === 'desligado' ? null : (
+            <Pressable
+              style={({ pressed }) => [styles.servico, pressed && { opacity: 0.8 }]}
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setExplicandoServico(true)}
+            >
+              <Icon name="crewServiceTile" />
+              <Text variant="Caption/Medium 12" tone="tertiary">
+                {t('servico.semMaisPausas')}
+              </Text>
+            </Pressable>
+          )}
         </View>
       </View>
+
+      <BottomSheet
+        visible={explicandoServico}
+        onClose={() => setExplicandoServico(false)}
+        title={t('servico.titulo')}
+        subtitle={t('servico.subtitulo')}
+        footer={<Button size="medium" icon={null} label={t('servico.entendi')} onPress={() => setExplicandoServico(false)} />}
+      >
+        <View style={{ gap: space[12], paddingTop: space[4] }}>
+          <Text variant="Body/Medium 14" tone="secondary">
+            {sessao.intervaloServico === 'desligado' ? t('servico.desligado') : t('servico.comoFunciona', { intervalo: sessao.intervaloServico })}
+          </Text>
+          <Text variant="Body/Medium 14" tone="secondary">
+            {t('servico.nadaSePerde')}
+          </Text>
+          {pausa ? (
+            <Text variant="Label/Medium 14">
+              {t('servico.proxima', { min: pausa.emMin, hora: horaLocal(embarcouEm + pausas[pausa.indice].inicioMin * 60_000) })}
+            </Text>
+          ) : null}
+        </View>
+      </BottomSheet>
 
       <FolhaPousarAntes
         visivel={confirmando}
@@ -237,6 +275,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 const SEM_TRILHA: Amostra[] = [];
 const SOBREPOSICAO = 56;
 const BOAS_VINDAS_MS = 90_000;
+/** A janela desce um pouco para o vidro começar abaixo do seletor Janela | Globo (pedido do Alberto, build-17). */
+const DESCIDA_DA_JANELA = 56;
 
 /**
  * O voo gravado no embarque, trocado pela leitura mais nova do cache quando ela chega (a cada 5 min
@@ -315,15 +355,6 @@ const styles = StyleSheet.create({
   },
   linhaTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
-  boasVindas: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space[10],
-    paddingHorizontal: space[16],
-    paddingVertical: space[12],
-    borderRadius: radius.md,
-    backgroundColor: color.bg.sheet,
-  },
   servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 160 },
   modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-start', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },
   modo: { width: 40, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },

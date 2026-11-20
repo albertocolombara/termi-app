@@ -1,6 +1,7 @@
 /** Navegação e estrutura (Figma: seção 09). */
 import React from 'react';
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeOut, ReduceMotion, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { motion } from './motion';
 import { Icon, type IconName } from './Icon';
@@ -84,6 +85,8 @@ export type BottomSheetProps = {
 
 /** Sheet com alça, cabeçalho e conteúdo, sobre um scrim. Toque no scrim ou "voltar" fecha. */
 export function BottomSheet({ visible, onClose, title, subtitle, children, footer }: BottomSheetProps) {
+  // A barra de navegação do Android (gestos ou 3 botões) fica por cima da sheet: o rodapé sobe a altura dela.
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onClose}>
       {visible ? (
@@ -95,7 +98,7 @@ export function BottomSheet({ visible, onClose, title, subtitle, children, foote
           <Animated.View
             entering={SlideInDown.duration(motion.duration.medium4).easing(motion.easing.emphasizedDecelerate).reduceMotion(ReduceMotion.System)}
             exiting={SlideOutDown.duration(motion.duration.medium2).easing(motion.easing.emphasizedAccelerate).reduceMotion(ReduceMotion.System)}
-            style={styles.sheet}
+            style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }]}
           >
             <View style={styles.handle} />
             <View style={{ gap: space[4] }}>
@@ -144,7 +147,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius['2xl'],
     paddingTop: space[12],
     paddingHorizontal: space[16],
-    paddingBottom: 36,
     gap: space[16],
     maxHeight: '94%',
   },

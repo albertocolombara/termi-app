@@ -336,6 +336,7 @@ const ICONS = {
     ),
   },
   // Controles do globo (Figma 04A · "Controles do mapa" e "Modo de câmera").
+  fechar: { box: 20, color: C.text.secondary, draw: (c) => <Path d="M5 5L15 15M15 5L5 15" {...stroke(c, 1.66667)} /> },
   centralizar: {
     box: 20,
     color: C.accent.default,

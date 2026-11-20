@@ -75,3 +75,17 @@ export const caminhoDoBloco = (b: Bloco) => `blocos/${b.camada}/${b.linha}/${b.c
  * Acima disso, a tela de embarque oferece "Embarcar com o globo" (UC-02 A4).
  */
 export const blocosSuficientes = (total: number, falhas: number) => total > 0 && falhas <= Math.floor(total * 0.05);
+
+/** Minutos de rota que o embarque baixa antes de abrir a janela; o resto baixa durante o voo. */
+export const MINUTOS_NO_EMBARQUE = 40;
+
+/**
+ * Divide os blocos da rota: os primeiros `MINUTOS_NO_EMBARQUE` (até `pontoNoLimite`) são baixados no
+ * embarque; os do resto da rota baixam já com o usuário a bordo (voos longos embarcavam devagar, 20/11/2026).
+ */
+export function dividirBlocos(aviao: Ponto, pontoNoLimite: Ponto, destino: Ponto): { noEmbarque: Bloco[]; duranteOVoo: Bloco[] } {
+  const noEmbarque = blocosDaRota(aviao, pontoNoLimite);
+  const ja = new Set(noEmbarque.map(caminhoDoBloco));
+  const duranteOVoo = blocosDaRota(pontoNoLimite, destino).filter((b) => !ja.has(caminhoDoBloco(b)));
+  return { noEmbarque, duranteOVoo };
+}

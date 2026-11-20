@@ -12,12 +12,12 @@ import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import { motivoVazio, type MotivoDaViagem } from '@/domain/sessao/motivo';
-import { ActionRow, Button, color, Icon, InfoBanner, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { ActionRow, Button, color, Icon, InfoBanner, LinhaTracejada, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
 
 import { CodigoDeBarras } from './CodigoDeBarras';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
-import { codigoDoLugar, horaLocal, km, metros, nomeDoLugar } from './formato';
+import { codigoDoLugar, duracao, horaLocal, km, metros, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
 export function TelaCartao() {
@@ -74,15 +74,15 @@ export function TelaCartao() {
               <View style={styles.linha}>
                 <Lugar cidade={nomeDoLugar(voo.origem)} codigo={codigoDoLugar(voo.origem)} />
                 <View style={styles.rota}>
-                  <View style={styles.tracejado} />
+                  <LinhaTracejada cor={color.cartao.tracejado} traco={2} espaco={2} style={{ flex: 1 }} />
                   <Icon name="plane" size={21} color={color.cartao.texto} />
-                  <View style={styles.tracejado} />
+                  <LinhaTracejada cor={color.cartao.tracejado} traco={2} espaco={2} style={{ flex: 1 }} />
                 </View>
                 <Lugar cidade={cidade} codigo={codigoDoLugar(voo.destino)} direita />
               </View>
               <View style={styles.linha}>
                 <Dado rotulo={t('cartao.chegada')} valor={horaLocal(voo.pousoPrevistoEm)} grande />
-                <Dado rotulo={t('cartao.tempoDeFoco')} valor={`${min} min`} grande direita />
+                <Dado rotulo={t('cartao.tempoDeFoco')} valor={duracao(min)} grande direita />
               </View>
               <View style={styles.linha}>
                 <Dado rotulo={t('cartao.status')} valor={t('cartao.confirmado')} />
@@ -90,6 +90,8 @@ export function TelaCartao() {
                 <Dado rotulo={t('cartao.assento')} valor="23A" />
                 <Dado rotulo={t('cartao.terminal')} valor="—" />
               </View>
+              {/* Picote entre as duas partes do bilhete */}
+              <LinhaTracejada cor={color.cartao.tracejado} traco={5} espaco={4} style={styles.picote} />
             </View>
             <View style={[styles.papel, styles.papelDeBaixo]} onLayout={(e) => setLargura(e.nativeEvent.layout.width - 2 * space[16])}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
@@ -178,9 +180,9 @@ const styles = StyleSheet.create({
     borderColor: color.cartao.bordaDoCabecalho,
   },
   papel: { backgroundColor: color.cartao.papel, paddingHorizontal: space[16], paddingVertical: space[24] },
-  papelDeCima: { gap: space[32], borderBottomLeftRadius: 12, borderBottomRightRadius: 12, borderBottomWidth: 1, borderStyle: 'dashed', borderColor: color.cartao.tracejado },
+  papelDeCima: { gap: space[32], borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
+  picote: { position: 'absolute', left: 12, right: 12, bottom: 0 },
   papelDeBaixo: { gap: space[20], borderRadius: 12 },
   linha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rota: { flex: 1, flexDirection: 'row', alignItems: 'center', marginHorizontal: space[12] },
-  tracejado: { flex: 1, borderTopWidth: 1, borderStyle: 'dashed', borderColor: color.cartao.tracejado },
 });
