@@ -3,12 +3,16 @@
  * caracteres aleatórios e para na certa, da esquerda para a direita (pedido do Alberto, 20/11/2026).
  * Um relógio só (~22 quadros por segundo) serve todos os letreiros da tela.
  * Com "reduzir movimento", o texto troca direto. Leitores de tela leem só o texto final.
+ *
+ * `correr`: quando o letreiro termina e o texto não cabe, ele passa a correr para o lado
+ * (TextoCorrido), como as companhias no painel (Alberto, build-35: nomes longos de cidade).
  */
 import { useEffect, useRef, useState } from 'react';
 import { type StyleProp, type TextStyle } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { Text } from './Text';
+import { TextoCorrido } from './TextoCorrido';
 
 const CARACTERES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const QUADRO_MS = 45;
@@ -42,7 +46,17 @@ function quadroDo(texto: string, quadro: number): string {
   return s;
 }
 
-export function Letreiro({ texto, style, numberOfLines = 1 }: { texto: string; style?: StyleProp<TextStyle>; numberOfLines?: number }) {
+export function Letreiro({
+  texto,
+  style,
+  numberOfLines = 1,
+  correr = false,
+}: {
+  texto: string;
+  style?: StyleProp<TextStyle>;
+  numberOfLines?: number;
+  correr?: boolean;
+}) {
   const reduzir = useReducedMotion();
   const [exibido, setExibido] = useState(reduzir ? texto : quadroDo(texto, 0));
   const quadro = useRef(0);
@@ -64,6 +78,7 @@ export function Letreiro({ texto, style, numberOfLines = 1 }: { texto: string; s
     return () => cancelar?.();
   }, [texto, reduzir]);
 
+  if (correr && exibido === texto) return <TextoCorrido texto={texto} style={style} />;
   return (
     <Text style={style} numberOfLines={numberOfLines} accessibilityLabel={texto}>
       {exibido}
