@@ -115,16 +115,17 @@ flowchart LR
 
 ### Domínio (com testes)
 - [x] Tempo de foco: mínimo de 15 min, econômica até 3 h, primeira classe até 6 h (`src/domain/sessao/duracao.ts`, PR #1)
-- [ ] Máquina de estados da sessão guiada pelo relógio, com Em espera (RN-09a) e Em solo (RN-09b)
+- [x] Máquina de estados da sessão guiada pelo relógio, com Em espera (RN-09a) e Em solo (RN-09b) — `sessao/estado.ts`, PR #17
 - [x] Agenda de pausas (RN-05 a RN-07, com os exemplos do PRD) — `src/domain/sessao/pausas.ts` com testes, PR #1
-- [ ] Elegibilidade e ordenação dos voos (RN-02)
-- [ ] Projeção de posição e lugar sobrevoado
-- [ ] Rendimentos de pouso e de pouso antecipado (RN-08, RN-10), incluindo os minutos de "Continuar até o pouso" (RN-09a)
-- [ ] Livro-caixa do saldo
+- [x] Elegibilidade e ordenação dos voos (RN-02), com tempos próximos — `voos/elegibilidade.ts`, PR #17
+- [x] Projeção de posição e milhas voadas — `voos/projecao.ts`, PR #17
+- [ ] Lugar sobrevoado (GeoNames)
+- [x] Rendimentos de pouso e de pouso antecipado (RN-08, RN-10), incluindo os minutos de "Continuar até o pouso" (RN-09a) — `sessao/rendimentos.ts`, PR #17
+- [x] Livro-caixa do saldo — `saldo/livroCaixa.ts`, PR #17
 
 ### Dados
-- [ ] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query
-- [ ] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12)
+- [x] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query — `data/voos`, PR #18 (falta conferir no aparelho pela tela "Voos do cache")
+- [x] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12) — `data/voos`, PR #18
 - [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque
 
 ### Telas e serviços

@@ -53,6 +53,12 @@ export default function Inicio() {
             description={t('dev.avisosDescricao')}
             onPress={() => router.push('/dev/avisos')}
           />
+          <ActionRow
+            icon="plane"
+            title={t('dev.voos')}
+            description={t('dev.voosDescricao')}
+            onPress={() => router.push('/dev/voos')}
+          />
         </View>
       )}
     </ScrollView>
