@@ -3,10 +3,10 @@
  * Tudo sai do relógio e da sessão gravada: ao abrir o app, a janela e o globo aparecem na posição certa.
  * Em segundo plano a janela e o globo são desmontados e o relógio para (lição do protótipo, build-7).
  *
- * Ainda não estão aqui (próximos PRs da Fase 3): Pousar antes, serviço de bordo (E1/E2), Em espera (E5),
- * Em solo (E8), tela de pouso, sons e vista da janela.
+ * Pousar antes (E3) abre a confirmação; quando o tempo do usuário acaba, a sessão vira pouso (UC-08).
+ * Ainda não estão aqui: serviço de bordo (E1/E2), Em espera (E5), Em solo (E8), sons e vista da janela.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { agendaDePausas } from '@/domain/sessao/pausas';
+import { tempoCumprido } from '@/domain/sessao/encerramento';
 import { minutosAte, progressoDaSessao, proximaPausa } from '@/domain/sessao/progresso';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
@@ -23,6 +24,8 @@ import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
 
 import { codigoDoLugar, horaLocal, kmh, metros, nomeDoLugar } from './formato';
+import { FolhaPousarAntes } from './FolhaPousarAntes';
+import { useEncerrar } from './useEncerrar';
 import { useRelogio } from './useRelogio';
 
 type Vista = 'janela' | 'globo';
@@ -49,6 +52,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [vista, setVista] = useState<Vista>('janela');
   const [modoGlobo, setModoGlobo] = useState<ModoGlobo>('planeta');
   const [alturaDoPainel, setAlturaDoPainel] = useState(260);
+  const [confirmando, setConfirmando] = useState(false);
+  const encerrar = useEncerrar(sessao);
 
   const { voo, embarcouEm, pousoPrevistoEm } = sessao;
   const pos = projetar(voo, agora);
@@ -62,7 +67,13 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   // No globo, o trecho voado vai do aeroporto de origem até o avião (geográfico, não pelo tempo).
   const totalKm = distanciaKm(voo.origem, voo.destino);
   const progressoNoMapa = totalKm > 0 ? Math.min(1, distanciaKm(voo.origem, pos) / totalKm) : 1;
-  const tempoAcabou = agora >= pousoPrevistoEm;
+  const tempoAcabou = tempoCumprido(pousoPrevistoEm, agora);
+
+  // O horário escolhido chegou: pouso completo garantido (RN-09). Também vale ao reabrir o app depois do pouso.
+  // Em espera e "Continuar até o pouso" (RN-09a) entram quando o app souber se o avião real ainda está no ar.
+  useEffect(() => {
+    if (tempoAcabou) encerrar('pouso');
+  }, [tempoAcabou, encerrar]);
   const origem = nomeDoLugar(voo.origem);
   const destino = nomeDoLugar(voo.destino);
   // Quanto o avião andou desde o embarque, para as nuvens passarem na janela.
@@ -175,11 +186,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         <View style={styles.boasVindas}>
           <Suitcase size={36} />
           <Text variant="Caption/Medium 12" tone="tertiary" style={{ flex: 1 }}>
-            {tempoAcabou ? t('emVoo.tempoAcabou') : t('emVoo.boasVindas', { voo: voo.callsign, origem, destino })}
+            {t('emVoo.boasVindas', { voo: voo.callsign, origem, destino })}
           </Text>
         </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
-          <View />
+          <Button variant="secondary" size="small" label={t('emVoo.pousarAntes')} onPress={() => setConfirmando(true)} disabled={tempoAcabou} />
           {pausa ? (
             <View style={styles.servico} accessible accessibilityLabel={t('emVoo.servicoEm', { min: pausa.emMin })}>
               <Icon name="crewServiceTile" />
@@ -188,6 +199,17 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           ) : null}
         </View>
       </View>
+
+      <FolhaPousarAntes
+        visivel={confirmando}
+        sessao={sessao}
+        agora={agora}
+        onContinuar={() => setConfirmando(false)}
+        onPousar={() => {
+          setConfirmando(false);
+          encerrar('pousar-antes');
+        }}
+      />
     </View>
   );
 }

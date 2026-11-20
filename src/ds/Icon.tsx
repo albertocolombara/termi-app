@@ -314,6 +314,27 @@ const ICONS = {
       </>
     ),
   },
+  // Itens da confirmação de "Pousar antes" (E3): o que fica e o que não entra.
+  incluido: {
+    box: 18,
+    color: C.status.success,
+    draw: (c) => (
+      <>
+        <Circle cx={9} cy={9} r={9} fill={c} opacity={0.22} />
+        <Path d="M5.2 9.2 7.7 11.7 12.8 6.6" {...stroke(c, 1.8)} />
+      </>
+    ),
+  },
+  naoIncluido: {
+    box: 18,
+    color: C.text.muted,
+    draw: (c) => (
+      <>
+        <Circle cx={9} cy={9} r={9} fill={C.surface.track} />
+        <Path d="M6.3 6.3 11.7 11.7M11.7 6.3 6.3 11.7" {...stroke(c, 1.6)} />
+      </>
+    ),
+  },
   pendingStep: {
     box: 18,
     color: 'rgba(255,255,255,0.2)',
