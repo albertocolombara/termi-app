@@ -299,35 +299,60 @@ Funções puras em `src/domain`:
 | Serviço | Uso | Restrições |
 |---|---|---|
 | **adsb.lol** | Posições ao vivo (só pelo coletor) | Dados ODbL; crédito obrigatório; chave concedida com uso comercial; 1.000 chamadas/dia e 300/hora com chave; avisar ida à produção; planejar receptor ADS-B próprio |
-| **VRS Standing Data** | Rotas, companhias (para o país da bandeira), aeroportos | Cobertura de rotas varia: 51% (Los Angeles) a 91% (Tóquio) |
+| **VRS Standing Data** | Rotas e aeroportos | Cobertura de rotas varia: 51% (Los Angeles) a 91% (Tóquio) |
 | **NASA GIBS** | Blue/Black Marble, Landsat WELD 30 m, GMIS, VIIRS | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
+| **OpenFlights** | País de cada companhia (bandeira na cauda) | Dados ODbL; crédito obrigatório; base desatualizada em companhias novas, corrigida à mão no coletor |
 | **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
 | **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | ~13 GB para o mundo todo (abaixo de 10 GB tirando áreas sem interesse) |
 | **GitHub Actions** (repo público `voo-ao-vivo-teste`) | Coletor durante o desenvolvimento e o teste fechado, gravando no R2 (decidido pelo Alberto em 19/11/2026: sem custo e sem servidor) | Antes do lançamento: Oracle Cloud Always Free (configuração automática) ou Cloudflare Workers pago (US$ 5/mês) **[Pendente]**. O Actions não pode ser parte de serviço em produção |
 | **RevenueCat / Google Play Billing** | Compras | Chave pública no app; segredos só no painel |
 | **Rive** | Animações do Termi | Exportar `.riv` do arquivo na nuvem |
 
-**Contrato do cache de voos [Proposta]** (`/voos/{regiao}.json`):
+**Contrato do cache de voos [Proposta]** — em teste no R2 desde 20/11/2026, publicado pelo coletor (`voo-ao-vivo-teste`, `src/publicar.mjs`). Só vira contrato depois de aprovado pelo Alberto.
+
+`/voos/indice.json` — regiões publicadas e a idade de cada uma:
 
 ```json
 {
   "versao": 1,
-  "regiao": "europa-oeste",
-  "coletadoEm": "2026-11-19T15:40:00Z",
+  "atualizadoEm": "2026-11-20T00:20:34Z",
+  "regioes": {
+    "londres-paris": { "nome": "Londres-Paris", "coletadoEm": "2026-11-20T00:20:34Z", "voos": 27 }
+  }
+}
+```
+
+`/voos/{regiao}.json` — um arquivo por região (12 regiões; cada uma atualizada a cada 20 min):
+
+```json
+{
+  "versao": 1,
+  "regiao": "londres-paris",
+  "nome": "Londres-Paris",
+  "coletadoEm": "2026-11-20T00:20:34Z",
+  "atribuicao": "Dados de voo: adsb.lol (ODbL 1.0) · Rotas: Virtual Radar Server Standing Data (CC0 1.0) · Companhias: OpenFlights (ODbL 1.0)",
   "voos": [
     {
       "hex": "4ca7b5",
       "callsign": "RYR123",
+      "companhia": "RYR",
       "companhiaPais": "IE",
-      "origem": "BCN",
-      "destino": "LGW",
+      "aeronave": "B738",
+      "origem":  { "iata": "BCN", "icao": "LEBL", "nome": "Barcelona", "lat": 41.30, "lon": 2.08 },
+      "destino": { "iata": "LGW", "icao": "EGKK", "nome": "London Gatwick", "lat": 51.15, "lon": -0.19 },
       "lat": 45.12, "lon": 1.98,
       "altitudePes": 37000, "velocidadeNos": 450, "rumo": 335,
-      "pousoPrevistoEm": "2026-11-19T16:52:00Z"
+      "distanciaRestanteKm": 700,
+      "pousoPrevistoEm": "2026-11-20T01:32:00Z"
     }
   ]
 }
 ```
+
+- **Mudanças em relação à primeira proposta:** origem e destino trazem nome e coordenadas (o globo desenha a rota sem outra base de aeroportos no app); entram `companhia`, `aeronave`, `distanciaRestanteKm`, `nome` da região e `atribuicao`; o índice é novo.
+- **Compatibilidade:** campo novo não muda a `versao`; remover ou mudar o sentido de um campo muda. O app ignora campos que não conhece e trata `null` em `companhiaPais`, `aeronave`, `rumo` e nos códigos de aeroporto.
+- **Frescor:** o app mostra os voos com a posição projetada a partir de `coletadoEm`. Região que veio sem nenhum avião não é publicada (falha do provedor); o arquivo anterior continua valendo.
+- **País da companhia:** OpenFlights (ODbL) com correções manuais no coletor; cobre 99% dos voos acompanhados.
 
 Para o "voo de ontem" (RN-12), o coletor precisa guardar também a trilha do dia anterior **[Pendente]**.
 

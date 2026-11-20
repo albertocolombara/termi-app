@@ -251,7 +251,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Marca e dados
 
 - **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real.
-- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA.
+- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA.
 
 ### Comparativo de planos
 
