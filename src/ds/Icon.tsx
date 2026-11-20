@@ -226,10 +226,11 @@ const ICONS = {
     color: C.text.secondary,
     draw: (c) => (
       <>
-        <Path d="M3.5 6h13M3.5 10h13M3.5 14h13" {...stroke(c, 1.6)} />
-        <Circle cx={7} cy={6} r={1.8} fill={C.bg.app} stroke={c} strokeWidth={1.6} />
-        <Circle cx={13} cy={10} r={1.8} fill={C.bg.app} stroke={c} strokeWidth={1.6} />
-        <Circle cx={8.5} cy={14} r={1.8} fill={C.bg.app} stroke={c} strokeWidth={1.6} />
+        {/* Contorno, como os outros ícones (Alberto, build-33): as linhas param na borda dos botões. */}
+        <Path d="M3.5 6h1.7M8.8 6h7.7M3.5 10h7.7M14.8 10h1.7M3.5 14h3.2M10.3 14h6.2" {...stroke(c, 1.6)} />
+        <Circle cx={7} cy={6} r={1.8} fill="none" stroke={c} strokeWidth={1.6} />
+        <Circle cx={13} cy={10} r={1.8} fill="none" stroke={c} strokeWidth={1.6} />
+        <Circle cx={8.5} cy={14} r={1.8} fill="none" stroke={c} strokeWidth={1.6} />
       </>
     ),
   },

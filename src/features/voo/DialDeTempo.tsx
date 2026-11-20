@@ -150,7 +150,7 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
           {premium ? (
             <FirstClassSeal variant="menor" />
           ) : (
-            <Text variant="Body/Large 16" style={{ color: color.text.muted, textAlign: 'center', paddingHorizontal: space[16] }}>
+            <Text variant="Body/Medium 14" style={{ color: color.text.muted, textAlign: 'center', paddingHorizontal: space[16] }}>
               {t('dial.dica')}
             </Text>
           )}

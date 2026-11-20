@@ -80,14 +80,15 @@ export function TelaAjustes() {
             titulo={t('ajustes.economiaDeBateria')}
             descricao={t('ajustes.economiaDeBateriaDescricao')}
             valor={a.economiaDeBateria}
-            onMudar={(v) => a.mudar({ economiaDeBateria: v })}
+            // Economia e 30 quadros por segundo não andam juntos: ligar um desliga o outro (Alberto, build-33).
+            onMudar={(v) => a.mudar(v ? { economiaDeBateria: true, janelaFluida: false } : { economiaDeBateria: false })}
           />
           <LinhaComValor titulo={t('ajustes.qualidadeDaJanela')} valor={t(qualidade.nome)} onPress={() => setFolha('qualidade')} />
           <LinhaComInterruptor
             titulo={t('ajustes.janelaFluida')}
-            descricao={a.economiaDeBateria ? t('ajustes.janelaFluidaEconomia') : t('ajustes.janelaFluidaDescricao')}
+            descricao={t('ajustes.janelaFluidaDescricao')}
             valor={a.janelaFluida}
-            onMudar={(v) => a.mudar({ janelaFluida: v })}
+            onMudar={(v) => a.mudar(v ? { janelaFluida: true, economiaDeBateria: false } : { janelaFluida: false })}
           />
         </Secao>
 
