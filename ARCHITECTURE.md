@@ -73,12 +73,13 @@ flowchart LR
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
 | Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
 | Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo |
+| Sons de fundo | **expo-audio** (módulo do Expo), loops AAC em `assets/sons` | [Decidido] só com o app aberto (20/11/2026, PR #29); tocar em segundo plano é [Pendente] | Motores, ruído branco, cabine e chuva (seção 10) |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
 | Live Activity (iOS) | expo-widgets ou módulo Swift | [Proposta] | Fase iOS |
 | Assinaturas | **RevenueCat** (Google Play Billing) | [Decidido] | Planos, vitalício, restauração, testes de preço |
 | Navegação | **Expo Router** (rotas em `src/app/`) | [Decidido] | Navegação por arquivos, recomendada pelo Expo |
 | Persistência local | **expo-sqlite** | [Decidido] | Voos, carimbos, mala, livro-caixa do saldo |
-| Preferências | AsyncStorage (usado no protótipo) ou MMKV | [Proposta] | Ajustes simples |
+| Preferências | `expo-sqlite/kv-store` (vem com o expo-sqlite, sem dependência nova; em uso desde 20/11/2026 para vista da janela, som e classe de teste). AsyncStorage e MMKV ficam descartados se o Alberto aprovar | [Proposta] | Ajustes simples |
 | Estado de UI | **Zustand** | [Decidido] | Sessão ativa e estado global leve |
 | Dados remotos | **TanStack Query** | [Decidido] | Cache, idade e retentativa dos JSON de voos |
 | Mapa/globo | Globo em Skia (SkSL) com blocos da NASA GIBS | [Decidido] | Ver ADR-11 e `src/globo` |
@@ -365,7 +366,8 @@ Funções puras em `src/domain`:
 - **Dados pessoais mínimos:** sem nome obrigatório, sem telefone, sem anúncios, sem SDK de rastreamento publicitário. Motivos da viagem e tarefas ficam no aparelho (e no backend de sincronização, se o usuário criar conta).
 - **Localização aproximada**, opcional, usada só no aparelho para escolher a região padrão.
 - **LGPD:** exportar e apagar dados (UC-16); política de privacidade em Sobre o Termi.
-- **Permissões Android:** `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `VIBRATE`, `ACCESS_COARSE_LOCATION`; para o bloqueio de apps (condicionado), "Acesso ao uso" e serviço em primeiro plano `specialUse`. **Proibidos:** serviço de Acessibilidade para bloqueio e `QUERY_ALL_PACKAGES`.
+- **Permissões Android:** `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `VIBRATE`, `ACCESS_COARSE_LOCATION`; para o bloqueio de apps (condicionado), "Acesso ao uso" e serviço em primeiro plano `specialUse`. **Proibidos:** serviço de Acessibilidade para bloqueio e `QUERY_ALL_PACKAGES`. O `expo-audio` traz `MODIFY_AUDIO_SETTINGS` (permissão normal, sem pedido ao usuário); o `RECORD_AUDIO` que ele pede por padrão está bloqueado no `app.config.ts`.
+- **Som em segundo plano [Pendente]:** para o som continuar com a tela bloqueada (visão §9, item 10), o Android exige um serviço em primeiro plano do tipo `mediaPlayback` (`FOREGROUND_SERVICE` e `FOREGROUND_SERVICE_MEDIA_PLAYBACK`) e controles de mídia na notificação; sem isso o som para em ~3 min. É um tipo aceito pela Play para áudio. Hoje o som toca só com a tela do voo aberta (`enableBackgroundPlayback: false`).
 
 ## 11. Validação e tratamento de erros
 

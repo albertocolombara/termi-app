@@ -14,11 +14,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
+import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import { useVistaDaJanela } from '@/data/preferencias/vistaDaJanela';
 import { useTrilha } from '@/data/voos/useTrilha';
 import { useVoosDisponiveis } from '@/data/voos/useVoos';
 import { CAMADAS_DA_VISTA, vistaEmUso } from '@/domain/janela/vistas';
 import { agendaDePausas } from '@/domain/sessao/pausas';
+import { somEmUso } from '@/domain/sons/catalogo';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
 import { minutosAte, proximaPausa } from '@/domain/sessao/progresso';
 import { distanciaKm } from '@/domain/voos/geo';
@@ -29,12 +31,14 @@ import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, InfoBanner, ra
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
+import { useSomQueToca } from '@/services/audio';
 import { useClasse } from '@/services/compras';
 
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
+import { FolhaSons } from './FolhaSons';
 import { useEncerrar } from './useEncerrar';
 import { useRelogio } from './useRelogio';
 
@@ -70,6 +74,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const classe = useClasse();
   const { escolhida, escolher } = useVistaDaJanela();
   const vistaDaJanela = vistaEmUso(escolhida, classe);
+  const [escolhendoSom, setEscolhendoSom] = useState(false);
+  const som = useSomDeFundo();
+  const somAtual = somEmUso(som.escolhido, classe);
+  // Toca com a tela do voo aberta e na frente; para no pouso (a tela sai) e em segundo plano.
+  useSomQueToca(somAtual, som.volume, ativo);
   const encerrar = useEncerrar(sessao);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
@@ -203,12 +212,17 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
       {/* Boas-vindas: só no começo do voo, por cima da paisagem, sem tirar espaço dela. */}
 
-      {vista === 'globo' ? (
-        <View style={[styles.modosDoGlobo, { marginHorizontal: screenGutter }]} accessibilityRole="radiogroup">
-          <ModoDoGlobo icone="seguir" rotulo={t('globo.seguir')} ativo={modoGlobo === 'seguir'} onPress={() => setModoGlobo('seguir')} />
-          <ModoDoGlobo icone="planeta" rotulo={t('globo.planeta')} ativo={modoGlobo === 'planeta'} onPress={() => setModoGlobo('planeta')} />
-        </View>
-      ) : null}
+      <View style={[styles.linha, { marginHorizontal: screenGutter }]} pointerEvents="box-none">
+        {vista === 'globo' ? (
+          <View style={styles.modosDoGlobo} accessibilityRole="radiogroup">
+            <ModoDoGlobo icone="seguir" rotulo={t('globo.seguir')} ativo={modoGlobo === 'seguir'} onPress={() => setModoGlobo('seguir')} />
+            <ModoDoGlobo icone="planeta" rotulo={t('globo.planeta')} ativo={modoGlobo === 'planeta'} onPress={() => setModoGlobo('planeta')} />
+          </View>
+        ) : (
+          <View />
+        )}
+        <IconButton icon="speaker" accessibilityLabel={t('sons.botao')} onPress={() => setEscolhendoSom(true)} />
+      </View>
 
       {/* Painel inferior ("Em voo / Painel inferior") */}
       <View
@@ -276,6 +290,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           ) : null}
         </View>
       </BottomSheet>
+
+      <FolhaSons
+        visivel={escolhendoSom}
+        classe={classe}
+        emUso={somAtual}
+        volume={som.volume}
+        onEscolher={som.escolher}
+        onVolume={som.ajustarVolume}
+        onFechar={() => setEscolhendoSom(false)}
+      />
 
       <FolhaVistaDaJanela
         visivel={escolhendoVista}
