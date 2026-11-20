@@ -95,9 +95,14 @@ half4 main(float2 xy) {
   half3 col = dayc * half(0.2 + 0.9 * lit);
   // Noite: só as luzes das cidades. Na imagem noturna, desertos e gelo são azulados (quase sem
   // vermelho) e as cidades são claras; o canal vermelho separa os dois.
-  // Luzes mais fracas (20/11/2026): com 1.6 as cidades poluíam o mapa à noite.
-  half3 luzes = half(smoothstep(0.10, 0.50, float(nightc.r))) * half3(1.0, 0.8, 0.5);
-  col = mix(col, dayc * 0.08 + luzes * 0.75, half(1.0 - lit));
+  // Curva das luzes (Alberto, build-31): o smoothstep anterior saturava a partir de 0,5 e as
+  // metrópoles viravam manchas lisas. Agora a intensidade segue o brilho real (potência 1,5) e é
+  // comprimida nos centros (1 - e^-x), sem estourar: centro quente e claro, periferia e estradas
+  // fracas, cor do laranja das bordas ao branco quente dos centros.
+  float li = pow(clamp((float(nightc.r) - 0.06) / 0.94, 0.0, 1.0), 1.5);
+  float luz = 1.0 - exp(-2.2 * li);
+  half3 luzes = mix(half3(1.0, 0.55, 0.22), half3(1.0, 0.82, 0.55), half(luz)) * half(luz * 0.85);
+  col = mix(col, dayc * 0.08 + luzes, half(1.0 - lit));
 
   float rim = pow(1.0 - max(dot(n, -d), 0.0), 3.0);
   col = mix(col, AR, half(rim * 0.45 * (0.15 + 0.85 * lit)));

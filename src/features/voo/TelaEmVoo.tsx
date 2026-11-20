@@ -149,6 +149,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               time={agora}
               driftKm={deslocamentoKm}
               driftKmPorS={velocidadeKmh / 3600}
+              altitudeKm={pos.noSolo ? 0 : pos.altitudePes === null ? null : pos.altitudePes * 0.0003048}
               fps={quadrosDaJanela(ajustes)}
               quality={indiceDaQualidade(ajustes.qualidadeDaJanela)}
               satClouds

@@ -21,6 +21,8 @@ import { useDerivedValue, useFrameCallback, useSharedValue, type SharedValue } f
 import { scheduleOnRN } from 'react-native-worklets';
 import { ATLAS_PX, SKSL, uniformArray } from './shader';
 import { makeAtlas, AtlasState } from './tiles';
+import { makeAtlasDeNuvens, type NuvensState } from './nuvens';
+import { pesoDaPassagemNoturna } from '@/domain/janela/nuvens';
 import { sun } from './geo';
 
 const effect = Skia.RuntimeEffect.Make(SKSL);
@@ -72,6 +74,11 @@ type Props = {
   driftKm: number;
   /** Velocidade das nuvens (km por segundo), para a interpolação entre leituras. */
   driftKmPorS?: number;
+  /**
+   * Altitude do avião em km. A câmera desce junto (sensação de aproximação no pouso), até 2,5 km:
+   * mais baixo os blocos de terra (61 m por pixel) ficariam borrados. Sem altitude: 10,5 km.
+   */
+  altitudeKm?: number | null;
   /** Quadros por segundo da paisagem (2 em economia, 10 padrão, 30 na janela fluida). */
   fps: number;
   quality: number;
@@ -92,6 +99,7 @@ export function Janela({
   time,
   driftKm,
   driftKmPorS = 0,
+  altitudeKm,
   fps,
   quality,
   satClouds,
@@ -112,11 +120,10 @@ export function Janela({
   const bD = useImage(require('../../assets/janela/base_dia.jpg'));
   const bN = useImage(require('../../assets/janela/base_noite.jpg'));
   const dN = useImage(require('../../assets/janela/det_noite.jpg'));
-  const cl = useImage(require('../../assets/janela/nuvens.png'));
 
   const base = useMemo(
-    () => ({ bD: texShader(bD), bN: texShader(bN), dN: texShader(dN), cl: texShader(cl) }),
-    [bD, bN, dN, cl],
+    () => ({ bD: texShader(bD), bN: texShader(bN), dN: texShader(dN) }),
+    [bD, bN, dN],
   );
 
   const [near, setNear] = useState<AtlasState>({ image: null, b: OFF });
@@ -130,6 +137,11 @@ export function Janela({
       makeAtlas('i9', 9, ATLAS_PX.imp, setImp),
     ];
   }
+  // Nuvens reais (satélite, a cada 3 h), em volta do avião.
+  const [nuvens, setNuvens] = useState<NuvensState>({ dia: null, noite: null, b: OFF });
+  const atlasDeNuvens = useRef<ReturnType<typeof makeAtlasDeNuvens> | null>(null);
+  if (!atlasDeNuvens.current) atlasDeNuvens.current = makeAtlasDeNuvens(setNuvens);
+  const nuvensShaders = useMemo(() => ({ dia: texShader(nuvens.dia), noite: texShader(nuvens.noite) }), [nuvens.dia, nuvens.noite]);
   const atlasShaders = useMemo(
     () => ({ near: texShader(near.image), mid: texShader(mid.image), imp: texShader(imp.image) }),
     [near.image, mid.image, imp.image],
@@ -206,7 +218,8 @@ export function Janela({
     if (q.near) aNear.update(la, lo);
     aMid.update(la, lo);
     aImp.update(la, lo);
-  }, [la, lo, q.near]);
+    if (satClouds) atlasDeNuvens.current!.update(la, lo);
+  }, [la, lo, q.near, satClouds]);
 
   // Quanto a posição anda em 1 s (para a interpolação). Sem a posição seguinte, fica parada entre leituras.
   const dLa = posicaoSeguinte ? posicaoSeguinte.lat - la : 0;
@@ -218,7 +231,11 @@ export function Janela({
   const bNear = near.image && q.near ? near.b : OFF;
   const bMid = mid.image ? mid.b : OFF;
   const bImp = imp.image ? imp.b : OFF;
-  const filhos = [base.bD, base.bN, base.dN, base.cl, atlasShaders.near, atlasShaders.mid, atlasShaders.imp];
+  const bCl = nuvens.dia ? nuvens.b : OFF;
+  const noite = pesoDaPassagemNoturna(lo, time);
+  const H = Math.min(13, Math.max(2.5, altitudeKm ?? 10.5));
+  // Mesma ordem dos "uniform shader" no SKSL.
+  const filhos = [base.bD, base.bN, base.dN, nuvensShaders.dia, nuvensShaders.noite, atlasShaders.near, atlasShaders.mid, atlasShaders.imp];
 
   // Um quadro da paisagem, montado na thread de interface a cada avanço do relógio.
   const picture = useDerivedValue(() => {
@@ -238,6 +255,9 @@ export function Janela({
       bNear,
       bMid,
       bImp,
+      bCl,
+      noite,
+      H,
     });
     const rec = Skia.PictureRecorder();
     const canvas = rec.beginRecording(Skia.XYWHRect(0, 0, lw, lh));

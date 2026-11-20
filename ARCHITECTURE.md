@@ -514,7 +514,7 @@ No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `
 
 **Luzes da asa.** Só a luz branca de posição, fixa, na ponta (entardecer e noite) e o beacon vermelho da fuselagem em pulso lento e fraco (um a cada 3,6 s). Sem strobe e sem luz vermelha de navegação. Os pulsos param com "reduzir movimento".
 
-**Camadas desenhadas ao vivo (shader SkSL).** Terra como esfera (raio 6.371 km) vista a ~10,5 km de altitude, a partir da posição e do rumo do avião:
+**Camadas desenhadas ao vivo (shader SkSL).** Terra como esfera (raio 6.371 km) vista da altitude real do avião, a partir da posição e do rumo. A altitude vem do cache e da projeção (cruzeiro, e descida em linha reta nos últimos 30 min); a câmera fica entre 2,5 km e 13 km (abaixo de 2,5 km os blocos de 61 m/px ficariam borrados) e usa 10,5 km quando a altitude é desconhecida (pedido do Alberto, 20/11/2026):
 
 | Camada | Fonte | Textura na GPU |
 |---|---|---|
@@ -522,11 +522,13 @@ No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `
 | Terra a média distância | Landsat, blocos no nível 8 (~244 m/px) | Atlas 1024 × 1024 |
 | Terra longe (dia) | Blue Marble, mapa-base `base_dia.jpg` | 2048 × 1792 |
 | Terra longe (noite) | Black Marble, `base_noite.jpg`, e detalhe `det_noite.jpg` | 2048 × 1792 e 1280 × 1536 |
-| Cidades à noite | Áreas construídas GMIS (blocos nível 9), moduladas pelo Black Marble e por um ruído de pontos | Atlas 1024 × 1024 |
-| Nuvens | Imagem de satélite (NOAA-20/VIIRS, 16/11/2026) misturada com nuvens geradas por ruído (fbm); opção só geradas | 1024 × 1024 |
+| Cidades à noite | Áreas construídas GMIS (blocos nível 9), moduladas pelo Black Marble na Europa (onde há a imagem-base noturna) e pela própria densidade das áreas construídas no resto do mundo | Atlas 1024 × 1024 |
+| Nuvens | Máscara de nuvens do VIIRS (NOAA-20) do mundo inteiro, atualizada a cada 3 h pela coleta "Nuvens" (passagens diurna e noturna; a janela usa a mais recente pela hora solar local), usada como cobertura por região das nuvens geradas por ruído (fbm). Camada a 7,5 km de altitude: na descida o avião a atravessa e as nuvens ficam por cima. Sem rede: só as geradas | Dois mosaicos 2×2 de 1024 × 1024 (dia e noite) |
 | Céu | Calculado: cor pela altura do sol, horizonte, brilho quente no nascer e no pôr, disco do sol, estrelas à noite, névoa pela distância | — |
 
 Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens na terra só existe nas qualidades Normal e Máxima.
+
+**Nuvens no R2 [Decidido em 20/11/2026 pelo Alberto]:** `nuvens/{dia|noite}/{linha}/{coluna}.webp` (20 × 10 blocos de 18°, nível 4 da grade do GIBS, ~4 km/px, cinza 0 = céu limpo, 255 = nuvem) e `nuvens/indice.json` com a versão. Mesmos nomes a cada atualização: o espaço fica fixo em ~22 MB, sem apagar nada. O app baixa os blocos da rota no embarque (`data/nuvens`), pede com `?v=versão` e guarda no cache em `nuvens/{versão}/`, apagando as versões antigas. Por voo, ~0,3 a 1 MB.
 
 **Blocos de terra.** Vêm do NASA GIBS (EPSG:4326, blocos de 512 px; cada bloco cobre 288/2^z graus) e são recomprimidos em WebP (qualidade 78), como no protótipo: `w10` (Landsat WELD, nível 10, ~61 m/px), `w8` (Landsat WELD, nível 8, ~244 m/px) e `i9` (GMIS em cinza, nível 9). No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
 
