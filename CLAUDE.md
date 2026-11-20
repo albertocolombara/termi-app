@@ -137,7 +137,8 @@ npm test
 - Branch padrão: `main`. Trabalhe em branches `tipo/descricao-curta` (`feat/dial`, `fix/aviso-pouso`, `docs/prd`).
 - Commits em português, no imperativo, curtos e específicos ("Agenda avisos do serviço de bordo como alarme exato").
 - Um assunto por PR, com: o que mudou, `RF`/`RN`/`UC` relacionados, como foi testado, o que falta.
-- Não faça push nem merge sem pedido do Alberto.
+- Push de branch e merge do próprio PR são permitidos com a checagem verde (decidido pelo Alberto em 19/11/2026). PRs que mudam regra de produto ou arquitetura esperam a revisão do Alberto, salvo quando só registram uma decisão dele.
+- Nunca force push na `main`.
 - Nunca commite `android/`, `ios/`, `.env`, builds ou blocos de paisagem.
 
 ## 14. Proibido
