@@ -303,7 +303,7 @@ Funções puras em `src/domain`:
 | **NASA GIBS** | Blue/Black Marble, Landsat WELD 30 m, GMIS, VIIRS | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
 | **OpenFlights** | País de cada companhia (bandeira na cauda) | Dados ODbL; crédito obrigatório; base desatualizada em companhias novas, corrigida à mão no coletor |
 | **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
-| **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | ~13 GB para o mundo todo (abaixo de 10 GB tirando áreas sem interesse) |
+| **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | Blocos do mundo (menos a Antártida): ~7,8 GB, medidos em 20/11/2026 |
 | **GitHub Actions** (repo público `voo-ao-vivo-teste`) | Coletor durante o desenvolvimento e o teste fechado, gravando no R2 (decidido pelo Alberto em 19/11/2026: sem custo e sem servidor) | Antes do lançamento: Oracle Cloud Always Free (configuração automática) ou Cloudflare Workers pago (US$ 5/mês) **[Pendente]**. O Actions não pode ser parte de serviço em produção |
 | **RevenueCat / Google Play Billing** | Compras | Chave pública no app; segredos só no painel |
 | **Rive** | Animações do Termi | Exportar `.riv` do arquivo na nuvem |
@@ -526,7 +526,18 @@ No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `
 
 Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens na terra só existe nas qualidades Normal e Máxima.
 
-**Blocos de terra.** Baixados do NASA GIBS e empacotados em arquivos `.bin` por faixa de latitude (`w10_*`, `w8_*`, `i9_*`), com um `index.json` que liga cada bloco (`nível/x_y`) ao pacote, início e tamanho; o app lê só os bytes do bloco. Tamanho médio: 47,5 KB (nível 10), 41 KB (nível 8), 12 KB (áreas construídas). No protótipo, ~21 MB cobrem só Barcelona → Londres. Em produção: ~13 GB para o mundo todo no Cloudflare R2, gerados uma vez em lotes (ver "infra-e-politicas.md"), e ~250 blocos (~9 MB) por hora de voo baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
+**Blocos de terra.** Vêm do NASA GIBS (EPSG:4326, blocos de 512 px; cada bloco cobre 288/2^z graus) e são recomprimidos em WebP (qualidade 78), como no protótipo: `w10` (Landsat WELD, nível 10, ~61 m/px), `w8` (Landsat WELD, nível 8, ~244 m/px) e `i9` (GMIS em cinza, nível 9). No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
+
+**Em produção [Decidido, 20/11/2026]:** um arquivo por bloco no R2, em `/blocos/{camada}/{linha}/{coluna}.webp`, com cache de 1 ano (imutável). Bloco ausente = oceano ou nada a desenhar (o app trata 404 como vazio). Cobre toda a terra menos a Antártida (decisão do Alberto, 19/11/2026). Gerado pelo workflow "Blocos de paisagem" do coletor (`blocos/gerar.py`), em 20/11/2026:
+
+| Camada | Blocos | Tamanho |
+|---|---|---|
+| `w10` (perto do avião) | 212.788 | 7,20 GB |
+| `w8` (distância média) | 16.076 | 0,52 GB |
+| `i9` (cidades à noite) | 30.372 | 0,11 GB |
+| **Total** | **259.236** | **~7,8 GB** (dentro dos 10 GB grátis do R2) |
+
+Por voo: ~250 blocos (~9 MB) por hora, baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
 
 **Níveis de qualidade.**
 
