@@ -269,7 +269,9 @@ Telas no Figma: "Estados do voo · v2" (E1–E8 e E5b) e "Erros e estados vazios
 - **E8 · Em solo:** aviso "O avião pousou em [cidade]", "Foco termina em N min", altitude 0 m e "Em solo em [IATA]"; "Pousar antes" continua, porque o tempo do usuário não acabou.
 - **Janela com o avião no solo (taxiando ou no portão):** render ainda não existe **[Pendente]** (Blender).
 
-**Em voo / Rota** (componente, página Design System): barra de rota do painel inferior, com variantes `Progresso` = 0, 25, 50, 75, 90, 100. No app o avião anda de forma contínua pela fração do voo entre o embarque e o pouso; trecho voado em laranja, restante em branco 65%.
+**Em voo / Rota** (componente, página Design System): barra de rota do painel inferior, com variantes `Progresso` = 0, 25, 50, 75, 90, 100. No app o avião anda de forma contínua pela rota inteira do avião, da origem ao destino (decidido pelo Alberto em 20/11/2026; antes era a fração do tempo de foco). Voado = origem → trilha real do histórico → posição atual; falta = posição atual → destino. Trecho voado em laranja, restante em branco 65%.
+
+**Tela em voo (ajustes de 20/11/2026, pedidos pelo Alberto no build-16):** a paisagem (janela ou globo) ocupa tudo acima do painel inferior, com degradês no topo e na base para se juntar ao fundo; a janela fica mais larga que a tela e é cortada nas laterais para preencher a altura. A mensagem de boas-vindas (RF-24) não ocupa mais espaço fixo no painel: aparece por cima da paisagem nos primeiros 90 s do voo e fecha com um toque. No globo, a rota voada segue a trilha real (uma posição a cada 20 min do histórico) e o centralizar é o ícone de mira do Figma, sempre à vista. "Pousar antes" usa o botão `mini` (rótulo de 12, como no Figma).
 
 | Situação | Padrão |
 |---|---|

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PixelRatio, StyleSheet, View } from 'react-native';
+import { PixelRatio, Pressable, StyleSheet, View } from 'react-native';
 import {
   Canvas,
   Fill,
@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { Button, color, Icon, space, Text } from '@/ds';
+import { color, Icon, radius, space, Text } from '@/ds';
 import { motion, timing } from '@/ds/motion';
 import { t } from '@/i18n';
 import { FORA, cantoDoMosaico, criarMosaico, nivelPara, type Mosaico } from './blocos';
@@ -50,8 +50,10 @@ type Props = {
   aviao: Ponto & { rumo: number };
   origem: Ponto & { nome: string };
   destino: Ponto & { nome: string };
-  /** Trecho voado (0 a 1). */
-  progresso: number;
+  /** Posições reais desde a decolagem (histórico do coletor). Vazia: a rota voada sai reta da origem. */
+  trilha?: Ponto[];
+  /** Distância do topo do globo até o botão de centralizar (fica abaixo do painel superior). */
+  topoDosControles?: number;
   /** planeta = de cima, norte para cima; seguir = câmera inclinada atrás do avião, no rumo dele. */
   modo: ModoGlobo;
   /** Instante (ms) para a posição do sol. */
@@ -78,7 +80,7 @@ function maisPerto(atual: number, alvo: number) {
  * detalhe do zoom; rota, avião e cidades são projetados por cima com a mesma câmera.
  * Gestos: pinça para aproximar e afastar, arrastar para mover o mapa. "Centralizar" volta ao avião.
  */
-export function Globo({ width, height, aviao, origem, destino: chegada, progresso, modo, instante }: Props) {
+export function Globo({ width, height, aviao, origem, destino: chegada, trilha = [], topoDosControles = space[16], modo, instante }: Props) {
   const dia = useImage(require('../../assets/globo/terra_dia.jpg'));
   const noite = useImage(require('../../assets/globo/terra_noite.jpg'));
   const fonte = useFont(require('@expo-google-fonts/geist/500Medium/Geist_500Medium.ttf'), 11);
@@ -97,11 +99,14 @@ export function Globo({ width, height, aviao, origem, destino: chegada, progress
   const voado = useSharedValue<[number, number][]>([]);
   const restante = useSharedValue<[number, number][]>([]);
 
-  // Rota inteira em pontos a cada 12 km (para os pontinhos do trecho que falta).
-  const rota = useMemo(
-    () => grandeCirculo([origem.lat, origem.lon], [chegada.lat, chegada.lon], 12),
-    [origem.lat, origem.lon, chegada.lat, chegada.lon],
-  );
+  // Trecho voado: origem → posições reais da trilha, em grande círculo entre cada par (a cada 12 km).
+  // Assim a linha acompanha as curvas do voo e termina sempre no avião, sem degraus.
+  const voadoAteATrilha = useMemo(() => {
+    const pontos: [number, number][] = [[origem.lat, origem.lon], ...trilha.map((p) => [p.lat, p.lon] as [number, number])];
+    const linha: [number, number][] = [pontos[0]];
+    for (let i = 1; i < pontos.length; i++) linha.push(...grandeCirculo(pontos[i - 1], pontos[i], 12).slice(1));
+    return linha;
+  }, [origem.lat, origem.lon, trilha]);
 
   useEffect(() => {
     sol.value = sunEcef(instante);
@@ -109,10 +114,10 @@ export function Globo({ width, height, aviao, origem, destino: chegada, progress
 
   useEffect(() => {
     aviaoSV.value = aviao;
-    const i = Math.round(progresso * (rota.length - 1));
-    voado.value = [...rota.slice(0, i + 1), [aviao.lat, aviao.lon]];
-    restante.value = [[aviao.lat, aviao.lon], ...rota.slice(i + 1)];
-  }, [aviao, progresso, rota, aviaoSV, voado, restante]);
+    const ultimo = voadoAteATrilha[voadoAteATrilha.length - 1];
+    voado.value = [...voadoAteATrilha, ...grandeCirculo(ultimo, [aviao.lat, aviao.lon], 12).slice(1)];
+    restante.value = grandeCirculo([aviao.lat, aviao.lon], [chegada.lat, chegada.lon], 12);
+  }, [aviao, voadoAteATrilha, chegada.lat, chegada.lon, aviaoSV, voado, restante]);
 
   // Segue o avião (e reage à troca de modo), a menos que o usuário tenha movido o mapa.
   useEffect(() => {
@@ -124,8 +129,10 @@ export function Globo({ width, height, aviao, origem, destino: chegada, progress
     heading.value = withTiming(maisPerto(heading.value, modo === 'seguir' ? aviao.rumo * RAD : 0), cfg);
   }, [aviao.lat, aviao.lon, aviao.rumo, modo, livre, lat, lon, tilt, heading]);
 
-  // Trocar de modo volta à distância padrão do modo.
+  // Trocar de modo volta ao avião, na distância padrão do modo (mesmo se o usuário tinha movido o mapa).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLivre(false);
     dist.value = withTiming(CAMERA[modo].dist, timing(motion.duration.medium4));
   }, [modo, dist]);
 
@@ -350,11 +357,14 @@ export function Globo({ width, height, aviao, origem, destino: chegada, progress
           <Icon name="plane" size={28} color={color.accent.default} />
         </Animated.View>
 
-        {livre && (
-          <View style={styles.centralizar}>
-            <Button variant="secondary" size="small" label={t('globo.centralizar')} onPress={centralizar} />
-          </View>
-        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('globo.centralizar')}
+          onPress={centralizar}
+          style={({ pressed }) => [styles.centralizar, { top: topoDosControles }, pressed && { opacity: 0.8 }]}
+        >
+          <Icon name="centralizar" />
+        </Pressable>
       </View>
     </GestureDetector>
   );
@@ -386,5 +396,5 @@ const styles = StyleSheet.create({
   ponto: { position: 'absolute', left: 0, top: 0, flexDirection: 'row', alignItems: 'center', gap: space[6] },
   pontoMarca: { width: PONTO, height: PONTO, borderRadius: PONTO / 2, backgroundColor: color.text.primary },
   pontoTexto: { textShadowColor: color.bg.flight, textShadowRadius: 4 },
-  centralizar: { position: 'absolute', right: space[16], bottom: space[16] },
+  centralizar: { position: 'absolute', right: space[16], width: 48, height: 48, borderRadius: radius.lg, backgroundColor: color.surface.strong, alignItems: 'center', justifyContent: 'center' },
 });

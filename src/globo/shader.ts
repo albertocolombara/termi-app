@@ -95,8 +95,9 @@ half4 main(float2 xy) {
   half3 col = dayc * half(0.2 + 0.9 * lit);
   // Noite: só as luzes das cidades. Na imagem noturna, desertos e gelo são azulados (quase sem
   // vermelho) e as cidades são claras; o canal vermelho separa os dois.
-  half3 luzes = half(smoothstep(0.06, 0.35, float(nightc.r))) * half3(1.0, 0.8, 0.5);
-  col = mix(col, dayc * 0.08 + luzes * 1.6, half(1.0 - lit));
+  // Luzes mais fracas (20/11/2026): com 1.6 as cidades poluíam o mapa à noite.
+  half3 luzes = half(smoothstep(0.10, 0.50, float(nightc.r))) * half3(1.0, 0.8, 0.5);
+  col = mix(col, dayc * 0.08 + luzes * 0.75, half(1.0 - lit));
 
   float rim = pow(1.0 - max(dot(n, -d), 0.0), 3.0);
   col = mix(col, AR, half(rim * 0.45 * (0.15 + 0.85 * lit)));

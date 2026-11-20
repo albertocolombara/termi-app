@@ -116,10 +116,19 @@ export function makeAtlas(
       if (k === key) return;
       key = k;
       const my = ++pending;
-      Promise.all([...Array(N * N)].map((_, i) => img(r0 + Math.floor(i / N), c0 + (i % N)))).then((ims) => {
+      // Se algo falhar (bloco ilegível, sem memória para a superfície), esquece a chave para
+      // tentar de novo na próxima posição. Antes ficava presa e a janela não carregava (20/11/2026).
+      const falhou = () => {
+        if (my === pending) key = '';
+      };
+      const chaves = [...Array(N * N)].map((_, i) => [r0 + Math.floor(i / N), c0 + (i % N)] as const);
+      Promise.all(chaves.map(([r, c]) => img(r, c))).then((ims) => {
         if (my !== pending) return;
+        // Guarda só os blocos do mosaico atual: o cache não cresce durante voos longos.
+        const atuais = new Set(chaves.map(([r, c]) => `${dir}/${r}_${c}`));
+        for (const k2 of cache.keys()) if (!atuais.has(k2)) cache.delete(k2);
         const surface = Skia.Surface.Make(px, px);
-        if (!surface) return;
+        if (!surface) return falhou();
         const canvas = surface.getCanvas();
         const paint = Skia.Paint();
         canvas.clear(Skia.Color('transparent'));
@@ -131,7 +140,7 @@ export function makeAtlas(
         surface.flush();
         const snap = surface.makeImageSnapshot();
         onChange({ image: snap.makeNonTextureImage() ?? snap, b: [c0 * deg - 180, 90 - r0 * deg, N * deg] });
-      });
+      }, falhou);
     },
   };
 }

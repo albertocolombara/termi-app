@@ -153,3 +153,27 @@ export async function buscarVoosDeOntem(base: string, regioes: string[], agora: 
   }
   return voos;
 }
+
+export type AmostraDoHistorico = { hex: string; lat: number; lon: number; em: number; destinoLat: number; destinoLon: number };
+
+/**
+ * Posições de uma região nas últimas `horas` (uma por faixa de 20 min), para montar a trilha real de um voo.
+ * Arquivo que falhar é só uma amostra a menos.
+ */
+export async function buscarAmostrasDoHistorico(base: string, regiao: string, agora: number, horas: number, sinal?: AbortSignal): Promise<AmostraDoHistorico[]> {
+  const faixas = new Set<string>();
+  for (let t = agora; t >= agora - horas * 3_600_000; t -= 20 * 60_000) faixas.add(faixaDoDia(t));
+  const arquivos = await Promise.allSettled([...faixas].map((f) => json<RegiaoJson>(`${base}/historico/${regiao}/${f}.json`, sinal)));
+  const amostras: AmostraDoHistorico[] = [];
+  for (const a of arquivos) {
+    if (a.status !== 'fulfilled') continue;
+    try {
+      for (const v of voosDaRegiao(a.value)) {
+        amostras.push({ hex: v.hex, lat: v.lat, lon: v.lon, em: v.coletadoEm, destinoLat: v.destino.lat, destinoLon: v.destino.lon });
+      }
+    } catch {
+      // arquivo antigo ou quebrado: ignora
+    }
+  }
+  return amostras;
+}
