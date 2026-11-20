@@ -301,7 +301,7 @@ Funções puras em `src/domain`:
 | **NASA GIBS** | Blue/Black Marble, Landsat WELD 30 m, GMIS, VIIRS | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
 | **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
 | **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | ~13 GB para o mundo todo (abaixo de 10 GB tirando áreas sem interesse) |
-| **Oracle Cloud Always Free** | Coletor no início | Depois, Cloudflare Workers pago (US$ 5/mês) |
+| **GitHub Actions** (repo público `voo-ao-vivo-teste`) | Coletor durante o desenvolvimento e o teste fechado, gravando no R2 (decidido pelo Alberto em 19/11/2026: sem custo e sem servidor) | Antes do lançamento: Oracle Cloud Always Free (configuração automática) ou Cloudflare Workers pago (US$ 5/mês) **[Pendente]**. O Actions não pode ser parte de serviço em produção |
 | **RevenueCat / Google Play Billing** | Compras | Chave pública no app; segredos só no painel |
 | **Rive** | Animações do Termi | Exportar `.riv` do arquivo na nuvem |
 

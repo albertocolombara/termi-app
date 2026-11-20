@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    # Mudança só em documentação não gera APK (economiza ~23 min por merge).
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 permissions:
   contents: write
