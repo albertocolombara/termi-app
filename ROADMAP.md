@@ -84,16 +84,16 @@ flowchart LR
 - **Entregáveis:** coletor de produção publicando JSON por região no R2; previsão de pouso revalidada; blocos do mundo no R2.
 - **Dependências:** contrato do cache (ARCHITECTURE §9). Pode correr em paralelo à Fase 1.
 - **Prioridade:** P0.
-- **Critérios de conclusão:** cache atualizado a cada 10–20 min por 7 dias sem falha; previsão com ≥ 80% dentro de ±10 min em todas as faixas oferecidas; blocos acessíveis pela CDN.
+- **Critérios de conclusão:** cache atualizado a cada 10–20 min por 7 dias sem falha; previsão medida em todas as faixas oferecidas (≥ 80% dentro de ±10 min é meta de qualidade, não de bloqueio, desde a RN-09 de 19/11/2026); blocos acessíveis pela CDN.
 
-- [ ] Completar a medição de 24 h de disponibilidade (faltam 11h–16h)
-- [ ] Corrigir o cálculo de pouso para voos longos (velocidade de cruzeiro, distância pela rota, vento) e medir de novo
-- [ ] Definir quais faixas de duração entram na v1 conforme o resultado
+- [x] Completar a medição de 24 h de disponibilidade — 19/11/2026, `voo-ao-vivo-teste`: voos em todas as faixas a qualquer hora (mínimo ~25 voos de 6 h+ no mundo, madrugada UTC). Uma resposta vazia do adsb.lol (19/11, 23:40 UTC) passou a ser ignorada na publicação (PR #2 do coletor)
+- [x] Medir de novo a previsão de pouso — 1.247 pousos: até 1h30 acerta 82–84% dentro de ±10 min; voos de 3 h+ ficam em 17–24% e um modelo novo não melhorou (ARCHITECTURE §13). Decisão do Alberto (19/11): o tempo do usuário é fixo, com os estados Em espera e Em solo (PRD RN-09)
+- [ ] Definir quais faixas de duração entram na v1 conforme o resultado — [Pendente] confirmar com o Alberto (PRD §12)
 - [ ] Fechar o contrato do JSON por região (versão, `coletadoEm`, campos)
 - [ ] Mapear companhia → país da bandeira (base de companhias)
 - [ ] Guardar a trilha do dia anterior para o "voo de ontem"
-- [ ] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
-- [ ] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub
+- [x] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026; `voos/<regiao>.json` e `voos/indice.json`); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
+- [x] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub — bucket `termi-dados`, publicação desde 20/11/2026 00:20 UTC (PR #1 do coletor)
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
 - [ ] Gerar e enviar os blocos do mundo (~13 GB; avaliar corte para < 10 GB)
 - [ ] Gerar texturas comprimidas (KTX2/Basis) [Proposta]
@@ -129,7 +129,7 @@ flowchart LR
 - [ ] Serviço de bordo com avisos agendados como alarme exato
 - [ ] Notificação fixa com contagem
 - [ ] Pousar antes com confirmação
-- [ ] Estados E1–E7, sem sinal, sem internet, em espera
+- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo
 - [ ] Tela de pouso com carimbo e rendimentos
 - [ ] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS
 

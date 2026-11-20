@@ -262,7 +262,7 @@ Controle pelo view model "Termi" no Rive: `pensando`, `novoVoo`, `esteira`, `emb
 
 ## 16. Estados vazios, carregamento e erro
 
-Telas no Figma: "Estados do voo · v2" (E1–E7) e "Erros e estados vazios · v2".
+Telas no Figma: "Estados do voo · v2" (E1–E7) e "Erros e estados vazios · v2". O estado Em solo (E8, PRD RN-09b) e o novo Em espera (RN-09a) ainda não têm tela **[Pendente]**.
 
 | Situação | Padrão |
 |---|---|

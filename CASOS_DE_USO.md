@@ -183,12 +183,13 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 - **E1 — Sem sinal do radar:** o Sistema estima a posição e mostra o estado E4; o foco continua.
 - **E2 — Sem internet:** o foco continua; a posição é estimada.
-- **E3 — Em espera:** o voo real atrasou no fim; se o tempo escolhido já foi cumprido, o Sistema oferece encerrar com pouso completo (RN-09).
+- **E3 — Em espera:** o horário chegou e o avião real ainda está no ar. O pouso completo está garantido; o Sistema oferece "Continuar até o pouso" e "Pousar agora" (RN-09a). Se o Viajante continuar, os minutos a mais contam, e o voo encerra quando ele tocar em "Pousar agora" ou o avião pousar.
+- **E5 — Em solo:** o avião real pousou antes do horário. A janela mostra o avião no solo e o foco segue até o horário; no horário, segue UC-08 (RN-09b).
 - **E4 — App encerrado pelo sistema ou aparelho reiniciado:** ao reabrir, o Sistema recupera a sessão pelo relógio; se o horário de pouso já passou, conclui o pouso.
 
 **Pós-condições:** sessão continua até o pouso ou o pouso antecipado.
 
-**Regras relacionadas:** RN-03, RN-04, RN-09, RN-20, RN-22. Requisitos: RF-17 a RF-26.
+**Regras relacionadas:** RN-03, RN-04, RN-09, RN-09a, RN-09b, RN-20, RN-22. Requisitos: RF-17 a RF-26.
 
 **Critérios de aceitação**
 
@@ -309,7 +310,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 - **Objetivo:** concluir o voo, receber os rendimentos e comprar o souvenir do destino.
 - **Ator principal:** Sistema (pouso) e Viajante (compra).
 - **Pré-condições:** sessão em andamento.
-- **Gatilho:** chega o horário de pouso (ou o Viajante encerra no estado Em espera com o tempo cumprido).
+- **Gatilho:** chega o horário de pouso fixado no embarque, com o avião real no ar ou não (RN-09); ou o Viajante encerra o estado Em espera.
 
 **Fluxo principal**
 

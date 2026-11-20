@@ -75,7 +75,7 @@ Regras de dependência: `domain` não importa nada de UI ou E/S; `ds` não conhe
 4. A sessão é guiada pelo relógio (`embarcouEm`, `pousoPrevistoEm`). Nada de timers em segundo plano para manter o estado.
 5. Escritas que creditam algo (voo + carimbo + lançamento de saldo) acontecem numa única transação.
 6. Registros conquistados são só acrescentados; nada de `DELETE` fora do fluxo "Apagar dados" pedido pelo usuário.
-7. Implemente todos os estados da tela: carregando, vazio, erro, sem rede, e os estados de voo E1–E7 quando aplicável.
+7. Implemente todos os estados da tela: carregando, vazio, erro, sem rede, e os estados de voo E1–E8 quando aplicável.
 8. Recursos premium checam o direito do RevenueCat num único lugar (`services/compras`), nunca espalhado.
 9. Bloqueio de apps só entra quando o ROADMAP indicar que a Play aprovou o teste.
 

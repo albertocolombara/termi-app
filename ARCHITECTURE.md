@@ -246,8 +246,10 @@ stateDiagram-v2
   EmVoo --> ConfirmarPousoAntes: Pousar antes
   ConfirmarPousoAntes --> EmVoo: Continuar voando
   ConfirmarPousoAntes --> PousouAntes: confirmar
-  EmVoo --> EmEspera: voo real atrasou e o horário chegou
-  EmEspera --> Pousou: tempo cumprido e o usuário encerra
+  EmVoo --> EmSolo: avião real pousou antes do horário
+  EmSolo --> Pousou: horário de pouso
+  EmVoo --> EmEspera: horário chegou e o avião real segue no ar
+  EmEspera --> Pousou: Pousar agora ou o avião real pousa
   EmVoo --> Pousou: horário de pouso
   Pousou --> [*]
   PousouAntes --> [*]
@@ -256,7 +258,7 @@ stateDiagram-v2
 
 - **O relógio manda.** O estado é calculado a partir de `embarcouEm`, `pousoPrevistoEm`, das pausas e do relógio do aparelho. Ao reabrir o app (ou depois de o sistema encerrá-lo), a sessão é reconstruída sem perda.
 - **O horário de pouso é fixado no embarque [Decidido, validado no protótipo].** Os avisos agendados dependem disso.
-- **[Pendente] Em espera:** como o estado E5 se concilia com o pouso fixo. Proposta: o aviso de pouso toca no horário fixado; se o app estiver aberto e o cache mostrar o avião ainda no ar, a tela mostra "Em espera" com a opção de encerrar como pouso completo (o tempo escolhido já foi cumprido).
+- **[Decidido] Em espera e Em solo (PRD RN-09, 19/11/2026).** O aviso de pouso toca no horário fixado e o pouso completo é creditado nesse horário, com o app aberto ou fechado. Se o app estiver aberto e o cache mostrar o avião ainda no ar, a tela oferece "Continuar até o pouso" (minutos a mais creditados quando o usuário encerra ou o avião pousa). Se o cache mostrar que o avião pousou antes do horário, a janela passa ao estado em solo e o foco segue até o horário. A janela no solo precisa de desenho no Figma **[Pendente]**.
 
 ### 6.3 Pouso e rendimentos
 
@@ -362,16 +364,18 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
 
 ## 13. Previsão de pouso (risco principal de dados)
 
-Medição em 494 voos (validacao-dados-voos.md):
+Medição de 19/11/2026 com 1.247 pousos reais (coletor `voo-ao-vivo-teste`, previsão v3), pela faixa da previsão:
 
-| Previsão inicial | Dentro de ±10 min |
-|---|---|
-| 25–59 min | 80% |
-| 60–89 min | 70% |
-| 90–179 min | 19% (só 16 voos) |
-| 3–6 h | 35% |
+| Previsão inicial | Erro típico | Dentro de ±10 min |
+|---|---|---|
+| 30–59 min | 3,6 min | 84% |
+| 60–89 min | 3,6 min | 82% |
+| 3–6 h | 27 min | 17% |
+| 6 h+ | 24 min | 24% |
 
-Em voos longos a previsão superestima o tempo (usa a velocidade atual, baixa após a decolagem, e ignora vento de cauda). **Até corrigir, o app não deve oferecer horário de pouso em faixas sem validação** (PRD, seção 12). Melhoria proposta no coletor: usar velocidade de cruzeiro típica por tipo de aeronave e distância restante pela rota, e recalibrar com os pousos observados.
+Um modelo de regressão com os mesmos dados (ajuste na metade mais antiga, conferência na outra) não passou de ~25% nos voos longos: a mesma rota varia ~10 min de um dia para o outro (vento, desvios, espera), e uma foto do avião no embarque não prevê isso. Perto do fim (~30 min antes), a previsão acerta 86% dentro de ±10 min. Com o tempo do usuário fixo (PRD RN-09), a previsão deixou de afetar minutos e recompensas: ela só decide quão perto do fim do foco o avião real pousa (estados Em espera e Em solo).
+
+Melhorias possíveis, sem prazo: histórico da mesma rota em dias anteriores e vento em altitude. Faixas oferecidas na v1: ver PRD §12.
 
 ## 14. Testes e observabilidade
 
@@ -423,7 +427,7 @@ Observabilidade:
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| Previsão de pouso ruim em voos longos | Alto: promessa central do produto | Corrigir no coletor e revalidar; limitar faixas oferecidas até lá |
+| Previsão de pouso imprecisa em voos longos | Médio: o pouso real pode ficar ~25 min longe do fim do foco | Tempo do usuário fixo (RN-09); estados Em espera e Em solo; seguir medindo |
 | Política da Play para alarmes exatos | Alto: avisos atrasam | SCHEDULE_EXACT_ALARM com pedido no onboarding; tentar USE_EXACT_ALARM com argumento de timer |
 | Bloqueio de apps rejeitado pela Play | Médio | Não prometer no paywall até aprovar; "Acesso ao uso" + `specialUse` |
 | Memória de textura em aparelhos fracos | Médio | Níveis de qualidade, KTX2, teste em aparelho fraco |
