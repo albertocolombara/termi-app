@@ -64,6 +64,9 @@ export function CategoriaFiltro({ label, icon, selected, onPress }: CategoriaFil
       accessibilityState={{ selected: !!selected }}
       accessibilityLabel={label}
       onPress={onPress}
+      // Alvo de 48: 32 do chip + 4 de margem + 4 de hitSlop em cima e embaixo. A margem curta deixa o
+      // espaço entre as linhas igual ao espaço entre os chips (8), como pediu o Alberto (20/11/2026).
+      hitSlop={{ top: 4, bottom: 4 }}
       style={({ pressed }) => [styles.chipHit, pressed && { opacity: 0.8 }]}
     >
       <View style={[styles.categoria, selected ? styles.categoriaSelecionada : styles.categoriaPadrao]}>
@@ -372,7 +375,7 @@ const styles = StyleSheet.create({
   chipHit: { alignSelf: 'flex-start' },
   categoria: {
     height: 32,
-    marginVertical: 8,
+    marginVertical: 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[6],

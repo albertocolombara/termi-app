@@ -1,4 +1,4 @@
-import { blocosDaRota, blocosSuficientes, caminhoDoBloco, grausPorBloco, mosaicoEmVolta } from '../blocosDaRota';
+import { blocosDaRota, blocosSuficientes, dividirBlocos, caminhoDoBloco, grausPorBloco, mosaicoEmVolta } from '../blocosDaRota';
 
 const BCN = { lat: 41.2971, lon: 2.0785 };
 const LHR = { lat: 51.47, lon: -0.4543 };
@@ -40,5 +40,14 @@ describe('blocos da rota', () => {
     expect(blocosSuficientes(300, 15)).toBe(true);
     expect(blocosSuficientes(300, 16)).toBe(false);
     expect(blocosSuficientes(0, 0)).toBe(false);
+  });
+
+  it('divide os blocos entre o embarque e o resto do voo, sem repetir', () => {
+    const meio = { lat: 46.4, lon: 0.8 };
+    const { noEmbarque, duranteOVoo } = dividirBlocos(BCN, meio, LHR);
+    const todos = [...noEmbarque, ...duranteOVoo].map(caminhoDoBloco);
+    expect(new Set(todos).size).toBe(todos.length);
+    expect(noEmbarque.length).toBeLessThan(blocosDaRota(BCN, LHR).length);
+    expect(new Set(todos)).toEqual(new Set(blocosDaRota(BCN, meio).concat(blocosDaRota(meio, LHR)).map(caminhoDoBloco)));
   });
 });

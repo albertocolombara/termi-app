@@ -8,7 +8,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { env } from '@/config/env';
 import { caminhoDoBloco, type Bloco } from '@/domain/voos/blocosDaRota';
 
-const SIMULTANEOS = 6;
+const SIMULTANEOS = 10;
 
 export type ProgressoDosBlocos = { feitos: number; total: number };
 export type ResultadoDosBlocos = { baixados: number; oceano: number; jaTinha: number; falhas: number; total: number };
@@ -37,7 +37,7 @@ async function baixarUm(b: Bloco, sinal: AbortSignal): Promise<'baixado' | 'ocea
   }
 }
 
-/** Baixa os blocos com até 6 pedidos ao mesmo tempo. Cancelável pelo `sinal`. */
+/** Baixa os blocos com até 10 pedidos ao mesmo tempo. Cancelável pelo `sinal`. */
 export async function baixarBlocos(
   blocos: Bloco[],
   aoProgredir: (p: ProgressoDosBlocos) => void,

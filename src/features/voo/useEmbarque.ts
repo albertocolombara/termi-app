@@ -19,7 +19,7 @@ import { buscarVoosDisponiveis } from '@/data/voos/useVoos';
 import { DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
 import { agendaDePausas, horariosDasPausas, INTERVALO_PADRAO, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
-import { blocosDaRota, blocosSuficientes } from '@/domain/voos/blocosDaRota';
+import { blocosSuficientes, dividirBlocos, MINUTOS_NO_EMBARQUE } from '@/domain/voos/blocosDaRota';
 import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
@@ -79,7 +79,9 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const baixar = useCallback(
     async (voo: Voo, faltaKm: number, vooDeOntem: boolean, sinal: AbortSignal) => {
       const agora = Date.now();
-      const blocos = blocosDaRota(projetar(voo, agora), voo.destino);
+      // Só os primeiros minutos da rota seguram o embarque; o resto baixa durante o voo (useBlocosDoVoo).
+      const limite = Math.min(voo.pousoPrevistoEm, agora + MINUTOS_NO_EMBARQUE * 60_000);
+      const blocos = dividirBlocos(projetar(voo, agora), projetar(voo, limite), voo.destino).noEmbarque;
       setEtapa({ tipo: 'baixando', voo, faltaKm, feitos: 0, total: blocos.length });
       const r = await baixarBlocos(blocos, (p) => setEtapa({ tipo: 'baixando', voo, faltaKm, ...p }), sinal);
       if (sinal.aborted) return;

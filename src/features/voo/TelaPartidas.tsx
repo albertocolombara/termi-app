@@ -74,6 +74,11 @@ export function TelaPartidas() {
       <FlatList
         data={vazio ? [] : lista}
         keyExtractor={(e) => e.voo.hex}
+        // Lista longa (às vezes centenas de voos): monta aos poucos e solta o que sai da tela.
+        initialNumToRender={14}
+        maxToRenderPerBatch={10}
+        windowSize={9}
+        removeClippedSubviews
         contentContainerStyle={{ paddingTop: insets.top + space[6], paddingBottom: insets.bottom + 160 }}
         ListHeaderComponent={
           <View style={{ gap: space[20] }}>

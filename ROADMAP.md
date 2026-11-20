@@ -132,7 +132,7 @@ flowchart LR
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
 - [ ] Render da janela com o avião no solo (taxiando ou no portão) para o estado Em solo **[Pendente]**
 - [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20 (falta conferir no aparelho)
-- [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20 (bandeiras Flagpack no app; falta conferir no aparelho)
+- [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20; no PR #27 as caudas viraram PNG (o SVG por linha derrubava o app ao rolar a lista no build-17)
 - [x] Sem voo: tempos próximos; dados fora do ar: voo de ontem — PR #18 e #20
 - [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22 (vai para o SQLite no embarque; falta conferir no aparelho)
 - [x] Caminho rápido no dial — "Embarcar no voo mais próximo" vai direto ao embarque, sem motivo da viagem (UC-03), PR #23

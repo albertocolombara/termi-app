@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { mostrarFerramentasDev } from '@/config/env';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
-import { ActionRow, Button, color, screenGutter, space, Text } from '@/ds';
+import { ActionRow, Button, color, screenGutter, space, Text, ToggleRow } from '@/ds';
+import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 import { t } from '@/i18n';
 
 /**
@@ -14,6 +15,8 @@ import { t } from '@/i18n';
 export default function Inicio() {
   const insets = useSafeAreaInsets();
   const sessao = useSessaoEmAndamento();
+  const classe = useClasse();
+  const trocarClasse = useTrocarClasseDeTeste();
   return (
     <ScrollView
       style={{ backgroundColor: color.bg.app }}
@@ -36,6 +39,12 @@ export default function Inicio() {
           <Text variant="Label/Strong 14" tone="tertiary">
             {t('inicio.ferramentas')}
           </Text>
+          <ToggleRow
+            title={t('dev.primeiraClasse')}
+            description={t('dev.primeiraClasseDescricao')}
+            value={classe === 'primeira'}
+            onChange={(v) => trocarClasse(v ? 'primeira' : 'economica')}
+          />
           <ActionRow
             icon="settings"
             title={t('dev.designSystem')}

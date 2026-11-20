@@ -43,6 +43,7 @@
     "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
@@ -51,7 +52,6 @@
     "flagpack-core": "^2.1.0",
     "jest": "^30.5.2",
     "jest-expo": "^58.0.15",
-    "svgo": "^3.3.5",
     "typescript": "~6.0.3"
   },
   "jest": {
