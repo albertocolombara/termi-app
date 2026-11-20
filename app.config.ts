@@ -52,6 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Permissões que o template do Expo adiciona e o app não usa.
     blockedPermissions: [
       'android.permission.QUERY_ALL_PACKAGES',
+      'android.permission.RECORD_AUDIO', // o expo-audio pede por padrão; o app só toca som
       'android.permission.SYSTEM_ALERT_WINDOW',
       'android.permission.READ_EXTERNAL_STORAGE',
       'android.permission.WRITE_EXTERNAL_STORAGE',
@@ -64,6 +65,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['expo-notifications', { color: TERMI_LARANJA }],
     'expo-asset',
     'expo-sqlite',
+    // Sons de fundo. Por enquanto só com o app aberto: tocar em segundo plano pede serviço em primeiro plano
+    // do tipo mediaPlayback (permissão nova, ARCHITECTURE §10), que espera a aprovação do Alberto.
+    ['expo-audio', { enableBackgroundPlayback: false, recordAudioAndroid: false, microphonePermission: false }],
     'expo-localization',
     [
       'expo-font',

@@ -137,8 +137,8 @@ flowchart LR
 - [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22 (vai para o SQLite no embarque; falta conferir no aparelho)
 - [x] Caminho rápido no dial — "Embarcar no voo mais próximo" vai direto ao embarque, sem motivo da viagem (UC-03), PR #23
 - [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa (falta conferir no aparelho; a tela em voo ainda é provisória)
-- [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); faltam o botão de som (com os sons) e conferir no aparelho
-- [ ] Sons de fundo e avisos por fase (áudio em segundo plano)
+- [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); botão e folha de som (04D) no PR #29; falta conferir no aparelho
+- [ ] Sons de fundo e avisos por fase (áudio em segundo plano) — sons de fundo (motores, ruído branco, cabine, chuva) com o app aberto no PR #29; faltam lofi, avisos por fase e o som em segundo plano (pendente de aprovação, ARCHITECTURE §10)
 - [ ] Serviço de bordo com avisos agendados como alarme exato
 - [ ] Notificação fixa com contagem
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
