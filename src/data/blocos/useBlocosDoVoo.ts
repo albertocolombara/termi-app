@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
-import { blocosDaRota } from '@/domain/voos/blocosDaRota';
+import { useAjustes } from '@/data/preferencias/ajustes';
+import { blocosDaRota, camadasParaBaixar } from '@/domain/voos/blocosDaRota';
 import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
 
@@ -11,12 +12,13 @@ import { baixarBlocos } from './baixarBlocos';
  * Os blocos que já existem são pulados; se o app for para segundo plano, para e retoma ao voltar.
  */
 export function useBlocosDoVoo(voo: Voo, ativo: boolean) {
+  const qualidade = useAjustes((a) => a.qualidadeDaJanela);
   useEffect(() => {
     if (!ativo) return;
     const controle = new AbortController();
-    baixarBlocos(blocosDaRota(projetar(voo, Date.now()), voo.destino), () => {}, controle.signal).catch(() => {});
+    baixarBlocos(blocosDaRota(projetar(voo, Date.now()), voo.destino, camadasParaBaixar(qualidade)), () => {}, controle.signal).catch(() => {});
     return () => controle.abort();
     // Uma vez por abertura da tela (e por voo); a rota não muda de minuto a minuto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voo.hex, ativo]);
+  }, [voo.hex, ativo, qualidade]);
 }

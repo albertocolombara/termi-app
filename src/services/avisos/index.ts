@@ -75,6 +75,8 @@ export type AvisosDoVoo = {
   /** Horários absolutos (ms) das pausas, vindos de `agendaDePausas`. */
   pausas: { inicio: number; fim: number }[];
   pausaMin: number;
+  /** Ajustes > Aviso de pouso. Desligado, o pouso não toca (os avisos do serviço de bordo seguem). */
+  avisoDePouso?: boolean;
 };
 
 /** Agenda o pouso e as pausas. Cancela avisos anteriores. Retorna quantos avisos foram agendados. */
@@ -92,6 +94,7 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
     });
     n += 2;
   }
+  if (v.avisoDePouso === false) return n;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: t('avisos.pousoTitulo', { cidade: v.cidadeDestino }),

@@ -171,7 +171,7 @@ flowchart LR
 - [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo
 - [ ] Vistas da janela por plano; sons premium
 - [ ] Backup do progresso e conta opcional
-- [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7)
+- [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste), aberto por uma engrenagem no Início até o menu lateral existir; faltam os itens que dependem de recursos ainda não feitos
 - [ ] Exportar e apagar dados
 - [ ] Estados vazios e aviso de avisos desligados no Início
 

@@ -1,4 +1,4 @@
-import { blocosDaRota, blocosSuficientes, dividirBlocos, caminhoDoBloco, grausPorBloco, mosaicoEmVolta } from '../blocosDaRota';
+import { blocosDaRota, blocosSuficientes, camadasParaBaixar, dividirBlocos, caminhoDoBloco, grausPorBloco, mosaicoEmVolta } from '../blocosDaRota';
 
 const BCN = { lat: 41.2971, lon: 2.0785 };
 const LHR = { lat: 51.47, lon: -0.4543 };
@@ -49,5 +49,10 @@ describe('blocos da rota', () => {
     expect(new Set(todos).size).toBe(todos.length);
     expect(noEmbarque.length).toBeLessThan(blocosDaRota(BCN, LHR).length);
     expect(new Set(todos)).toEqual(new Set(blocosDaRota(BCN, meio).concat(blocosDaRota(meio, LHR)).map(caminhoDoBloco)));
+  });
+
+  it('na qualidade Econômica não baixa o nível 10', () => {
+    expect(camadasParaBaixar('economica').map((c) => c.camada)).toEqual(['w8', 'i9']);
+    expect(blocosDaRota(BCN, LHR, camadasParaBaixar('economica')).some((b) => b.camada === 'w10')).toBe(false);
   });
 });
