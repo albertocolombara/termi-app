@@ -308,7 +308,7 @@ Funções puras em `src/domain`:
 | **RevenueCat / Google Play Billing** | Compras | Chave pública no app; segredos só no painel |
 | **Rive** | Animações do Termi | Exportar `.riv` do arquivo na nuvem |
 
-**Contrato do cache de voos [Proposta]** — em teste no R2 desde 20/11/2026, publicado pelo coletor (`voo-ao-vivo-teste`, `src/publicar.mjs`). Só vira contrato depois de aprovado pelo Alberto.
+**Contrato do cache de voos [Decidido, aprovado pelo Alberto em 19/11/2026]** — publicado no R2 desde 20/11/2026 pelo coletor (`voo-ao-vivo-teste`, `src/publicar.mjs`).
 
 `/voos/indice.json` — regiões publicadas e a idade de cada uma:
 

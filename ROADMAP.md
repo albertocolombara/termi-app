@@ -88,8 +88,8 @@ flowchart LR
 
 - [x] Completar a medição de 24 h de disponibilidade — 19/11/2026, `voo-ao-vivo-teste`: voos em todas as faixas a qualquer hora (mínimo ~25 voos de 6 h+ no mundo, madrugada UTC). Uma resposta vazia do adsb.lol (19/11, 23:40 UTC) passou a ser ignorada na publicação (PR #2 do coletor)
 - [x] Medir de novo a previsão de pouso — 1.247 pousos: até 1h30 acerta 82–84% dentro de ±10 min; voos de 3 h+ ficam em 17–24% e um modelo novo não melhorou (ARCHITECTURE §13). Decisão do Alberto (19/11): o tempo do usuário é fixo, com os estados Em espera e Em solo (PRD RN-09)
-- [ ] Definir quais faixas de duração entram na v1 conforme o resultado — [Pendente] confirmar com o Alberto (PRD §12)
-- [ ] Fechar o contrato do JSON por região (versão, `coletadoEm`, campos) — formato em teste no R2 (ARCHITECTURE §9); falta a aprovação do Alberto
+- [x] Definir quais faixas de duração entram na v1 conforme o resultado — todas, de 15 min a 6 h, com o tempo do usuário fixo (RN-09); decidido pelo Alberto em 19/11/2026
+- [x] Fechar o contrato do JSON por região (versão, `coletadoEm`, campos) — ARCHITECTURE §9, aprovado pelo Alberto em 19/11/2026; publicado no R2 pelo coletor
 - [x] Mapear companhia → país da bandeira (base de companhias) — OpenFlights (ODbL) + 15 correções manuais; 99% dos voos acompanhados (PR #3 do coletor, 20/11/2026)
 - [x] Guardar a trilha do dia anterior para o "voo de ontem" — histórico por faixa de 20 min no R2 (PR #4 do coletor, 20/11/2026); o uso no app entra com a RN-12
 - [x] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026; `voos/<regiao>.json` e `voos/indice.json`); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
