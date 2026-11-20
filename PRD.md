@@ -208,8 +208,10 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Fim do voo
 
 - **RN-08 — Pouso completo.** Rende: minutos do voo inteiro (pausas incluídas), milhas da distância real voada, carimbo no passaporte, $1 por minuto e acesso à loja do destino.
-- **RN-09 — Em espera.** Se o voo real atrasar no fim e o tempo escolhido já tiver sido cumprido, o usuário pode encerrar com pouso completo.
-- **RN-10 — Pousar antes.** Rende: minutos até ali, milhas do trecho voado, $1 por minuto voado. Não rende carimbo nem loja do destino. O voo fica no diário como "Pousou antes, sobre [lugar sobrevoado]".
+- **RN-09 — O tempo é do usuário.** O foco dura o tempo do voo escolhido no embarque (horário de pouso fixado no embarque). Quando esse horário chega, o voo conta como **pouso completo** (RN-08), esteja o avião real no ar ou não. O usuário nunca é obrigado a ficar até o avião pousar (decidido pelo Alberto em 19/11/2026).
+- **RN-09a — Em espera (continuar até o pouso).** Se o horário chegou e o avião real ainda está no ar, o app oferece "Continuar até o pouso", sem obrigação. Os minutos a mais contam como foco ($1 por minuto, milhas do trecho a mais). O usuário pode encerrar a qualquer momento ("Pousar agora") e continua com o pouso completo. Se o avião pousar enquanto ele continua, o voo encerra ali.
+- **RN-09b — Em solo (avião pousou antes do horário).** Se o avião real pousar antes do horário escolhido, o foco segue até o horário: a janela mostra o avião no solo (taxiando ou no portão) e o pouso completo vem no horário escolhido.
+- **RN-10 — Pousar antes** (encerrar antes do horário escolhido). Rende: minutos até ali, milhas do trecho voado, $1 por minuto voado. Não rende carimbo nem loja do destino. O voo fica no diário como "Pousou antes, sobre [lugar sobrevoado]".
 - **RN-11 — Sem recuperação.** Nunca recuperar um voo pagando ou de qualquer outra forma.
 - **RN-12 — Dados fora do ar.** O app oferece refazer o voo real de ontem, no mesmo horário. Conta igual a um voo ao vivo.
 
@@ -284,6 +286,8 @@ flowchart LR
   G --> H[Em voo]
   H -- Pousar antes --> K[Pousou antes]
   H -- Chega a hora --> L[Pouso]
+  H -- Chega a hora, avião ainda no ar --> P[Em espera]
+  P -- Pousar agora ou avião pousa --> L
   L --> M[Loja do destino]
   M --> I
   K --> I
@@ -302,7 +306,8 @@ Fluxos detalhados, alternativos e exceções: [CASOS_DE_USO.md](CASOS_DE_USO.md)
 | Fim do serviço de bordo (E1) | Aviso discreto "De volta ao foco", com o horário do pouso. |
 | Pousar antes (E3) | Confirmação com o que entra e o que não entra; "Continuar voando" principal. |
 | Sem sinal do radar (E4) | Dado ao vivo caiu; posição estimada; foco continua. |
-| Em espera (E5) | Voo real atrasou no fim; se o tempo foi cumprido, encerrar com pouso completo. |
+| Em espera (E5) | O horário chegou e o avião real ainda está no ar: pouso completo garantido; opção "Continuar até o pouso" ou "Pousar agora" (RN-09a). |
+| Em solo (E8) | O avião real pousou antes do horário: a janela mostra o avião no solo e o foco segue até o horário; pouso completo no fim (RN-09b). |
 | Pouso (E6) | Carimbo, rendimentos, loja do destino. |
 | Pousou antes (E7) | Minutos, milhas e dinheiro proporcional; sem carimbo nem loja. |
 
@@ -350,7 +355,7 @@ Critérios por caso de uso ficam em [CASOS_DE_USO.md](CASOS_DE_USO.md). Critéri
 
 **Entra na v1 sob condição:**
 
-- **Voos acima de ~1h30:** só depois de corrigir e revalidar a previsão de pouso (hoje 19% dentro de ±10 min na faixa de 90–179 min e 35% na de 3–6 h). Ver ARCHITECTURE.md, riscos.
+- **Voos acima de ~1h30:** com o tempo do usuário fixo (RN-09, RN-09a, RN-09b), a previsão afeta só quão perto do fim do foco o avião real pousa; não afeta minutos nem recompensas. Medição de 19/11/2026: em voos de 3 h ou mais o pouso real fica a ~25 min do previsto (17–24% dentro de ±10 min). **[Pendente]** confirmar com o Alberto se entram na v1 assim. Ver ARCHITECTURE.md §13.
 - **Bloqueio de apps:** só se aprovado num teste na Play Store.
 - **Widgets:** [Pendente].
 
@@ -386,7 +391,7 @@ Critérios por caso de uso ficam em [CASOS_DE_USO.md](CASOS_DE_USO.md). Critéri
 | Voos concluídos com pouso completo / voos iniciados | — | [Proposta] acompanhar |
 | Retenção D7 e D30 | — | [Proposta] definir meta após o beta |
 | Avisos de pouso entregues no horário | ~100% | [Proposta] |
-| Erro da previsão de pouso | ≥ 80% dentro de ±10 min na faixa oferecida | [Proposta] (hoje atingido só em 25–59 min) |
+| Erro da previsão de pouso | ≥ 80% dentro de ±10 min na faixa oferecida | [Proposta] métrica de qualidade, não de bloqueio (RN-09). Hoje atingido até 1h30 (82–84%) |
 | Avaliação média na Play Store | ≥ 4,5 | [Proposta] |
 
 Testes de preço: dois preços na Play via RevenueCat.
