@@ -75,6 +75,30 @@ export const color = {
     accent: p['yellow/500'],
     onAccent: p['brown/950'],
   },
+  /** Cartão de embarque (papel branco, Figma "03 · Cartão de embarque"). */
+  cartao: {
+    papel: p['white/100'],
+    texto: p['ink/900'],
+    textoMedio: 'rgba(20,18,24,0.80)',
+    textoSecundario: 'rgba(20,18,24,0.65)',
+    tracejado: 'rgba(20,18,24,0.45)',
+    cabecalho: p['white/a05'],
+    bordaDoCabecalho: p['white/a65'],
+  },
+  /** Painel de partidas (Figma: "Painel de voos/Linha", Fundo=Base/Alternado). */
+  painel: {
+    linha: p['black/a25'],
+    linhaAlternada: 'rgba(0,0,0,0.10)',
+  },
+  /** Dial de tempo (Figma: "Dial de tempo / com voos"; cores locais do componente, sem variável). */
+  dial: {
+    barra: '#5B5F68', // voos no ar naquele tempo
+    barraSemVoo: '#3A2420', // nenhum voo
+    trilho: '#26282E',
+    miolo: '#0F0F12',
+    contornoDoBotao: '#141317',
+    legenda: '#8C8F97',
+  },
   border: {
     subtle: p['white/a10'],
     default: p['white/a15'],

@@ -10,12 +10,13 @@ import type { Aeroporto, Voo } from '@/domain/voos/tipos';
 
 export const VERSAO_CONTRATO = 1;
 
-type AeroportoJson = { iata: string | null; icao: string | null; nome: string | null; lat: number; lon: number };
+type AeroportoJson = { iata: string | null; icao: string | null; nome: string | null; cidade?: string | null; pais?: string | null; lat: number; lon: number };
 type VooJson = {
   hex: string;
   callsign: string;
   companhia: string | null;
   companhiaPais: string | null;
+  companhiaNome?: string | null;
   aeronave: string | null;
   origem: AeroportoJson;
   destino: AeroportoJson;
@@ -44,7 +45,15 @@ export type IndiceJson = {
 export class ErroDoCache extends Error {}
 
 const numero = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-const aeroporto = (a: AeroportoJson): Aeroporto => ({ iata: a.iata ?? null, icao: a.icao ?? null, nome: a.nome ?? null, lat: a.lat, lon: a.lon });
+const aeroporto = (a: AeroportoJson): Aeroporto => ({
+  iata: a.iata ?? null,
+  icao: a.icao ?? null,
+  nome: a.nome ?? null,
+  cidade: a.cidade ?? null,
+  pais: a.pais ?? null,
+  lat: a.lat,
+  lon: a.lon,
+});
 
 /** Converte o JSON de uma região em voos do domínio. Voos com dados quebrados são ignorados, não derrubam a lista. */
 export function voosDaRegiao(json: RegiaoJson): Voo[] {
@@ -60,6 +69,7 @@ export function voosDaRegiao(json: RegiaoJson): Voo[] {
       callsign: v.callsign,
       companhia: v.companhia ?? null,
       companhiaPais: v.companhiaPais ?? null,
+      companhiaNome: v.companhiaNome ?? null,
       aeronave: v.aeronave ?? null,
       origem: aeroporto(v.origem),
       destino: aeroporto(v.destino),
@@ -71,6 +81,7 @@ export function voosDaRegiao(json: RegiaoJson): Voo[] {
       distanciaRestanteKm: v.distanciaRestanteKm,
       pousoPrevistoEm: pouso,
       coletadoEm,
+      regiao: json.regiao,
     });
   }
   return voos;

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { mostrarFerramentasDev } from '@/config/env';
-import { ActionRow, color, screenGutter, space, Text } from '@/ds';
+import { ActionRow, Button, color, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
 /**
@@ -23,6 +23,8 @@ export default function Inicio() {
           {t('inicio.subtitulo')}
         </Text>
       </View>
+
+      <Button label={t('inicio.novoVoo')} onPress={() => router.push('/voo')} />
 
       {mostrarFerramentasDev && (
         <View style={{ gap: space[8] }}>

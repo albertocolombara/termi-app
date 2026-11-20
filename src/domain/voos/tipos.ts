@@ -6,6 +6,10 @@ export type Aeroporto = {
   iata: string | null;
   icao: string | null;
   nome: string | null;
+  /** Cidade (base VRS, em inglês). */
+  cidade: string | null;
+  /** ISO 3166-1 alfa-2. */
+  pais: string | null;
   lat: number;
   lon: number;
 };
@@ -16,6 +20,7 @@ export type Voo = {
   companhia: string | null;
   /** ISO 3166-1 alfa-2, para a bandeira na cauda (nunca logo ou pintura real). */
   companhiaPais: string | null;
+  companhiaNome: string | null;
   aeronave: string | null;
   origem: Aeroporto;
   destino: Aeroporto;
@@ -29,4 +34,6 @@ export type Voo = {
   pousoPrevistoEm: number;
   /** ms: quando a região foi coletada (a posição vale para esse instante). */
   coletadoEm: number;
+  /** Região do coletor onde o avião estava (ex.: "londres-paris"). */
+  regiao: string;
 };

@@ -9,9 +9,10 @@ export function voo(min: number, extra: Partial<Voo> = {}): Voo {
     callsign: `TST${min}`,
     companhia: 'TST',
     companhiaPais: 'BR',
+    companhiaNome: 'Teste Linhas Aéreas',
     aeronave: 'A320',
-    origem: { iata: 'GRU', icao: 'SBGR', nome: 'Guarulhos', lat: -23.43, lon: -46.47 },
-    destino: { iata: 'GIG', icao: 'SBGL', nome: 'Galeão', lat: -22.81, lon: -43.25 },
+    origem: { iata: 'GRU', icao: 'SBGR', nome: 'Guarulhos', cidade: 'Sao Paulo', pais: 'BR', lat: -23.43, lon: -46.47 },
+    destino: { iata: 'GIG', icao: 'SBGL', nome: 'Galeão', cidade: 'Rio de Janeiro', pais: 'BR', lat: -22.81, lon: -43.25 },
     lat: -23.2,
     lon: -45.5,
     altitudePes: 35000,
@@ -20,6 +21,7 @@ export function voo(min: number, extra: Partial<Voo> = {}): Voo {
     distanciaRestanteKm: 230,
     pousoPrevistoEm: AGORA + min * 60_000,
     coletadoEm: AGORA,
+    regiao: 'sao-paulo',
     ...extra,
   };
 }
