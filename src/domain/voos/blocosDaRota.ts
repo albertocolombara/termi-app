@@ -83,9 +83,13 @@ export const MINUTOS_NO_EMBARQUE = 40;
  * Divide os blocos da rota: os primeiros `MINUTOS_NO_EMBARQUE` (até `pontoNoLimite`) são baixados no
  * embarque; os do resto da rota baixam já com o usuário a bordo (voos longos embarcavam devagar, 20/11/2026).
  */
-export function dividirBlocos(aviao: Ponto, pontoNoLimite: Ponto, destino: Ponto): { noEmbarque: Bloco[]; duranteOVoo: Bloco[] } {
-  const noEmbarque = blocosDaRota(aviao, pontoNoLimite);
+export function dividirBlocos(aviao: Ponto, pontoNoLimite: Ponto, destino: Ponto, camadas = CAMADAS): { noEmbarque: Bloco[]; duranteOVoo: Bloco[] } {
+  const noEmbarque = blocosDaRota(aviao, pontoNoLimite, camadas);
   const ja = new Set(noEmbarque.map(caminhoDoBloco));
-  const duranteOVoo = blocosDaRota(pontoNoLimite, destino).filter((b) => !ja.has(caminhoDoBloco(b)));
+  const duranteOVoo = blocosDaRota(pontoNoLimite, destino, camadas).filter((b) => !ja.has(caminhoDoBloco(b)));
   return { noEmbarque, duranteOVoo };
 }
+
+/** Na qualidade Econômica a janela não usa o nível 10 (61 m): não baixa (~3 MB por hora em vez de ~9). */
+export const camadasParaBaixar = (qualidade: 'automatica' | 'alta' | 'economica') =>
+  qualidade === 'economica' ? CAMADAS.filter((c) => c.camada !== 'w10') : CAMADAS;

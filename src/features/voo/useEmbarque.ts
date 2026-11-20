@@ -13,13 +13,14 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { env } from '@/config/env';
 import { baixarBlocos } from '@/data/blocos/baixarBlocos';
+import { useAjustes } from '@/data/preferencias/ajustes';
 import { criarSessao } from '@/data/sessoes/repositorio';
 import { CHAVE_SESSAO_EM_ANDAMENTO } from '@/data/sessoes/useSessaoEmAndamento';
 import { buscarVoosDisponiveis } from '@/data/voos/useVoos';
 import { DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
-import { agendaDePausas, horariosDasPausas, INTERVALO_PADRAO, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
-import { blocosSuficientes, dividirBlocos, MINUTOS_NO_EMBARQUE } from '@/domain/voos/blocosDaRota';
+import { agendaDePausas, horariosDasPausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
+import { blocosSuficientes, camadasParaBaixar, dividirBlocos, MINUTOS_NO_EMBARQUE } from '@/domain/voos/blocosDaRota';
 import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
@@ -42,6 +43,7 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const { vooHex, motivo, setMotivo, setVoo } = useNovoVoo();
+  const ajustes = useAjustes();
   const [etapa, setEtapa] = useState<EtapaDoEmbarque>({ tipo: 'localizando' });
   const controle = useRef<AbortController | null>(null);
   const vooRef = useRef<{ voo: Voo; faltaKm: number; vooDeOntem: boolean } | null>(null);
@@ -55,15 +57,15 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
         voo,
         embarcouEm,
         pousoPrevistoEm,
-        intervaloServico: INTERVALO_PADRAO, // vira ajuste do usuário com a tela de Ajustes (Fase 4)
+        intervaloServico: ajustes.servicoDeBordo,
         motivo: caminhoRapido ? MOTIVO_VAZIO : motivo,
         vooDeOntem,
       });
       if (sinal.aborted) return; // a sessão já está gravada; a tela em voo a encontra ao abrir o app
       const duracaoMin = Math.round((pousoPrevistoEm - embarcouEm) / 60_000);
-      const pausas = horariosDasPausas(embarcouEm, agendaDePausas(duracaoMin, INTERVALO_PADRAO));
+      const pausas = horariosDasPausas(embarcouEm, agendaDePausas(duracaoMin, ajustes.servicoDeBordo));
       try {
-        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN });
+        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN, avisoDePouso: ajustes.avisoDePouso });
         mostrarNotificacaoFixa(`${codigoDoLugar(voo.origem)} → ${codigoDoLugar(voo.destino)}`, pousoPrevistoEm);
       } catch {
         // Sem permissão de avisos o voo segue; os Ajustes avisam que os avisos podem não tocar (UC-05 E1).
@@ -73,7 +75,7 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       setVoo(null);
       setEtapa({ tipo: 'embarcou', sessaoId });
     },
-    [caminhoRapido, db, motivo, queryClient, setMotivo, setVoo],
+    [ajustes, caminhoRapido, db, motivo, queryClient, setMotivo, setVoo],
   );
 
   const baixar = useCallback(
@@ -81,7 +83,7 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       const agora = Date.now();
       // Só os primeiros minutos da rota seguram o embarque; o resto baixa durante o voo (useBlocosDoVoo).
       const limite = Math.min(voo.pousoPrevistoEm, agora + MINUTOS_NO_EMBARQUE * 60_000);
-      const blocos = dividirBlocos(projetar(voo, agora), projetar(voo, limite), voo.destino).noEmbarque;
+      const blocos = dividirBlocos(projetar(voo, agora), projetar(voo, limite), voo.destino, camadasParaBaixar(ajustes.qualidadeDaJanela)).noEmbarque;
       setEtapa({ tipo: 'baixando', voo, faltaKm, feitos: 0, total: blocos.length });
       const r = await baixarBlocos(blocos, (p) => setEtapa({ tipo: 'baixando', voo, faltaKm, ...p }), sinal);
       if (sinal.aborted) return;
@@ -91,7 +93,7 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       }
       await preparar(voo, faltaKm, vooDeOntem, false, sinal);
     },
-    [preparar],
+    [ajustes.qualidadeDaJanela, preparar],
   );
 
   const comecar = useCallback(async () => {

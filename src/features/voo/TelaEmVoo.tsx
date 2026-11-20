@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
+import { indiceDaQualidade, useAjustes } from '@/data/preferencias/ajustes';
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import { useVistaDaJanela } from '@/data/preferencias/vistaDaJanela';
 import { useTrilha } from '@/data/voos/useTrilha';
@@ -71,6 +72,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [explicandoServico, setExplicandoServico] = useState(false);
   const [escolhendoVista, setEscolhendoVista] = useState(false);
   const classe = useClasse();
+  const ajustes = useAjustes();
   const { escolhida, escolher } = useVistaDaJanela();
   const vistaDaJanela = vistaEmUso(escolhida, classe);
   const [escolhendoSom, setEscolhendoSom] = useState(false);
@@ -121,8 +123,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               posicao={posicao}
               time={agora}
               driftKm={deslocamentoKm}
-              fps={10}
-              quality={1}
+              fps={ajustes.economiaDeBateria ? 2 : 10}
+              quality={indiceDaQualidade(ajustes.qualidadeDaJanela)}
               satClouds
               showMeter={false}
               showLandscape
