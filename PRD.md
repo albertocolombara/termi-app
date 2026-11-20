@@ -352,10 +352,10 @@ Critérios por caso de uso ficam em [CASOS_DE_USO.md](CASOS_DE_USO.md). Critéri
 - Paywall, oferta de boas-vindas, assinatura e vitalício, restauração.
 - Backup do progresso e conta opcional para sincronizar.
 - Coleção inicial de 13 países, pronta para receber novos países logo depois.
+- **Voos acima de ~1h30:** com o tempo do usuário fixo (RN-09, RN-09a, RN-09b), a previsão afeta só quão perto do fim do foco o avião real pousa; não afeta minutos nem recompensas. Medição de 19/11/2026: em voos de 3 h ou mais o pouso real fica a ~25 min do previsto (17–24% dentro de ±10 min). **Entram na v1 assim** (decidido pelo Alberto em 19/11/2026). Ver ARCHITECTURE.md §13.
 
 **Entra na v1 sob condição:**
 
-- **Voos acima de ~1h30:** com o tempo do usuário fixo (RN-09, RN-09a, RN-09b), a previsão afeta só quão perto do fim do foco o avião real pousa; não afeta minutos nem recompensas. Medição de 19/11/2026: em voos de 3 h ou mais o pouso real fica a ~25 min do previsto (17–24% dentro de ±10 min). **[Pendente]** confirmar com o Alberto se entram na v1 assim. Ver ARCHITECTURE.md §13.
 - **Bloqueio de apps:** só se aprovado num teste na Play Store.
 - **Widgets:** [Pendente].
 
