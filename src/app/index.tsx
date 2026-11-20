@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { mostrarFerramentasDev } from '@/config/env';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
-import { ActionRow, Button, color, screenGutter, space, Text, ToggleRow } from '@/ds';
+import { ActionRow, Button, color, IconButton, screenGutter, space, Text, ToggleRow } from '@/ds';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 import { t } from '@/i18n';
 
@@ -22,6 +22,9 @@ export default function Inicio() {
       style={{ backgroundColor: color.bg.app }}
       contentContainerStyle={{ paddingTop: insets.top + space[24], paddingHorizontal: screenGutter, gap: space[24] }}
     >
+      <View style={{ alignSelf: 'flex-end', marginBottom: -space[16] }}>
+        <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
+      </View>
       <View style={{ gap: space[8] }}>
         <Text variant="Heading/Screen 32">{t('inicio.titulo')}</Text>
         <Text variant="Body/Large 16" tone="secondary">

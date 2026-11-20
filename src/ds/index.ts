@@ -35,3 +35,4 @@ export { Cauda } from './bandeiras/Cauda';
 export { CabecalhoDoPainel, LinhaDoPainel, type LinhaDoPainelProps } from './PainelDeVoos';
 export { EmVooRota } from './EmVooRota';
 export { LinhaTracejada } from './LinhaTracejada';
+export { Letreiro, useAlternancia } from './Letreiro';

@@ -120,6 +120,7 @@ export function TelaPartidas() {
               companhia={item.voo.companhiaNome}
               pais={item.voo.companhiaPais}
               destino={destino}
+              rota={`${codigoDoLugar(item.voo.origem)} → ${codigoDoLugar(item.voo.destino)}`}
               tempo={`${item.minutosAtePouso} min`}
               alternado={index % 2 === 1}
               accessibilityLabel={t('partidas.linhaAcessivel', {
