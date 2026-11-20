@@ -7,7 +7,7 @@ Prioridades: **P0** bloqueia o lançamento · **P1** necessário para a v1 · **
 
 Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada).
 
-**Situação em 20/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta terminar os blocos de 61 m, o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento.**
+**Situação em 20/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento.**
 
 ```mermaid
 flowchart LR
@@ -97,7 +97,7 @@ flowchart LR
 - [x] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026; `voos/<regiao>.json` e `voos/indice.json`); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
 - [x] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub — bucket `termi-dados`, publicação desde 20/11/2026 00:20 UTC (PR #1 do coletor)
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
-- [ ] Gerar e enviar os blocos do mundo — toda a terra menos a Antártida (decisão do Alberto, 19/11/2026), ~7,8 GB medidos numa amostra. Em andamento pelo workflow "Blocos de paisagem" do coletor (PR #5): 244 m (16.076 blocos, 0,52 GB) e cidades à noite (30.372 blocos, 0,11 GB) enviados em 20/11; 61 m gerando
+- [x] Gerar e enviar os blocos do mundo — toda a terra menos a Antártida (decisão do Alberto, 19/11/2026): 259.236 blocos, ~7,8 GB no R2 em 20/11/2026 (workflow "Blocos de paisagem" do coletor, PR #5; ARCHITECTURE §19)
 - [ ] Gerar texturas comprimidas (KTX2/Basis) [Proposta]
 - [ ] Monitorar o uso da cota do adsb.lol — hoje ~864 chamadas por dia (limite de 1.000 com a chave), visíveis no log de cada coleta
 - [ ] Cache atualizado a cada 10–20 min por 7 dias sem falha (em medição desde 20/11/2026 00:20 UTC)
