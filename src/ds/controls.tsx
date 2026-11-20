@@ -50,6 +50,31 @@ export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
   );
 }
 
+// ───────── Categoria / Filtro ─────────
+export type CategoriaFiltroProps = { label: string; icon: IconName; selected?: boolean; onPress?: () => void };
+
+/**
+ * Filtro de categoria (Figma: "Categoria / Filtro"). Chip de 32 num alvo de 48.
+ * Selecionado: fundo accent/subtle, contorno amarelo e marca de confirmação (não depende só da cor).
+ */
+export function CategoriaFiltro({ label, icon, selected, onPress }: CategoriaFiltroProps) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected: !!selected }}
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => [styles.chipHit, pressed && { opacity: 0.8 }]}
+    >
+      <View style={[styles.categoria, selected ? styles.categoriaSelecionada : styles.categoriaPadrao]}>
+        {selected ? <Icon name="confirmacao" /> : null}
+        <Icon name={icon} />
+        <Text variant="Label/Medium 14">{label}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
 // ───────── Segmented control ─────────
 export type Segment<T extends string> = { value: T; label: string; icon?: IconName };
 
@@ -165,15 +190,32 @@ export function Checkbox({ checked }: { checked?: boolean }) {
   );
 }
 
-/** Tarefa da "bagagem de mão": checkbox + rótulo, toque alterna. */
-export function CheckboxItem({ label, checked, onChange }: { label: string; checked?: boolean; onChange?: (v: boolean) => void }) {
+/**
+ * Tarefa da "bagagem de mão": checkbox + rótulo. A linha inteira é o alvo (mín. 48), toque alterna.
+ * Com `onRemove`, segurar a linha remove a tarefa (também como ação de acessibilidade `removeLabel`).
+ */
+export function CheckboxItem({
+  label,
+  checked,
+  onChange,
+  onRemove,
+  removeLabel,
+}: {
+  label: string;
+  checked?: boolean;
+  onChange?: (v: boolean) => void;
+  onRemove?: () => void;
+  removeLabel?: string;
+}) {
   return (
     <Pressable
       accessibilityRole="checkbox"
       accessibilityState={{ checked: !!checked }}
-      hitSlop={hitSlop}
+      accessibilityActions={onRemove ? [{ name: 'delete', label: removeLabel ?? 'Remover' }] : undefined}
+      onAccessibilityAction={(e) => e.nativeEvent.actionName === 'delete' && onRemove?.()}
       onPress={() => onChange?.(!checked)}
-      style={styles.checkItem}
+      onLongPress={onRemove}
+      style={({ pressed }) => [styles.checkItem, pressed && { opacity: 0.8 }]}
     >
       <Checkbox checked={checked} />
       <Text variant="Body/Large 16" style={checked && styles.done}>
@@ -328,6 +370,19 @@ export function TextField({ style, ...rest }: TextInputProps) {
 
 const styles = StyleSheet.create({
   chipHit: { alignSelf: 'flex-start' },
+  categoria: {
+    height: 32,
+    marginVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    paddingLeft: space[10],
+    paddingRight: space[12],
+    borderRadius: radius.tile,
+    borderWidth: 1,
+  },
+  categoriaPadrao: { borderColor: C.border.control },
+  categoriaSelecionada: { borderColor: C.border.accent, backgroundColor: C.accent.subtle },
   chip: { borderRadius: radius.sm },
   chipLarge: { paddingVertical: 9, paddingHorizontal: space[14] },
   chipSmall: { paddingVertical: 7, paddingHorizontal: space[12] },
@@ -363,7 +418,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  checkItem: { flexDirection: 'row', alignItems: 'center', gap: space[10], alignSelf: 'flex-start' },
+  checkItem: { flexDirection: 'row', alignItems: 'center', gap: space[10], minHeight: 48 },
   done: { color: C.text.tertiary, textDecorationLine: 'line-through' },
   toggle: { width: 48, height: 28, borderRadius: radius.full, padding: 3, flexDirection: 'row', alignItems: 'center' },
   knob: { width: 22, height: 22, borderRadius: 11 },
@@ -389,6 +444,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.border.input,
     borderRadius: radius.md,
-    padding: space[12],
+    minHeight: 56,
+    paddingHorizontal: space[16],
+    paddingVertical: space[12],
   },
 });

@@ -149,7 +149,7 @@ export function ActionRow({
       <View style={styles.texts}>
         <Text variant="Body/Large Medium 16">{title}</Text>
         {description ? (
-          <Text variant="Body/Small 13" tone="tertiary">
+          <Text variant="Body/Small 13" tone="tertiary" numberOfLines={1}>
             {description}
           </Text>
         ) : null}

@@ -1,6 +1,6 @@
 /**
- * 03 · Cartão de embarque. PRD: RF-14, RN-09; UC-02 (E2: o voo sumiu do cache).
- * O motivo da viagem (03b) entra no próximo passo da Fase 3.
+ * 03 · Cartão de embarque. PRD: RF-13, RF-14, RN-09; UC-02 (E2: o voo sumiu do cache).
+ * "Adicionar motivo da viagem" abre a folha 03b.
  */
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -11,16 +11,19 @@ import { useVoosDisponiveis } from '@/data/voos/useVoos';
 import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
-import { Button, color, Icon, InfoBanner, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { motivoVazio, type MotivoDaViagem } from '@/domain/sessao/motivo';
+import { ActionRow, Button, color, Icon, InfoBanner, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
 
 import { CodigoDeBarras } from './CodigoDeBarras';
+import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { codigoDoLugar, horaLocal, km, metros, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
 export function TelaCartao() {
   const insets = useSafeAreaInsets();
-  const { tempoMin, vooHex } = useNovoVoo();
+  const { tempoMin, vooHex, motivo, setMotivo } = useNovoVoo();
+  const [folhaAberta, setFolhaAberta] = useState(false);
   const q = useVoosDisponiveis();
   const [largura, setLargura] = useState(348);
   const voo = q.data?.voos.find((v) => v.hex === vooHex);
@@ -100,11 +103,35 @@ export function TelaCartao() {
               <CodigoDeBarras texto={voo.callsign} largura={largura} />
             </View>
           </View>
+          <ActionRow
+            title={motivoVazio(motivo) ? t('cartao.adicionarMotivo') : t('cartao.editarMotivo')}
+            description={motivoVazio(motivo) ? t('cartao.adicionarMotivoDescricao') : resumoDoMotivo(motivo)}
+            onPress={() => setFolhaAberta(true)}
+          />
         </View>
         <Button label={t('cartao.embarcar')} onPress={() => router.push('/voo/embarque')} />
       </ScrollView>
+      <FolhaMotivoDaViagem
+        visivel={folhaAberta}
+        inicial={motivo}
+        onFechar={() => setFolhaAberta(false)}
+        onSalvar={(m) => {
+          setMotivo(m);
+          setFolhaAberta(false);
+        }}
+      />
     </View>
   );
+}
+
+/** "Estudo · Revisar o capítulo 3 · 3 tarefas", só com o que foi preenchido. */
+function resumoDoMotivo(m: MotivoDaViagem): string {
+  const partes = [
+    m.categoria ? t(`motivo.categorias.${m.categoria}`) : null,
+    m.foco || null,
+    m.tarefas.length === 0 ? null : m.tarefas.length === 1 ? t('motivo.umaTarefa') : t('motivo.tarefas', { n: m.tarefas.length }),
+  ];
+  return partes.filter(Boolean).join(' · ');
 }
 
 function Lugar({ cidade, codigo, direita }: { cidade: string; codigo: string; direita?: boolean }) {

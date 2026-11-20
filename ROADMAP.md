@@ -134,7 +134,7 @@ flowchart LR
 - [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20 (falta conferir no aparelho)
 - [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20 (bandeiras Flagpack no app; falta conferir no aparelho)
 - [x] Sem voo: tempos próximos; dados fora do ar: voo de ontem — PR #18 e #20
-- [ ] Cartão de embarque com motivo da viagem — cartão no PR #20; falta o motivo da viagem (03b)
+- [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22 (vai para o SQLite no embarque; falta conferir no aparelho)
 - [ ] Caminho rápido no dial
 - [ ] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo"
 - [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas

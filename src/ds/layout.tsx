@@ -1,6 +1,6 @@
 /** Navegação e estrutura (Figma: seção 09). */
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { FadeIn, FadeOut, ReduceMotion, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { motion } from './motion';
 import { Icon, type IconName } from './Icon';
@@ -87,7 +87,8 @@ export function BottomSheet({ visible, onClose, title, subtitle, children, foote
   return (
     <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onClose}>
       {visible ? (
-        <View style={styles.sheetRoot}>
+        // O teclado empurra a sheet para cima; o conteúdo rola se não couber.
+        <KeyboardAvoidingView behavior="padding" style={styles.sheetRoot}>
           <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(150)} style={StyleSheet.absoluteFill}>
             <Pressable accessibilityLabel="Fechar" style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
           </Animated.View>
@@ -107,10 +108,14 @@ export function BottomSheet({ visible, onClose, title, subtitle, children, foote
                 </Text>
               ) : null}
             </View>
-            {children ? <View style={{ gap: space[4] }}>{children}</View> : null}
+            {children ? (
+              <ScrollView style={styles.sheetBody} contentContainerStyle={{ gap: space[4] }} keyboardShouldPersistTaps="handled" bounces={false}>
+                {children}
+              </ScrollView>
+            ) : null}
             {footer}
           </Animated.View>
-        </View>
+        </KeyboardAvoidingView>
       ) : null}
     </Modal>
   );
@@ -141,7 +146,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     paddingBottom: 36,
     gap: space[16],
+    maxHeight: '94%',
   },
+  sheetBody: { flexGrow: 0, flexShrink: 1 },
   // Alça centralizada no topo, como no Material Design 3.
   handle: { width: 40, height: 4, borderRadius: radius.xs, backgroundColor: C.surface.track, alignSelf: 'center' },
 });
