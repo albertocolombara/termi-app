@@ -256,7 +256,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         </View>
       </View>
 
-      <View style={[styles.linha, { marginHorizontal: screenGutter }]} pointerEvents="box-none">
+      <View style={[styles.linha, styles.linhaDosControles, { marginHorizontal: screenGutter }]} pointerEvents="box-none">
         {vista === 'globo' ? (
           <View style={styles.modosDoGlobo} accessibilityRole="radiogroup">
             <ModoDoGlobo icone="seguir" rotulo={t('globo.seguir')} ativo={modoGlobo === 'seguir'} onPress={() => setModoGlobo('seguir')} />
@@ -265,7 +265,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         ) : (
           <View />
         )}
-        <IconButton icon="speaker" accessibilityLabel={t('sons.botao')} onPress={() => setEscolhendoSom(true)} />
+        {/* Ajustes acima do som (Alberto, build-31): o voo segue no horário com os Ajustes abertos. */}
+        <View style={styles.botoesDaDireita} pointerEvents="box-none">
+          <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
+          <IconButton icon="speaker" accessibilityLabel={t('sons.botao')} onPress={() => setEscolhendoSom(true)} />
+        </View>
       </View>
 
       {/* Painel inferior ("Em voo / Painel inferior") */}
@@ -284,18 +288,14 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Dado rotulo={t('emVoo.horaLocal')} valor={horaLocal(agora)} />
         </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
-          <View style={styles.acoes}>
-            <Button
-              variant="secondary"
-              size="mini"
-              label={t('emVoo.pousarAntes')}
-              onPress={() => setConfirmando(true)}
-              disabled={tempoAcabou}
-              style={{ alignSelf: 'center' }}
-            />
-            {/* Ajustes sem sair do voo: o voo segue no horário enquanto a tela está aberta. */}
-            <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
-          </View>
+          <Button
+            variant="secondary"
+            size="mini"
+            label={t('emVoo.pousarAntes')}
+            onPress={() => setConfirmando(true)}
+            disabled={tempoAcabou}
+            style={{ alignSelf: 'center' }}
+          />
           {emPausa ? (
             // E2: o indicador vira "Serviço de bordo em andamento", em destaque, com a contagem regressiva.
             <Pressable
@@ -517,7 +517,8 @@ const styles = StyleSheet.create({
   },
   linhaTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
-  acoes: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  linhaDosControles: { alignItems: 'flex-end' },
+  botoesDaDireita: { gap: space[8] },
   servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 150 },
   servicoEmAndamento: {
     maxWidth: 190,
