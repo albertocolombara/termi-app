@@ -25,6 +25,9 @@ jobs:
     env:
       APP_ENV: preview
       # Valores públicos por definição (vão dentro do APK). A chave secreta do Supabase nunca entra aqui.
+      # Dados públicos do R2 (endereço r2.dev de desenvolvimento até termos domínio próprio)
+      EXPO_PUBLIC_FLIGHT_CACHE_URL: https://pub-10aaf652e29a4aa99f9726219b1a3995.r2.dev
+      EXPO_PUBLIC_TILES_BASE_URL: https://pub-10aaf652e29a4aa99f9726219b1a3995.r2.dev
       EXPO_PUBLIC_SUPABASE_URL: https://eavuayeisrnzzpdbpugt.supabase.co
       EXPO_PUBLIC_SUPABASE_KEY: sb_publishable_LWkoWcQreAFqWhdXD1ZCog_PNZcsnGK
     steps:
