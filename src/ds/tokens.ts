@@ -90,6 +90,14 @@ export const color = {
     linha: p['black/a25'],
     linhaAlternada: 'rgba(0,0,0,0.10)',
   },
+  /** Ícones das categorias do motivo da viagem (Figma: "Categoria / Filtro" e "Categoria / Tag"). */
+  categoria: {
+    estudo: '#7FB0FF',
+    trabalho: '#5ED6C8',
+    leitura: '#C4A1FF',
+    criacao: '#FF92BE',
+    outro: '#B3B1BA',
+  },
   /** Dial de tempo (Figma: "Dial de tempo / com voos"; cores locais do componente, sem variável). */
   dial: {
     barra: '#5B5F68', // voos no ar naquele tempo

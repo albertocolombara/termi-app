@@ -3,6 +3,7 @@ export { Text, type TextProps } from './Text';
 export { Icon, Suitcase, iconNames, type IconName, type IconProps } from './Icon';
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
 export {
+  CategoriaFiltro,
   Checkbox,
   CheckboxItem,
   Chip,
@@ -12,6 +13,7 @@ export {
   TextField,
   Toggle,
   ToggleRow,
+  type CategoriaFiltroProps,
   type ChipProps,
   type Segment,
   type SliderProps,

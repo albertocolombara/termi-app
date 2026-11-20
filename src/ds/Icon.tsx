@@ -255,6 +255,44 @@ const ICONS = {
       </>
     ),
   },
+  // Categorias do motivo da viagem (Figma: "Categoria / Filtro"). Cor própria de cada categoria.
+  categoriaEstudo: {
+    box: 14,
+    color: C.categoria.estudo,
+    draw: (c) => (
+      <Path d="M12.6875 5.25L7 2.625L1.3125 5.25L7 7.875L12.6875 5.25ZM12.6875 5.25V8.3125M3.5 6.3875V9.1875C3.5 10.0625 5.075 10.9375 7 10.9375C8.925 10.9375 10.5 10.0625 10.5 9.1875V6.3875" {...stroke(c, 1.3125)} />
+    ),
+  },
+  categoriaTrabalho: {
+    box: 14,
+    color: C.categoria.trabalho,
+    draw: (c) => (
+      <Path d="M4.8125 4.375V3.325C4.8125 2.7125 5.3375 2.1875 5.95 2.1875H8.05C8.6625 2.1875 9.1875 2.7125 9.1875 3.325V4.375M1.75 7.875H12.25M3.0625 4.375H10.9375C11.6624 4.375 12.25 4.96263 12.25 5.6875V10.9375C12.25 11.6624 11.6624 12.25 10.9375 12.25H3.0625C2.33763 12.25 1.75 11.6624 1.75 10.9375V5.6875C1.75 4.96263 2.33763 4.375 3.0625 4.375Z" {...stroke(c, 1.3125)} />
+    ),
+  },
+  categoriaLeitura: {
+    box: 14,
+    color: C.categoria.leitura,
+    draw: (c) => (
+      <Path d="M7 11.8125C8.3125 10.7625 10.15 10.5 12.25 10.675V2.8C10.15 2.625 8.3125 2.8875 7 3.9375C5.6875 2.8875 3.85 2.625 1.75 2.8V10.675C3.85 10.5 5.6875 10.7625 7 11.8125ZM7 3.9375V11.8125" {...stroke(c, 1.3125)} />
+    ),
+  },
+  categoriaCriacao: {
+    box: 14,
+    color: C.categoria.criacao,
+    draw: (c) => <Path d="M7.875 3.5L10.5 6.125M9.1875 2.1875L11.8125 4.8125L4.8125 11.8125H2.1875V9.1875L9.1875 2.1875Z" {...stroke(c, 1.3125)} />,
+  },
+  categoriaOutro: {
+    box: 14,
+    color: C.categoria.outro,
+    draw: (c) => (
+      <>
+        <Path d="M2.1875 2.1875H6.5625L11.8125 7.4375L7.4375 11.8125L2.1875 6.5625V2.1875Z" {...stroke(c, 1.3125)} />
+        <Circle cx={4.55} cy={4.55} r={0.875} {...stroke(c, 1.3125)} />
+      </>
+    ),
+  },
+  confirmacao: { box: 16, color: C.accent.default, draw: (c) => <Path d="M3 8.5L6 11.5L13 4.5" {...stroke(c, 1.8)} /> },
   // Multicoloridos (cores fixas do Figma)
   checkStep: {
     box: 18,
