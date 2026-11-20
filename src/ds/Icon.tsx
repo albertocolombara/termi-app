@@ -314,6 +314,11 @@ const ICONS = {
       </>
     ),
   },
+  pendingStep: {
+    box: 18,
+    color: 'rgba(255,255,255,0.2)',
+    draw: (c) => <Circle cx={9} cy={9} r={7.5} stroke={c} strokeWidth={3} fill="none" />,
+  },
   plusTile: {
     box: 28,
     color: C.accent.default,

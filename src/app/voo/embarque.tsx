@@ -1,17 +1,9 @@
-import { View } from 'react-native';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
-import { color, InfoBanner, screenGutter, space, TopBar } from '@/ds';
-import { t } from '@/i18n';
+import { TelaEmbarque } from '@/features/voo/TelaEmbarque';
 
-/** Provisório: a tela 05 · Embarcando entra no próximo passo da Fase 3. */
+/** 05 · Embarcando. `?rapido=1` quando vem do caminho rápido do dial (UC-03): sessão sem motivo da viagem. */
 export default function Embarque() {
-  const insets = useSafeAreaInsets();
-  return (
-    <View style={{ flex: 1, backgroundColor: color.bg.app, paddingTop: insets.top + space[6], paddingHorizontal: screenGutter, gap: space[20] }}>
-      <TopBar title={t('comum.voltar')} onBack={() => router.back()} />
-      <InfoBanner message={t('embarque.emBreve')} />
-    </View>
-  );
+  const { rapido } = useLocalSearchParams<{ rapido?: string }>();
+  return <TelaEmbarque caminhoRapido={rapido === '1'} />;
 }
