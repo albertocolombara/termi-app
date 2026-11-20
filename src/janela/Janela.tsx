@@ -69,6 +69,9 @@ type Props = {
   /** Diagnóstico: desligar camadas para achar o que pesa. */
   showLandscape: boolean;
   showOverlay: boolean;
+  /** Camadas da vista da janela (domain/janela/vistas): asa e moldura do Blender. */
+  asa?: boolean;
+  moldura?: boolean;
 };
 
 export function Janela({
@@ -82,6 +85,8 @@ export function Janela({
   showMeter,
   showLandscape,
   showOverlay,
+  asa = true,
+  moldura = true,
 }: Props) {
   const height = Math.round((width * 4) / 3);
   const q = QUALITY[quality];
@@ -236,7 +241,7 @@ export function Janela({
         <Canvas style={{ width: lw, height: lh }}>{picture && <Picture picture={picture} />}</Canvas>
       </View>
       {showOverlay && (
-        <Overlay width={width} height={height} wt={r2(wt)} wn={r2(wn)} beacon={r2(beacon)} glow={r2(wn * 0.75 + wt * 0.25)} />
+        <Overlay width={width} height={height} wt={r2(wt)} wn={r2(wn)} beacon={r2(beacon)} glow={r2(wn * 0.75 + wt * 0.25)} asa={asa} moldura={moldura} />
       )}
       {!bD && <Text style={styles.loading}>Preparando a janela…</Text>}
       {showMeter && (
@@ -259,6 +264,8 @@ const Overlay = memo(function Overlay({
   wn,
   beacon,
   glow,
+  asa,
+  moldura,
 }: {
   width: number;
   height: number;
@@ -266,6 +273,8 @@ const Overlay = memo(function Overlay({
   wn: number;
   beacon: number;
   glow: number;
+  asa: boolean;
+  moldura: boolean;
 }) {
   const asaDia = useImage(require('../../assets/janela/asa_dia.webp'));
   const asaTarde = useImage(require('../../assets/janela/asa_entardecer.webp'));
@@ -280,14 +289,14 @@ const Overlay = memo(function Overlay({
     ) : null;
   return (
     <Canvas style={StyleSheet.absoluteFill}>
-      {img(asaDia)}
-      {asaTarde && wt > 0.001 && (
+      {asa && img(asaDia)}
+      {asa && asaTarde && wt > 0.001 && (
         <SkiaImage image={asaTarde} x={0} y={0} width={width} height={height} fit="cover" opacity={wt}>
           <ColorMatrix matrix={WARM} />
         </SkiaImage>
       )}
-      {img(asaNoite, wn)}
-      {asaBeacon && beacon > 0.001 && (
+      {asa && img(asaNoite, wn)}
+      {asa && asaBeacon && beacon > 0.001 && (
         <SkiaImage
           image={asaBeacon}
           x={0}
@@ -299,7 +308,7 @@ const Overlay = memo(function Overlay({
           blendMode="screen"
         />
       )}
-      {glow > 0.001 && (
+      {asa && glow > 0.001 && (
         <Rect
           x={width * 0.254 - width * 0.025}
           y={height * 0.442 - width * 0.025}
@@ -316,9 +325,9 @@ const Overlay = memo(function Overlay({
           />
         </Rect>
       )}
-      {img(molDia)}
-      {img(molTarde, wt)}
-      {img(molNoite, wn)}
+      {moldura && img(molDia)}
+      {moldura && img(molTarde, wt)}
+      {moldura && img(molNoite, wn)}
       <Rect x={0} y={0} width={width} height={height}>
         <LinearGradient
           start={vec(0, 0)}
