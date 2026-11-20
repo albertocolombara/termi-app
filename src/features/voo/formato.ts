@@ -10,3 +10,6 @@ export const nomeDoLugar = (a: { cidade: string | null; nome: string | null; iat
   a.cidade ?? a.nome ?? a.iata ?? a.icao ?? '—';
 
 export const codigoDoLugar = (a: { iata: string | null; icao: string | null }) => a.iata ?? a.icao ?? '—';
+
+/** Velocidade em km/h a partir de nós. */
+export const kmh = (nos: number | null) => (nos === null ? '—' : `${Math.round(nos * 1.852).toLocaleString('pt-BR')} km/h`);
