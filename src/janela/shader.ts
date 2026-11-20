@@ -19,17 +19,22 @@ uniform float hq;
 uniform float3 bNear;
 uniform float3 bMid;
 uniform float3 bImp;
+uniform float3 bCl;   // mosaico de nuvens reais: oeste, norte, lado (graus)
+uniform float noite;  // 0 = passagem diurna do satélite, 1 = noturna (a mais recente)
+uniform float H;      // altitude da câmera em km (altitude real, entre 2,5 e 13)
 
 uniform shader bD;
 uniform shader bN;
 uniform shader dN;
-uniform shader cl;
+uniform shader clD;
+uniform shader clN;
 uniform shader tNear;
 uniform shader tMid;
 uniform shader tImp;
 
 const float R = 6371.0;
-const float H = 10.5;
+// Base da camada de nuvens (km). Antes era H - 3 com H fixo em 10,5 km.
+const float CA = 7.5;
 const float2 SZB = float2(2048.0, 1792.0);
 const float2 SZD = float2(1280.0, 1536.0);
 const float2 SZC = float2(1024.0, 1024.0);
@@ -87,6 +92,11 @@ float3 ground(float2 g, out float3 night) {
   half4 m = atlMid(g); c = mix(c, grade(float3(m.rgb)), float(m.a));
   half4 n = atlNear(g); c = mix(c, grade(float3(n.rgb)), float(n.a));
   half4 im = atlImp(g); float bm = max(max(night.r, night.g), night.b);
+  // Fora da Europa (as imagens-base noturnas do protótipo só cobrem a Europa), o brilho vem
+  // das próprias áreas construídas: assim as cidades acendem no mundo inteiro (build-31).
+  float eb = inside(tb) ? smoothstep(0.0, 0.03, min(min(tb.x, 1.0 - tb.x), min(tb.y, 1.0 - tb.y))) : 0.0;
+  // Calibrado para ficar no mesmo nível da Europa (onde o brilho vem do Black Marble).
+  bm = mix(float(im.r), bm, eb);
   float sp = vn(g * float2(900.0 * cos(radians(g.y)), 900.0)) * vn(g * float2(2300.0 * cos(radians(g.y)), 2300.0) + 7.0);
   float3 city = float3(1.0, 0.72, 0.42) * pow(float(im.r), 1.3) * (0.12 + 2.0 * bm) * (0.3 + 2.2 * sp);
   night = mix(night, city, float(im.a));
@@ -95,11 +105,17 @@ float3 ground(float2 g, out float3 night) {
 
 float cloudAt(float2 g, float2 km) {
   float n = fbm(km * 0.05) * 0.65 + fbm(km * 0.23) * 0.35;
-  float gen = smoothstep(1.02 - cover, 1.32 - cover, n);
-  float2 tc = float2((g.x + 18.0) / 36.0, (63.0 - g.y) / 36.0);
-  float2 s = (useSat > 0.5 && inside(tc)) ? float2(cl.eval(tc * SZC).rg) : float2(0.0);
-  float sat = s.r * smoothstep(0.15, 0.95, n + s.r * 0.55);
-  return mix(gen, sat, s.g * useSat);
+  // Nuvens reais (VIIRS, a cada 3 h) como cobertura por região: onde o satélite viu nuvem, o céu
+  // fica bem nublado (com aberturas); onde viu céu limpo, poucas nuvens. A máscara do satélite é
+  // quase "tudo ou nada"; usada direto, virava um teto liso. O desenho fino continua do ruído.
+  float cov = cover;
+  float2 tc = float2((g.x - bCl.x) / bCl.z, (bCl.y - g.y) / bCl.z);
+  if (useSat > 0.5 && inside(tc)) {
+    float s = mix(float(clD.eval(tc * SZC).r), float(clN.eval(tc * SZC).r), noite);
+    float e = min(min(tc.x, 1.0 - tc.x), min(tc.y, 1.0 - tc.y));
+    cov = mix(cover, mix(0.12, 0.78, s), smoothstep(0.0, 0.04, e));
+  }
+  return smoothstep(1.02 - cov, 1.32 - cov, n);
 }
 
 float3 skyCol(float3 d, float day, float warm) {
@@ -128,8 +144,9 @@ half4 main(float2 fc) {
   float3 hor = mix(float3(0.05, 0.07, 0.15), float3(0.68, 0.8, 0.93), day) + float3(1.0, 0.42, 0.12) * warm * 0.5;
   float3 oo = float3(0.0, 0.0, R + H);
   float b = dot(oo, d); float c = dot(oo, oo) - R * R; float disc = b * b - c;
+  float tg = 1e9;
   if (disc > 0.0 && -b - sqrt(disc) > 0.0) {
-    float t = -b - sqrt(disc); float3 p = oo + d * t; float2 g = ll(p.xy);
+    float t = -b - sqrt(disc); tg = t; float3 p = oo + d * t; float2 g = ll(p.xy);
     float3 nl; float3 gc = ground(g, nl);
     float lit = clamp(sunD.z * 1.6 + 0.15, 0.0, 1.0);
     float2 sh = p.xy + sunD.xy / max(sunD.z, 0.15) * (-3.0);
@@ -138,14 +155,21 @@ half4 main(float2 fc) {
     float lg = smoothstep(0.25, 0.85, max(max(nl.r, nl.g), nl.b)); gc += float3(1.0, 0.72, 0.35) * lg * (1.0 - day) * 1.5;
     gc = mix(gc, float3(0.42, 0.52, 0.68) * (lit * day + 0.02), 0.14 * day);
     col = mix(gc, hor * 0.92, 1.0 - exp(-t / 75.0));
-    float tc2 = (H - 3.0) / max(-d.z, 1e-3);
-    if (tc2 < t) {
-      float2 cp = d.xy * tc2; float2 cg = ll(cp); float a = cloudAt(cg, cp + F.xy * drift);
-      float lt = hq > 0.5 ? cloudAt(ll(cp + sunD.xy * 2.5), cp + sunD.xy * 2.5 + F.xy * drift) : 0.3;
-      float3 cc = mix(float3(0.07, 0.08, 0.12), float3(0.97, 0.97, 0.96), day) * (1.0 - 0.35 * lt * day) + float3(1.0, 0.5, 0.2) * warm * 0.55;
-      float far = 1.0 - exp(-tc2 / 170.0);
-      col = mix(col, mix(cc, hor, far * 0.75), a * (1.0 - far * 0.45));
-    }
+  }
+  // Camada de nuvens numa altitude fixa: em cruzeiro fica abaixo do avião; na descida o avião a
+  // atravessa e as nuvens passam a ficar por cima (vistas por baixo, mais escuras).
+  float hc = H - CA;
+  float tc2 = -1.0;
+  if (hc > 0.0 && d.z < -1e-3) tc2 = hc / -d.z;
+  if (hc < 0.0 && d.z > 1e-3) tc2 = -hc / d.z;
+  if (tc2 > 0.0 && tc2 < tg) {
+    float2 cp = d.xy * tc2; float2 cg = ll(cp); float a = cloudAt(cg, cp + F.xy * drift);
+    a *= smoothstep(0.05, 0.6, abs(hc)); // sem "parede branca" no instante em que cruza a camada
+    float lt = hq > 0.5 ? cloudAt(ll(cp + sunD.xy * 2.5), cp + sunD.xy * 2.5 + F.xy * drift) : 0.3;
+    float3 cc = mix(float3(0.07, 0.08, 0.12), float3(0.97, 0.97, 0.96), day) * (1.0 - 0.35 * lt * day) + float3(1.0, 0.5, 0.2) * warm * 0.55;
+    if (hc < 0.0) cc *= 0.78;
+    float far = 1.0 - exp(-tc2 / 170.0);
+    col = mix(col, mix(cc, hor, far * 0.75), a * (1.0 - far * 0.45));
   }
   return half4(half3(col), 1.0);
 }
@@ -165,6 +189,9 @@ export function uniformArray(u: {
   bNear: number[];
   bMid: number[];
   bImp: number[];
+  bCl: number[];
+  noite: number;
+  H: number;
 }): number[] {
   'worklet';
   return [
@@ -180,5 +207,8 @@ export function uniformArray(u: {
     ...u.bNear,
     ...u.bMid,
     ...u.bImp,
+    ...u.bCl,
+    u.noite,
+    u.H,
   ];
 }
