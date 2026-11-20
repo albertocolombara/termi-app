@@ -16,3 +16,12 @@ android {
     abortOnError false
   }
 }
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  // Mesma versão do expo-audio: o ExoPlayer já está no APK, não pesa a mais.
+  implementation "androidx.media3:media3-exoplayer:1.9.1"
+}

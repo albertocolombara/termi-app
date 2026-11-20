@@ -45,6 +45,7 @@ import { FolhaPousarAntes } from './FolhaPousarAntes';
 import { FolhaSons } from './FolhaSons';
 import { useEncerrar } from './useEncerrar';
 import { useRelogio } from './useRelogio';
+import { useSomLiberado } from './somLiberado';
 
 type Vista = 'janela' | 'globo';
 
@@ -88,6 +89,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   // O som em si toca no layout raiz (SomDoVoo), também com a tela bloqueada.
   const somAtual = somEmUso(som.escolhido, classe);
   const encerrar = useEncerrar(sessao);
+  // Chegou à tela do voo: o som pode tocar (se o embarque foi pulado, por exemplo).
+  const liberarSom = useSomLiberado((s) => s.liberar);
+  useEffect(() => {
+    liberarSom(sessao.id);
+  }, [liberarSom, sessao.id]);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
   const voo = useVooAtualizado(sessao.voo);

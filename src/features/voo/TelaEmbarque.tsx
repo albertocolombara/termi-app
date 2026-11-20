@@ -13,6 +13,7 @@ import { DURACAO_EMBARCOU_MS, TermiAnimado } from '@/features/termi/TermiAnimado
 import { t } from '@/i18n';
 
 import { codigoDoLugar, km, nomeDoLugar } from './formato';
+import { useSomLiberado } from './somLiberado';
 import { useEmbarque, type EtapaDoEmbarque } from './useEmbarque';
 
 type Estado = 'feita' | 'atual' | 'pendente';
@@ -23,6 +24,7 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
 
   const reduzirMovimento = useReducedMotion();
   const [pulou, setPulou] = useState(false);
+  const liberarSom = useSomLiberado((s) => s.liberar);
   // O Termi cabe no espaço que sobra entre a rota e as etapas (em telas baixas os elementos se encostavam, build-26).
   const { width } = useWindowDimensions();
   const [espacoDoTermi, setEspacoDoTermi] = useState(0);
@@ -37,9 +39,19 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       router.dismissTo('/');
       router.push('/voo/em-voo');
     };
-    if (reduzirMovimento || pulou) return abrir();
+    const sessaoId = etapa.sessaoId;
+    if (reduzirMovimento || pulou) {
+      liberarSom(sessaoId);
+      return abrir();
+    }
+    // O som entra com fade quando a animação está terminando (Alberto, build-28).
+    const som = setTimeout(() => liberarSom(sessaoId), Math.max(0, DURACAO_EMBARCOU_MS - SOM_ANTES_DO_FIM_MS));
     const id = setTimeout(abrir, DURACAO_EMBARCOU_MS + 150);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(som);
+      clearTimeout(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etapa.tipo, reduzirMovimento, pulou]);
 
   const cancelarEmbarque = () => {
@@ -201,6 +213,8 @@ function progressoTotal(e: EtapaDoEmbarque): number {
   }
 }
 
+/** Quanto antes do fim da animação do embarque o som começa a entrar. */
+const SOM_ANTES_DO_FIM_MS = 700;
 const TERMI_MAX = 300;
 const TERMI_MIN = 140;
 
