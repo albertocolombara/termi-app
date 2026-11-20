@@ -50,6 +50,10 @@ export function useSomQueToca(som: Som | null, volume: number, tocando: boolean,
     }
     return () => {
       player.current = null;
+      // No Android, remove() só tira o player da lista do módulo: o ExoPlayer só é liberado quando o
+      // coletor de lixo do JS passa. Sem pausar antes, o som antigo continua tocando junto com o novo.
+      p.pause();
+      p.volume = 0;
       try {
         p.clearLockScreenControls();
       } catch {

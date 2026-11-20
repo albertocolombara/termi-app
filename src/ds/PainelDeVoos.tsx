@@ -5,10 +5,13 @@
  */
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Cauda } from './bandeiras/Cauda';
 import { Letreiro, useAlternancia } from './Letreiro';
+import { useStateProgress } from './motion';
 import { Text } from './Text';
+import { TextoCorrido } from './TextoCorrido';
 import { color as C, fontFamily, space } from './tokens';
 
 const pixel = (tamanho: number) => ({ fontFamily: fontFamily.pixel, fontSize: tamanho, letterSpacing: -0.03 * tamanho });
@@ -18,7 +21,7 @@ export function CabecalhoDoPainel({ voo, destino, tempo }: { voo: string; destin
     <View style={styles.cabecalho}>
       <View style={styles.colunas}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text variant="Body/Large Medium 16" tone="tertiary" style={{ width: 162 }}>
+          <Text variant="Body/Large Medium 16" tone="tertiary" style={{ width: LARGURA_DO_VOO }}>
             {voo}
           </Text>
           <Text variant="Body/Large Medium 16" tone="tertiary">
@@ -63,7 +66,7 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
       <View style={styles.colunas}>
         <View style={styles.identificacao}>
           <Cauda pais={p.pais} />
-          <View style={{ width: 108, gap: 2 }}>
+          <View style={{ width: LARGURA_DO_TEXTO, gap: 2 }}>
             <Text style={[pixel(14), { color: C.text.primary }]} numberOfLines={1}>
               {p.codigo}
             </Text>
@@ -81,13 +84,40 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
   );
 });
 
-/** Companhia e rota se revezam a cada 4 s, todas as linhas juntas, com o mesmo giro do letreiro. */
+/**
+ * Companhia e rota se revezam a cada 6 s, todas as linhas juntas, com um fade (pedido do Alberto,
+ * build-26). Nome de companhia que não cabe corre para o lado enquanto está à vista.
+ */
 function LinhaQueAlterna({ companhia, rota }: { companhia: string | null; rota?: string }) {
-  const opcoes = [companhia, rota].filter((x): x is string => !!x);
-  const i = useAlternancia(4000, Math.max(1, opcoes.length));
-  if (opcoes.length === 0) return null;
-  return <Letreiro texto={opcoes[i % opcoes.length]} style={[pixel(12), { color: C.text.secondary }]} />;
+  const temAs2 = !!companhia && !!rota;
+  const i = useAlternancia(6000, temAs2 ? 2 : 1);
+  const mostraRota = temAs2 ? i === 1 : !companhia;
+  const p = useStateProgress(mostraRota, 400);
+  const estiloCompanhia = useAnimatedStyle(() => ({ opacity: 1 - p.get() }));
+  const estiloRota = useAnimatedStyle(() => ({ opacity: p.get() }));
+  const estilo = [pixel(12), { color: C.text.secondary }];
+  if (!companhia && !rota) return null;
+  return (
+    <View style={styles.revezamento}>
+      {companhia ? (
+        <Animated.View style={[StyleSheet.absoluteFill, estiloCompanhia]} importantForAccessibility={mostraRota ? 'no-hide-descendants' : 'auto'}>
+          <TextoCorrido texto={companhia} style={estilo} ativo={!mostraRota} />
+        </Animated.View>
+      ) : null}
+      {rota ? (
+        <Animated.View style={[StyleSheet.absoluteFill, estiloRota]} importantForAccessibility={mostraRota ? 'auto' : 'no-hide-descendants'}>
+          <Text style={estilo} numberOfLines={1}>
+            {rota}
+          </Text>
+        </Animated.View>
+      ) : null}
+    </View>
+  );
 }
+
+/** Coluna do voo: cauda (36) + espaço (10) + texto. O texto ficou mais estreito para sobrar espaço ao destino. */
+const LARGURA_DO_TEXTO = 88;
+const LARGURA_DO_VOO = 36 + 10 + LARGURA_DO_TEXTO + 12;
 
 const styles = StyleSheet.create({
   cabecalho: {
@@ -100,4 +130,6 @@ const styles = StyleSheet.create({
   colunas: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12], maxWidth: 380, width: '100%', alignSelf: 'center' },
   linha: { paddingHorizontal: space[16], paddingVertical: space[10], minHeight: 56 },
   identificacao: { flexDirection: 'row', alignItems: 'center', gap: space[10], height: 36 },
+  // Altura de uma linha do pixel 12, para as duas camadas do revezamento ficarem no mesmo lugar.
+  revezamento: { height: 16 },
 });

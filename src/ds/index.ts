@@ -36,3 +36,5 @@ export { CabecalhoDoPainel, LinhaDoPainel, type LinhaDoPainelProps } from './Pai
 export { EmVooRota } from './EmVooRota';
 export { LinhaTracejada } from './LinhaTracejada';
 export { Letreiro, useAlternancia } from './Letreiro';
+export { TextoCorrido } from './TextoCorrido';
+export { IndicadorDePaginas, PaywallPlano, type PaywallPlanoProps } from './Paywall';

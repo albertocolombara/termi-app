@@ -83,12 +83,13 @@ export type AvisosDoVoo = {
 export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
   await cancelarAvisos();
   let n = 0;
-  for (const p of v.pausas) {
+  for (const [i, p] of v.pausas.entries()) {
     await Notifications.scheduleNotificationAsync({
       content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }) },
       trigger: emHorario(p.inicio, CANAL_SERVICO),
     });
     await Notifications.scheduleNotificationAsync({
+      identifier: idDoFimDaPausa(i),
       content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo') },
       trigger: emHorario(p.fim, CANAL_SERVICO),
     });
@@ -103,6 +104,13 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
     trigger: emHorario(v.pousoEm, CANAL_POUSO),
   });
   return n + 1;
+}
+
+const idDoFimDaPausa = (indice: number) => `fim-servico-${indice}`;
+
+/** "Voltar ao foco" (UC-05 A1): a pausa acabou antes, então o aviso de fim dela não toca. */
+export async function cancelarAvisoDeFimDaPausa(indice: number) {
+  await Notifications.cancelScheduledNotificationAsync(idDoFimDaPausa(indice)).catch(() => {});
 }
 
 export async function cancelarAvisos() {

@@ -1,7 +1,6 @@
 /**
  * 04E · Vista da janela (bottom sheet). PRD: RF-19, RN-18, RN-20.
- * Só a janela é grátis. Na econômica, tocar numa vista da primeira classe abriria o paywall (RN-20);
- * o paywall entra na Fase 4, então por enquanto a folha só diz que a vista é da primeira classe.
+ * Só a janela é grátis. Na econômica, tocar numa vista da primeira classe abre o paywall (RN-20, RF-25).
  * Com asa e Asa e motor ainda não têm render: aparecem como "Em breve".
  */
 import { useState } from 'react';
@@ -31,18 +30,24 @@ export function FolhaVistaDaJanela({
   classe,
   emUso,
   onEscolher,
+  onPrimeiraClasse,
   onFechar,
 }: {
   visivel: boolean;
   classe: Classe;
   emUso: Vista;
   onEscolher: (v: Vista) => void;
+  /** Vista com cadeado na econômica: abre o paywall. */
+  onPrimeiraClasse: () => void;
   onFechar: () => void;
 }) {
   const [aviso, setAviso] = useState<ChaveDeTexto | null>(null);
   const tocar = (v: Vista) => {
     if (!CAMADAS_DA_VISTA[v].pronta) return setAviso('vista.emBreveAviso');
-    if (!vistaLiberada(v, classe)) return setAviso('vista.daPrimeiraClasse');
+    if (!vistaLiberada(v, classe)) {
+      setAviso(null);
+      return onPrimeiraClasse();
+    }
     setAviso(null);
     onEscolher(v);
   };

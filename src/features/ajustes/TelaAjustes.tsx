@@ -134,6 +134,10 @@ export function TelaAjustes() {
         volume={som.volume}
         onEscolher={som.escolher}
         onVolume={som.ajustarVolume}
+        onPrimeiraClasse={() => {
+          setFolha(null);
+          router.push('/primeira-classe');
+        }}
         onFechar={() => setFolha(null)}
       />
     </View>
