@@ -83,6 +83,12 @@ export function TelaAjustes() {
             onMudar={(v) => a.mudar({ economiaDeBateria: v })}
           />
           <LinhaComValor titulo={t('ajustes.qualidadeDaJanela')} valor={t(qualidade.nome)} onPress={() => setFolha('qualidade')} />
+          <LinhaComInterruptor
+            titulo={t('ajustes.janelaFluida')}
+            descricao={a.economiaDeBateria ? t('ajustes.janelaFluidaEconomia') : t('ajustes.janelaFluidaDescricao')}
+            valor={a.janelaFluida}
+            onMudar={(v) => a.mudar({ janelaFluida: v })}
+          />
         </Secao>
 
         <Secao titulo={t('ajustes.contaECompras')}>

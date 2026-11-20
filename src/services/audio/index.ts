@@ -19,6 +19,12 @@ const ARQUIVO: Partial<Record<Som, number>> = {
   chuva: require('../../../assets/sons/chuva.m4a'),
 };
 
+/**
+ * Ganho por som, sobre o volume escolhido. Os arquivos já saem com o mesmo volume médio (-20 LUFS),
+ * mas o ruído branco soa mais alto pelo espectro cheio (Alberto, build-27): fica ~4 dB abaixo.
+ */
+const GANHO: Partial<Record<Som, number>> = { 'ruido-branco': 0.6 };
+
 let modoPronto = false;
 
 export type InfoDoSom = { titulo: string; subtitulo: string };
@@ -68,8 +74,8 @@ export function useSomQueToca(som: Som | null, volume: number, tocando: boolean,
   useEffect(() => {
     const p = player.current;
     if (!p) return;
-    p.volume = volume;
+    p.volume = volume * (som ? (GANHO[som] ?? 1) : 1);
     if (volume > 0) p.play();
     else p.pause();
-  }, [fonte, tocando, volume]);
+  }, [fonte, som, tocando, volume]);
 }

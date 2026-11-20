@@ -383,7 +383,7 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
 
 - **Memória de textura abaixo de ~150 MB.** Acima de 256 MB (cache de GPU do Skia) o app travou a ~2 fps.
 - **Paisagem em resolução reduzida e ampliada;** asa e moldura em resolução cheia, redesenhadas só quando a luz muda.
-- **10 fps por padrão, 2 fps em economia.** O teto atual (~21 fps) vem do timer em JavaScript; o próximo passo é desenhar pela thread de interface (Reanimated).
+- **10 fps por padrão, 2 fps em economia, 30 fps opcional** (Ajustes > "Janela a 30 quadros por segundo", desligado por padrão). Desde a build-28 o relógio da janela roda na thread de interface (`useFrameCallback` + `useDerivedValue`): cada quadro é montado sem passar pelo JavaScript, o que tira o teto de ~21 fps do timer em JS. A posição e o deslocamento das nuvens são interpolados entre as leituras de 1 s da tela (antes a paisagem andava em degraus de 1 s). **[Pendente]** medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica.
 - **Segundo plano sem trabalho:** janela desmontada e relógios parados (1% de bateria em 25 min de tela bloqueada).
 - **Texturas comprimidas** (KTX2/Basis) no app nativo [Proposta].
 - **Blocos baixados no embarque,** fora do APK (o protótipo embute ~21 MB de blocos só para Barcelona → Londres; ~26 MB com renders e mapas-base).
