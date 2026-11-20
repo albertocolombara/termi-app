@@ -115,6 +115,7 @@ export const ptBR = {
     subtitulo: 'O Termi está procurando seu assento…',
     rotaAcessivel: 'De {origem} para {destino}',
     termiNaEsteira: 'O Termi na esteira de bagagem',
+    pularAnimacao: 'Toque para pular a animação',
     localizando: 'Localizando o avião',
     localizado: 'Avião localizado a {falta} de {cidade}',
     paisagem: 'Baixando a paisagem da rota',

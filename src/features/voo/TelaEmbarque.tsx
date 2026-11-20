@@ -1,25 +1,15 @@
 /**
  * 05 · Embarcando (carregamento) e X5 · paisagem não baixou. PRD: RF-15, RF-16; UC-02 passos 7–9, A4, A5, E1, E2; UC-03.
- * O Termi anda na esteira enquanto as etapas reais acontecem. A animação final será em Rive;
- * aqui é uma versão simples em Reanimated, que para com "reduzir movimento".
+ * O Termi (Rive) anda na esteira enquanto as etapas reais acontecem e, no fim, faz o "embarcou" até o final.
  */
-import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  ReduceMotion,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomSheet, Button, color, Icon, InfoBanner, radius, screenGutter, space, Suitcase, Text, type IconName } from '@/ds';
+import { BottomSheet, Button, color, Icon, InfoBanner, radius, screenGutter, space, Text, type IconName } from '@/ds';
+import { DURACAO_EMBARCOU_MS, TermiAnimado } from '@/features/termi/TermiAnimado';
 import { t } from '@/i18n';
 
 import { codigoDoLugar, km, nomeDoLugar } from './formato';
@@ -31,12 +21,22 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const insets = useSafeAreaInsets();
   const { etapa, tentarDeNovo, embarcarComGlobo, cancelar, recomecar } = useEmbarque({ caminhoRapido });
 
+  const reduzirMovimento = useReducedMotion();
+  const [pulou, setPulou] = useState(false);
+
+  // Embarcou: o Termi faz o pulinho e sai pela esteira até o fim (2,6 s) antes de abrir o voo.
+  // Tocar na tela pula a animação; com "reduzir movimento", abre direto (CLAUDE.md §9).
   useEffect(() => {
     if (etapa.tipo !== 'embarcou') return;
-    // Depois do embarque, "voltar" não leva ao cartão nem ao embarque.
-    router.dismissTo('/');
-    router.push('/voo/em-voo');
-  }, [etapa.tipo]);
+    const abrir = () => {
+      // Depois do embarque, "voltar" não leva ao cartão nem ao embarque.
+      router.dismissTo('/');
+      router.push('/voo/em-voo');
+    };
+    if (reduzirMovimento || pulou) return abrir();
+    const id = setTimeout(abrir, DURACAO_EMBARCOU_MS + 150);
+    return () => clearTimeout(id);
+  }, [etapa.tipo, reduzirMovimento, pulou]);
 
   const cancelarEmbarque = () => {
     cancelar();
@@ -79,7 +79,13 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       </View>
 
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: space[24] }}>
-        <Esteira />
+        <Pressable
+          disabled={etapa.tipo !== 'embarcou'}
+          onPress={() => setPulou(true)}
+          accessibilityHint={etapa.tipo === 'embarcou' ? t('embarque.pularAnimacao') : undefined}
+        >
+          <TermiAnimado esteira embarcou={etapa.tipo === 'embarcou'} tamanho={300} rotulo={t('embarque.termiNaEsteira')} />
+        </Pressable>
         <View style={{ alignItems: 'center', gap: space[8] }}>
           <Text variant="Heading/Data 24" style={{ fontWeight: '600' }} accessibilityRole="header">
             {t('embarque.titulo')}
@@ -220,58 +226,6 @@ function Girando() {
   );
 }
 
-const EMENDA = 24;
-
-/** Esteira com o Termi (referência estática do Figma, com as emendas deslizando e o Termi quicando). */
-function Esteira() {
-  const reduzir = useReducedMotion();
-  const desliza = useSharedValue(0);
-  const pulo = useSharedValue(0);
-  useEffect(() => {
-    if (reduzir) return;
-    desliza.value = withRepeat(withTiming(-EMENDA, { duration: 700, easing: Easing.linear, reduceMotion: ReduceMotion.System }), -1);
-    pulo.value = withRepeat(
-      withSequence(
-        withTiming(-10, { duration: 260, easing: Easing.out(Easing.quad) }),
-        withTiming(0, { duration: 260, easing: Easing.in(Easing.quad) }),
-        withTiming(0, { duration: 500 }),
-      ),
-      -1,
-    );
-    return () => {
-      cancelAnimation(desliza);
-      cancelAnimation(pulo);
-    };
-  }, [desliza, pulo, reduzir]);
-  const emendas = useAnimatedStyle(() => ({ transform: [{ translateX: desliza.value }] }));
-  const termi = useAnimatedStyle(() => ({ transform: [{ translateY: pulo.value }, { rotate: '-4deg' }] }));
-  const sombra = useAnimatedStyle(() => ({ transform: [{ scaleX: 1 + pulo.value / 40 }] }));
-
-  return (
-    <View style={styles.esteiraCaixa} accessible accessibilityLabel={t('embarque.termiNaEsteira')}>
-      <Animated.View style={[styles.termi, termi]}>
-        <Suitcase size={144} />
-      </Animated.View>
-      <Animated.View style={[styles.sombra, sombra]} />
-      <View style={styles.lona}>
-        <Animated.View style={[styles.emendas, emendas]}>
-          {Array.from({ length: 15 }, (_, i) => (
-            <View key={i} style={[styles.emenda, { left: i * EMENDA }]} />
-          ))}
-        </Animated.View>
-        <View style={styles.brilho} />
-      </View>
-      <View style={[styles.rolo, { left: 0 }]}>
-        <View style={styles.eixo} />
-      </View>
-      <View style={[styles.rolo, { right: 0 }]}>
-        <View style={styles.eixo} />
-      </View>
-      <View style={styles.base} />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.flight, paddingHorizontal: screenGutter, gap: space[16] },
   rota: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
@@ -280,14 +234,4 @@ const styles = StyleSheet.create({
   trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },
   barra: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
   cartaoGlobo: { backgroundColor: color.surface.default, borderRadius: radius.lg, padding: space[14], gap: space[6] },
-  esteiraCaixa: { width: 300, height: 216 },
-  termi: { position: 'absolute', left: 78, top: 30 },
-  sombra: { position: 'absolute', left: 102, top: 163, width: 96, height: 10, borderRadius: 5, backgroundColor: color.esteira.sombra },
-  lona: { position: 'absolute', top: 168, left: 0, width: 300, height: 22, borderRadius: 11, backgroundColor: color.esteira.lona, overflow: 'hidden' },
-  emendas: { position: 'absolute', left: 0, top: 0, width: 340, height: 22 },
-  emenda: { position: 'absolute', top: 0, width: 2, height: 22, backgroundColor: color.esteira.emenda },
-  brilho: { position: 'absolute', top: 0, left: 0, right: 0, height: 2, backgroundColor: color.esteira.brilho },
-  rolo: { position: 'absolute', top: 168, width: 22, height: 22, borderRadius: 11, backgroundColor: color.esteira.lona, borderWidth: 2, borderColor: color.esteira.emenda, alignItems: 'center', justifyContent: 'center' },
-  eixo: { width: 6, height: 6, borderRadius: 3, backgroundColor: color.text.muted },
-  base: { position: 'absolute', top: 190, left: 30, width: 240, height: 26, borderBottomLeftRadius: 6, borderBottomRightRadius: 6, backgroundColor: color.esteira.base },
 });
