@@ -1,11 +1,13 @@
 # Roadmap — Termi: Focus Flights
 
 > Planejamento da evolução do produto em fases. Escopo e regras: [PRD.md](PRD.md). Decisões técnicas: [ARCHITECTURE.md](ARCHITECTURE.md).
-> Última atualização: 19/11/2026.
+> Última atualização: 20/11/2026.
 
 Prioridades: **P0** bloqueia o lançamento · **P1** necessário para a v1 · **P2** desejável · **P3** pós-lançamento.
 
-Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada). Nenhuma tarefa deste repositório está concluída ainda.
+Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada).
+
+**Situação em 20/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta terminar os blocos de 61 m, o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento.**
 
 ```mermaid
 flowchart LR
@@ -36,13 +38,13 @@ flowchart LR
 | Design system no Figma e em código | Página "Design System" (variáveis, componentes, 31 ícones); `src/ds` trazido do protótipo | Catálogo testado no M35 (build-1, 19/11): ajustes de sublinhado, linha do campo, Geist Grid e animações no PR "Ajustes do design system" |
 | Protótipo técnico Android (base técnica) | `termi-prototipo`, build-8: janela Skia com renders do Blender e blocos Landsat, serviço de bordo, notificação fixa, avisos como alarme exato | Base confirmada no app: build-1 do `termi-app` (19/11) com a janela no mesmo desempenho e o aviso de pouso tocando com a tela bloqueada e o app fechado |
 | Medições de bateria e memória | Doc "prototipo-tecnico.md" | ~1% em 25 min com tela bloqueada; limite de ~150 MB de textura |
-| Validação dos dados de voo | Doc "validacao-dados-voos.md" (~17 h de coleta mundial) | Disponibilidade resolvida; previsão ruim acima de ~1h30 |
+| Validação dos dados de voo | Doc "validacao-dados-voos.md" e coletor `voo-ao-vivo-teste` (24 h, 1.247 pousos) | Disponibilidade resolvida; previsão imprecisa acima de ~1h30, resolvida pela regra do tempo do usuário (RN-09) |
 | Infraestrutura e políticas | Doc "infra-e-politicas.md" | Plano de R2, coletor, custos e riscos da Play |
 | Animações do Termi | Arquivo Rive (nuvem), 5 animações e state machine testada | Falta exportar `.riv` e nomear o arquivo |
 | Janela no Blender | Renders atrás da asa (3 luzes) | Faltam "Com asa" e "Asa e motor" |
 | Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
-**Lacunas que bloqueiam decisões estruturais:** previsão de pouso para voos longos, aprovação da Play para alarmes exatos e bloqueio de apps.
+**Lacunas que bloqueiam decisões estruturais:** aprovação da Play para alarmes exatos e bloqueio de apps. (A previsão de pouso dos voos longos deixou de bloquear em 19/11/2026: RN-09.)
 
 ---
 
@@ -95,9 +97,10 @@ flowchart LR
 - [x] Coletor no GitHub Actions gravando no R2 durante o desenvolvimento (decidido em 19/11/2026; `voos/<regiao>.json` e `voos/indice.json`); onde ele roda em produção (Oracle grátis ou Workers pago) fica para a Fase 8
 - [x] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub — bucket `termi-dados`, publicação desde 20/11/2026 00:20 UTC (PR #1 do coletor)
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
-- [ ] Gerar e enviar os blocos do mundo (~13 GB; avaliar corte para < 10 GB)
+- [ ] Gerar e enviar os blocos do mundo — toda a terra menos a Antártida (decisão do Alberto, 19/11/2026), ~7,8 GB medidos numa amostra. Em andamento pelo workflow "Blocos de paisagem" do coletor (PR #5): 244 m (16.076 blocos, 0,52 GB) e cidades à noite (30.372 blocos, 0,11 GB) enviados em 20/11; 61 m gerando
 - [ ] Gerar texturas comprimidas (KTX2/Basis) [Proposta]
-- [ ] Monitorar o uso da cota do adsb.lol
+- [ ] Monitorar o uso da cota do adsb.lol — hoje ~864 chamadas por dia (limite de 1.000 com a chave), visíveis no log de cada coleta
+- [ ] Cache atualizado a cada 10–20 min por 7 dias sem falha (em medição desde 20/11/2026 00:20 UTC)
 
 ---
 
@@ -107,17 +110,25 @@ flowchart LR
 - **Entregáveis:** UC-02 a UC-06 e UC-08 (sem loja) funcionando no aparelho.
 - **Dependências:** Fases 1 e 2.
 - **Prioridade:** P0.
+- **Situação:** em andamento desde 20/11/2026.
 - **Critérios de conclusão:** critérios de aceitação desses casos de uso atendidos; aviso de pouso confirmado com tela bloqueada e app fechado no Android 14+.
 
 ### Domínio (com testes)
-- [ ] Máquina de estados da sessão guiada pelo relógio
-- [ ] Agenda de pausas (RN-05 a RN-07, com os exemplos do PRD)
+- [x] Tempo de foco: mínimo de 15 min, econômica até 3 h, primeira classe até 6 h (`src/domain/sessao/duracao.ts`, PR #1)
+- [ ] Máquina de estados da sessão guiada pelo relógio, com Em espera (RN-09a) e Em solo (RN-09b)
+- [x] Agenda de pausas (RN-05 a RN-07, com os exemplos do PRD) — `src/domain/sessao/pausas.ts` com testes, PR #1
 - [ ] Elegibilidade e ordenação dos voos (RN-02)
 - [ ] Projeção de posição e lugar sobrevoado
-- [ ] Rendimentos de pouso e de pouso antecipado (RN-08, RN-10)
+- [ ] Rendimentos de pouso e de pouso antecipado (RN-08, RN-10), incluindo os minutos de "Continuar até o pouso" (RN-09a)
 - [ ] Livro-caixa do saldo
 
+### Dados
+- [ ] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query
+- [ ] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12)
+- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque
+
 ### Telas e serviços
+- [ ] Telas de Em espera e Em solo no Figma (Alberto) **[Pendente]**
 - [ ] Dial (15 min–6 h; faixa premium marcada)
 - [ ] Painel de partidas com filtros de região e cauda com bandeira
 - [ ] Sem voo: tempos próximos; dados fora do ar: voo de ontem
