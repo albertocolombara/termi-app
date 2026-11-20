@@ -1,2 +1,11 @@
-<manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <application>
+    <!-- Som de fundo do voo sem controle de mídia (FlightSoundService.kt). -->
+    <service
+      android:name="expo.modules.screenstate.FlightSoundService"
+      android:exported="false"
+      android:foregroundServiceType="mediaPlayback" />
+  </application>
 </manifest>

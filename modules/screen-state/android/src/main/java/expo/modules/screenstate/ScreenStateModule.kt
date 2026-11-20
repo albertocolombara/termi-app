@@ -1,16 +1,15 @@
 package expo.modules.screenstate
 
 import android.app.KeyguardManager
-import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -85,48 +84,49 @@ class ScreenStateModule : Module() {
     Function("showFlightNotification") { title: String, text: String, endAt: Double ->
       val ctx = context
       val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      if (Build.VERSION.SDK_INT >= 26) {
-        val channel = NotificationChannel(CHANNEL_ID, "Voo em andamento", NotificationManager.IMPORTANCE_LOW)
-        channel.setShowBadge(false)
-        nm.createNotificationChannel(channel)
-      }
-      val launch = ctx.packageManager.getLaunchIntentForPackage(ctx.packageName)
-      val pending = PendingIntent.getActivity(
-        ctx, 0, launch,
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-      )
-      val builder = if (Build.VERSION.SDK_INT >= 26) {
-        Notification.Builder(ctx, CHANNEL_ID)
-      } else {
-        @Suppress("DEPRECATION")
-        Notification.Builder(ctx)
-      }
-      builder
-        .setSmallIcon(ctx.applicationInfo.icon)
-        .setContentTitle(title)
-        .setContentText(text)
-        .setOngoing(true)
-        .setOnlyAlertOnce(true)
-        .setContentIntent(pending)
-        .setShowWhen(true)
-        .setWhen(endAt.toLong())
-        .setUsesChronometer(true)
-      if (Build.VERSION.SDK_INT >= 24) builder.setChronometerCountDown(true)
-      if (Build.VERSION.SDK_INT >= 26) {
-        val remaining = (endAt - System.currentTimeMillis()).toLong()
-        builder.setTimeoutAfter(maxOf(1000L, remaining))
-      }
-      nm.notify(NOTIFICATION_ID, builder.build())
+      nm.notify(FlightNotification.NOTIFICATION_ID, FlightNotification.build(ctx, title, text, endAt.toLong()))
     }
 
     Function("hideFlightNotification") {
-      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      nm.cancel(NOTIFICATION_ID)
+      val ctx = context
+      main.post { FlightSoundService.instance?.finish(removeNotification = true) }
+      val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      nm.cancel(FlightNotification.NOTIFICATION_ID)
+    }
+
+    // Som de fundo sem controle de mídia (FlightSoundService). Só chamar com o app aberto:
+    // o Android não deixa iniciar serviço em primeiro plano a partir do segundo plano.
+    Function("startFlightSound") { uri: String, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
+      val ctx = context
+      val intent = Intent(ctx, FlightSoundService::class.java).apply {
+        putExtra(FlightSoundService.EXTRA_URI, uri)
+        putExtra(FlightSoundService.EXTRA_VOLUME, volume.toFloat())
+        putExtra(FlightSoundService.EXTRA_END_AT, endAt.toLong())
+        putExtra(FlightSoundService.EXTRA_TITLE, title)
+        putExtra(FlightSoundService.EXTRA_TEXT, text)
+        putExtra(FlightSoundService.EXTRA_FADE_IN_MS, fadeInMs.toLong())
+      }
+      if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(intent) else ctx.startService(intent)
+    }
+
+    Function("setFlightSoundVolume") { volume: Double ->
+      main.post { FlightSoundService.instance?.setVolume(volume.toFloat()) }
+    }
+
+    Function("resumeFlightSound") {
+      main.post { FlightSoundService.instance?.resume() }
+    }
+
+    Function("isFlightSoundRunning") {
+      FlightSoundService.instance != null
+    }
+
+    /** Para o som; a notificação do voo fica (com a contagem) se o voo continua. */
+    Function("stopFlightSound") {
+      main.post { FlightSoundService.instance?.finish(removeNotification = false) }
     }
   }
 
-  companion object {
-    private const val CHANNEL_ID = "voo_em_andamento"
-    private const val NOTIFICATION_ID = 4210
-  }
+  private val main = Handler(Looper.getMainLooper())
+
 }

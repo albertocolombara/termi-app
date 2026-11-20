@@ -117,10 +117,16 @@ export async function cancelarAvisos() {
   await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
 }
 
+/** Título e texto da notificação fixa do voo (a mesma do som de fundo no Android). */
+export function textosDaNotificacaoFixa(rota: string, pousoEm: number) {
+  const hora = new Date(pousoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return { titulo: t('avisos.fixaTitulo', { rota }), texto: t('avisos.fixaTexto', { hora }) };
+}
+
 /** Notificação fixa com contagem regressiva até o pouso (módulo nativo, só Android por enquanto). */
 export function mostrarNotificacaoFixa(rota: string, pousoEm: number) {
-  const hora = new Date(pousoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  ScreenState.showFlightNotification(t('avisos.fixaTitulo', { rota }), t('avisos.fixaTexto', { hora }), pousoEm);
+  const { titulo, texto } = textosDaNotificacaoFixa(rota, pousoEm);
+  ScreenState.showFlightNotification(titulo, texto, pousoEm);
 }
 
 export function esconderNotificacaoFixa() {
