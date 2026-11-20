@@ -14,8 +14,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
+import { useVistaDaJanela } from '@/data/preferencias/vistaDaJanela';
 import { useTrilha } from '@/data/voos/useTrilha';
 import { useVoosDisponiveis } from '@/data/voos/useVoos';
+import { CAMADAS_DA_VISTA, vistaEmUso } from '@/domain/janela/vistas';
 import { agendaDePausas } from '@/domain/sessao/pausas';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
 import { minutosAte, proximaPausa } from '@/domain/sessao/progresso';
@@ -23,13 +25,15 @@ import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
 import { progressoNaRota, type Amostra } from '@/domain/voos/trilha';
-import { BottomSheet, Button, color, EmVooRota, Icon, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
+import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
+import { useClasse } from '@/services/compras';
 
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
+import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
 import { useEncerrar } from './useEncerrar';
 import { useRelogio } from './useRelogio';
@@ -62,6 +66,10 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [confirmando, setConfirmando] = useState(false);
   const [boasVindasFechada, setBoasVindasFechada] = useState(false);
   const [explicandoServico, setExplicandoServico] = useState(false);
+  const [escolhendoVista, setEscolhendoVista] = useState(false);
+  const classe = useClasse();
+  const { escolhida, escolher } = useVistaDaJanela();
+  const vistaDaJanela = vistaEmUso(escolhida, classe);
   const encerrar = useEncerrar(sessao);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
@@ -112,6 +120,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               showMeter={false}
               showLandscape
               showOverlay
+              asa={CAMADAS_DA_VISTA[vistaDaJanela].asa}
+              moldura={CAMADAS_DA_VISTA[vistaDaJanela].moldura}
             />
           </View>
         ) : null}
@@ -170,6 +180,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             <Text variant="Body/Medium 14" tone="secondary">
               {horaLocal(pousoPrevistoEm)}
             </Text>
+            {vista === 'janela' ? (
+              <IconButton
+                icon="windowView"
+                accessibilityLabel={t('vista.botao')}
+                onPress={() => setEscolhendoVista(true)}
+                indicator={classe !== 'primeira'}
+                style={{ marginTop: space[10] }}
+              />
+            ) : null}
           </View>
         </View>
       </View>
@@ -257,6 +276,17 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           ) : null}
         </View>
       </BottomSheet>
+
+      <FolhaVistaDaJanela
+        visivel={escolhendoVista}
+        classe={classe}
+        emUso={vistaDaJanela}
+        onEscolher={(v) => {
+          escolher(v);
+          setEscolhendoVista(false);
+        }}
+        onFechar={() => setEscolhendoVista(false)}
+      />
 
       <FolhaPousarAntes
         visivel={confirmando}
