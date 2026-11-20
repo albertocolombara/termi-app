@@ -108,7 +108,7 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
 
       <View style={{ minHeight: 48, justifyContent: 'center', paddingTop: space[40] }}>
         {podeCancelar ? (
-          <Button variant="secondary" size="small" label={t('embarque.cancelar')} onPress={cancelarEmbarque} style={{ alignSelf: 'center' }} />
+          <Button variant="secondary" size="mini" label={t('embarque.cancelar')} onPress={cancelarEmbarque} style={{ alignSelf: 'center' }} />
         ) : null}
       </View>
 

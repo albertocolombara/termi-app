@@ -335,6 +335,34 @@ const ICONS = {
       </>
     ),
   },
+  // Controles do globo (Figma 04A · "Controles do mapa" e "Modo de câmera").
+  centralizar: {
+    box: 20,
+    color: C.accent.default,
+    draw: (c) => (
+      <>
+        <Circle cx={10} cy={10} r={5} {...stroke(c, 1.66667)} />
+        <Circle cx={10} cy={10} r={1.33} stroke={c} strokeWidth={1.66667} fill={c} />
+        <Path d="M10 1.667V4.167M10 15.833V18.333M1.667 10H4.167M15.833 10H18.333" {...stroke(c, 1.66667)} />
+      </>
+    ),
+  },
+  seguir: {
+    box: 20,
+    color: C.text.primary,
+    draw: (c) => <Path d="M10 2.5L15.833 16.667L10 13.333L4.167 16.667L10 2.5Z" {...stroke(c, 1.58333)} />,
+  },
+  planeta: {
+    box: 20,
+    color: C.text.primary,
+    draw: (c) => (
+      <>
+        <Circle cx={10} cy={10} r={7.5} {...stroke(c, 1.58333)} />
+        <Path d="M10 17.5C11.841 17.5 13.333 14.142 13.333 10C13.333 5.858 11.841 2.5 10 2.5C8.159 2.5 6.667 5.858 6.667 10C6.667 14.142 8.159 17.5 10 17.5Z" {...stroke(c, 1.58333)} />
+        <Path d="M2.5 10H17.5" {...stroke(c, 1.58333)} />
+      </>
+    ),
+  },
   pendingStep: {
     box: 18,
     color: 'rgba(255,255,255,0.2)',

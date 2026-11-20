@@ -5,13 +5,16 @@ import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'link';
-export type ButtonSize = 'large' | 'medium' | 'small';
+export type ButtonSize = 'large' | 'medium' | 'small' | 'mini';
 
 export type ButtonProps = Omit<PressableProps, 'style' | 'children'> & {
   label: string;
   /** primary = amarelo; secondary = superfície translúcida (small = contorno); link = só texto. */
   variant?: ButtonVariant;
-  /** large = rótulo à esquerda + ícone à direita; medium = centralizado; small = compacto (secondary). */
+  /**
+   * large = rótulo à esquerda + ícone à direita; medium = centralizado; small = compacto (secondary).
+   * mini = contorno com rótulo de 12, para ações discretas sobre a janela e o embarque ("Pousar antes", "Cancelar embarque").
+   */
   size?: ButtonSize;
   /** Ícone à direita no tamanho large. Padrão: seta. `null` remove. */
   icon?: IconName | null;
@@ -26,14 +29,15 @@ export type ButtonProps = Omit<PressableProps, 'style' | 'children'> & {
 export function Button({ label, variant = 'primary', size = 'large', icon = 'arrowRight', disabled, style, ...rest }: ButtonProps) {
   const isPrimary = variant === 'primary';
   const isLink = variant === 'link';
-  const isOutline = variant === 'secondary' && size === 'small';
+  const isMini = size === 'mini';
+  const isOutline = (variant === 'secondary' && size === 'small') || isMini;
   const fg = isPrimary ? C.text.onAccent : C.text.primary;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      hitSlop={size === 'small' || isLink ? hitSlop : undefined}
+      hitSlop={size === 'small' || isMini || isLink ? hitSlop : undefined}
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
@@ -45,7 +49,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       ]}
       {...rest}
     >
-      <Text variant="Body/Large Medium 16" style={{ color: fg }} underline={isLink} numberOfLines={1}>
+      <Text variant={isMini ? 'Caption/Regular 12' : 'Body/Large Medium 16'} style={{ color: fg }} underline={isLink} numberOfLines={1}>
         {label}
       </Text>
       {size === 'large' && !isLink && !isOutline && icon ? (

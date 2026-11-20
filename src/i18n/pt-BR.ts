@@ -142,6 +142,7 @@ export const ptBR = {
     horaLocal: 'Hora local',
     boasVindas: 'Bem-vindo(a) a bordo do {voo}, de {origem} para {destino}. Pode sair do app à vontade; só não ligue o modo avião, para o voo ao vivo e os avisos continuarem.',
     pousarAntes: 'Pousar antes',
+    fecharBoasVindas: 'Toque para fechar',
     servicoEm: 'Serviço de bordo\nem {min} min',
   },
   pousarAntes: {

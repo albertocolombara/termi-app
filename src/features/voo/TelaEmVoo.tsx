@@ -7,18 +7,22 @@
  * Ainda não estão aqui: serviço de bordo (E1/E2), Em espera (E5), Em solo (E8), sons e vista da janela.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useTrilha } from '@/data/voos/useTrilha';
+import { useVoosDisponiveis } from '@/data/voos/useVoos';
 import { agendaDePausas } from '@/domain/sessao/pausas';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
-import { minutosAte, progressoDaSessao, proximaPausa } from '@/domain/sessao/progresso';
+import { minutosAte, proximaPausa } from '@/domain/sessao/progresso';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
-import { Button, color, EmVooRota, Icon, IconButton, InfoBanner, radius, screenGutter, SegmentedControl, space, Suitcase, Text } from '@/ds';
+import type { Voo } from '@/domain/voos/tipos';
+import { progressoNaRota, type Amostra } from '@/domain/voos/trilha';
+import { Button, color, EmVooRota, Icon, InfoBanner, radius, screenGutter, SegmentedControl, space, Suitcase, Text, type IconName } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
@@ -51,11 +55,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const { agora, ativo } = useRelogio(1000);
   const [vista, setVista] = useState<Vista>('janela');
   const [modoGlobo, setModoGlobo] = useState<ModoGlobo>('planeta');
-  const [alturaDoPainel, setAlturaDoPainel] = useState(260);
+  const [alturaDoPainel, setAlturaDoPainel] = useState(240);
+  const [alturaDoTopo, setAlturaDoTopo] = useState(170);
   const [confirmando, setConfirmando] = useState(false);
+  const [boasVindasFechada, setBoasVindasFechada] = useState(false);
   const encerrar = useEncerrar(sessao);
 
-  const { voo, embarcouEm, pousoPrevistoEm } = sessao;
+  const { embarcouEm, pousoPrevistoEm } = sessao;
+  const voo = useVooAtualizado(sessao.voo);
+  const trilha = useTrilha(voo).data ?? SEM_TRILHA;
   const pos = projetar(voo, agora);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
   const pausas = useMemo(
@@ -63,57 +71,70 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
     [embarcouEm, pousoPrevistoEm, sessao.intervaloServico],
   );
   const pausa = proximaPausa(embarcouEm, pausas, agora);
-  const progresso = progressoDaSessao(embarcouEm, pousoPrevistoEm, agora);
-  // No globo, o trecho voado vai do aeroporto de origem até o avião (geográfico, não pelo tempo).
-  const totalKm = distanciaKm(voo.origem, voo.destino);
-  const progressoNoMapa = totalKm > 0 ? Math.min(1, distanciaKm(voo.origem, pos) / totalKm) : 1;
+  // A barra de rota mostra a rota inteira do avião (origem → destino), pela trilha real.
+  const progressoDaRota = progressoNaRota(voo.origem, trilha, pos, voo.destino);
   const tempoAcabou = tempoCumprido(pousoPrevistoEm, agora);
+  const origem = nomeDoLugar(voo.origem);
+  const destino = nomeDoLugar(voo.destino);
+  // Quanto o avião andou desde o embarque, para as nuvens passarem na janela.
+  const deslocamentoKm = ((agora - embarcouEm) / 3_600_000) * (voo.velocidadeNos ?? 450) * 1.852;
+
+  // A paisagem ocupa tudo acima do painel inferior e passa um pouco por trás dele, sob o degradê.
+  const alturaDaPaisagem = Math.max(320, height - alturaDoPainel + SOBREPOSICAO);
+  // A janela é 4:3; para preencher a altura, fica mais larga que a tela e é cortada nas laterais.
+  const larguraDaJanela = Math.max(width, Math.round((alturaDaPaisagem * 3) / 4));
+  const mostrarBoasVindas = !boasVindasFechada && agora - embarcouEm < BOAS_VINDAS_MS;
 
   // O horário escolhido chegou: pouso completo garantido (RN-09). Também vale ao reabrir o app depois do pouso.
   // Em espera e "Continuar até o pouso" (RN-09a) entram quando o app souber se o avião real ainda está no ar.
   useEffect(() => {
     if (tempoAcabou) encerrar('pouso');
   }, [tempoAcabou, encerrar]);
-  const origem = nomeDoLugar(voo.origem);
-  const destino = nomeDoLugar(voo.destino);
-  // Quanto o avião andou desde o embarque, para as nuvens passarem na janela.
-  const deslocamentoKm = ((agora - embarcouEm) / 3_600_000) * (voo.velocidadeNos ?? 450) * 1.852;
-  const alturaDoGlobo = Math.max(240, height - alturaDoPainel - insets.bottom);
 
   return (
     <View style={styles.tela}>
-      {/* Fundo: janela (4:3, largura toda) ou globo. Desmontados em segundo plano. */}
-      <View style={StyleSheet.absoluteFill}>
+      {/* Paisagem: janela ou globo. Desmontados em segundo plano. */}
+      <View style={[styles.paisagem, { height: alturaDaPaisagem }]}>
         {ativo && vista === 'janela' ? (
-          <Janela
-            width={width}
-            posicao={posicao}
-            time={agora}
-            driftKm={deslocamentoKm}
-            fps={10}
-            quality={1}
-            satClouds
-            showMeter={false}
-            showLandscape
-            showOverlay
-          />
+          <View style={{ position: 'absolute', top: 0, left: (width - larguraDaJanela) / 2 }}>
+            <Janela
+              width={larguraDaJanela}
+              posicao={posicao}
+              time={agora}
+              driftKm={deslocamentoKm}
+              fps={10}
+              quality={1}
+              satClouds
+              showMeter={false}
+              showLandscape
+              showOverlay
+            />
+          </View>
         ) : null}
         {ativo && vista === 'globo' ? (
           <Globo
             width={width}
-            height={alturaDoGlobo}
+            height={alturaDaPaisagem}
             aviao={posicao}
-            progresso={progressoNoMapa}
+            trilha={trilha}
+            topoDosControles={alturaDoTopo + space[16]}
             origem={{ lat: voo.origem.lat, lon: voo.origem.lon, nome: origem }}
             destino={{ lat: voo.destino.lat, lon: voo.destino.lon, nome: destino }}
             modo={modoGlobo}
             instante={agora}
           />
         ) : null}
+        {/* Degradês para a paisagem se juntar ao fundo (Figma 04B). */}
+        <View pointerEvents="none" style={[styles.degradeTopo, { height: Math.min(260, alturaDaPaisagem * 0.36) }]} />
+        <View pointerEvents="none" style={[styles.degradeBase, { height: Math.min(220, alturaDaPaisagem * 0.3) }]} />
       </View>
 
       {/* Painel superior */}
-      <View style={{ paddingTop: insets.top + space[24], paddingHorizontal: screenGutter, gap: space[16] }} pointerEvents="box-none">
+      <View
+        style={{ paddingTop: insets.top + space[24], paddingHorizontal: screenGutter }}
+        pointerEvents="box-none"
+        onLayout={(e) => setAlturaDoTopo(e.nativeEvent.layout.height)}
+      >
         <View style={styles.linhaTopo} pointerEvents="box-none">
           <View style={{ gap: space[16] }} pointerEvents="box-none">
             <View style={{ gap: space[6] }}>
@@ -151,31 +172,36 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
       <View style={{ flex: 1 }} pointerEvents="box-none" />
 
+      {/* Boas-vindas: só no começo do voo, por cima da paisagem, sem tirar espaço dela. */}
+      {mostrarBoasVindas ? (
+        <Pressable
+          onPress={() => setBoasVindasFechada(true)}
+          accessibilityRole="button"
+          accessibilityHint={t('emVoo.fecharBoasVindas')}
+          style={[styles.boasVindas, { marginHorizontal: screenGutter, marginBottom: space[12] }]}
+        >
+          <Suitcase size={36} />
+          <Text variant="Caption/Medium 12" tone="secondary" style={{ flex: 1 }}>
+            {t('emVoo.boasVindas', { voo: voo.callsign, origem, destino })}
+          </Text>
+        </Pressable>
+      ) : null}
+
       {vista === 'globo' ? (
-        <View style={[styles.modosDoGlobo, { marginHorizontal: screenGutter }]}>
-          <IconButton
-            icon="plane"
-            accessibilityLabel={t('globo.seguir')}
-            onPress={() => setModoGlobo('seguir')}
-            style={modoGlobo === 'seguir' ? styles.modoAtivo : undefined}
-          />
-          <IconButton
-            icon="globe"
-            accessibilityLabel={t('globo.planeta')}
-            onPress={() => setModoGlobo('planeta')}
-            style={modoGlobo === 'planeta' ? styles.modoAtivo : undefined}
-          />
+        <View style={[styles.modosDoGlobo, { marginHorizontal: screenGutter }]} accessibilityRole="radiogroup">
+          <ModoDoGlobo icone="seguir" rotulo={t('globo.seguir')} ativo={modoGlobo === 'seguir'} onPress={() => setModoGlobo('seguir')} />
+          <ModoDoGlobo icone="planeta" rotulo={t('globo.planeta')} ativo={modoGlobo === 'planeta'} onPress={() => setModoGlobo('planeta')} />
         </View>
       ) : null}
 
       {/* Painel inferior ("Em voo / Painel inferior") */}
       <View
-        style={{ paddingHorizontal: screenGutter, paddingTop: space[16], paddingBottom: insets.bottom + space[24], gap: space[20], backgroundColor: vista === 'globo' ? color.bg.flight : 'transparent' }}
+        style={{ paddingHorizontal: screenGutter, paddingTop: space[16], paddingBottom: insets.bottom + space[24], gap: space[20] }}
         onLayout={(e) => setAlturaDoPainel(e.nativeEvent.layout.height)}
       >
         <View style={styles.linha}>
           <Lugar cidade={origem} codigo={codigoDoLugar(voo.origem)} />
-          <EmVooRota progresso={progresso} />
+          <EmVooRota progresso={progressoDaRota} />
           <Lugar cidade={destino} codigo={codigoDoLugar(voo.destino)} direita />
         </View>
         <View style={styles.linha}>
@@ -183,14 +209,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Dado rotulo={t('emVoo.velocidade')} valor={kmh(pos.noSolo ? 0 : voo.velocidadeNos)} />
           <Dado rotulo={t('emVoo.horaLocal')} valor={horaLocal(agora)} />
         </View>
-        <View style={styles.boasVindas}>
-          <Suitcase size={36} />
-          <Text variant="Caption/Medium 12" tone="tertiary" style={{ flex: 1 }}>
-            {t('emVoo.boasVindas', { voo: voo.callsign, origem, destino })}
-          </Text>
-        </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
-          <Button variant="secondary" size="small" label={t('emVoo.pousarAntes')} onPress={() => setConfirmando(true)} disabled={tempoAcabou} />
+          <Button variant="secondary" size="mini" label={t('emVoo.pousarAntes')} onPress={() => setConfirmando(true)} disabled={tempoAcabou} />
           {pausa ? (
             <View style={styles.servico} accessible accessibilityLabel={t('emVoo.servicoEm', { min: pausa.emMin })}>
               <Icon name="crewServiceTile" />
@@ -211,6 +231,44 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         }}
       />
     </View>
+  );
+}
+
+const SEM_TRILHA: Amostra[] = [];
+const SOBREPOSICAO = 56;
+const BOAS_VINDAS_MS = 90_000;
+
+/**
+ * O voo gravado no embarque, trocado pela leitura mais nova do cache quando ela chega (a cada 5 min
+ * com a tela aberta). Assim a posição projetada se corrige pelo dado real. Só aceita o mesmo voo:
+ * mesmo avião, mesmo destino e pouso previsto parecido.
+ */
+function useVooAtualizado(gravado: Voo): Voo {
+  const cache = useVoosDisponiveis();
+  const vivo = cache.data?.voos.find((v) => v.hex === gravado.hex);
+  if (
+    vivo &&
+    vivo.coletadoEm > gravado.coletadoEm &&
+    distanciaKm(vivo.destino, gravado.destino) < 5 &&
+    Math.abs(vivo.pousoPrevistoEm - gravado.pousoPrevistoEm) < 3 * 3_600_000
+  ) {
+    return vivo;
+  }
+  return gravado;
+}
+
+function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotulo: string; ativo: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityLabel={rotulo}
+      accessibilityState={{ selected: ativo }}
+      onPress={onPress}
+      hitSlop={6}
+      style={({ pressed }) => [styles.modo, ativo && styles.modoAtivo, pressed && { opacity: 0.8 }]}
+    >
+      <Icon name={icone} color={ativo ? color.accent.default : color.text.primary} />
+    </Pressable>
   );
 }
 
@@ -240,6 +298,21 @@ function Dado({ rotulo, valor }: { rotulo: string; valor: string }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.flight },
+  paisagem: { position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden' },
+  degradeTopo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundImage: `linear-gradient(180deg, ${color.bg.flight} 18%, transparent 100%)`,
+  },
+  degradeBase: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundImage: `linear-gradient(180deg, transparent 0%, ${color.bg.flight} 100%)`,
+  },
   linhaTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
   boasVindas: {
@@ -249,9 +322,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     paddingVertical: space[12],
     borderRadius: radius.md,
-    backgroundColor: color.surface.subtle,
+    backgroundColor: color.bg.sheet,
   },
   servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 160 },
-  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-start', gap: space[4], padding: space[4], borderRadius: radius.xl, backgroundColor: color.surface.strong },
-  modoAtivo: { backgroundColor: color.surface.default },
+  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-start', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },
+  modo: { width: 40, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  modoAtivo: { backgroundColor: color.surface.track },
 });

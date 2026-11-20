@@ -55,7 +55,6 @@ export default function GloboDeTeste() {
             width={width}
             height={alturaGlobo}
             aviao={aviao}
-            progresso={progresso}
             origem={{ lat: ROUTE.from.lat, lon: ROUTE.from.lon, nome: ROUTE.from.city }}
             destino={{ lat: ROUTE.to.lat, lon: ROUTE.to.lon, nome: ROUTE.to.city }}
             modo={modo}

@@ -128,7 +128,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RF-21** O app deve executar o serviço de bordo (pausa) conforme a configuração do usuário e as regras RN-05 a RN-07, com aviso sonoro e notificação no início e no fim, mesmo com o app fechado, e o botão "Voltar ao foco".
 - **RF-22** Durante o voo deve existir uma notificação fixa com contagem regressiva até o pouso (Android) e, no iOS, uma Live Activity.
 - **RF-23** O botão "Pousar antes" deve abrir uma confirmação que mostra o que entra e o que não entra (RN-10), com "Continuar voando" como ação principal.
-- **RF-24** A mensagem de boas-vindas do voo deve dizer que o usuário pode sair do app à vontade e pedir para não ligar o modo avião.
+- **RF-24** A mensagem de boas-vindas do voo deve dizer que o usuário pode sair do app à vontade e pedir para não ligar o modo avião. Ela aparece no começo do voo, por cima da paisagem, e some depois (decidido em 20/11/2026).
 - **RF-25** Na econômica, tocar numa vista, som ou qualquer outro recurso da primeira classe durante o voo deve abrir o paywall, como fora do voo (RN-20). O voo segue no horário com o paywall aberto; fechar volta ao voo.
 - **RF-26** O app deve tratar os estados: Sem sinal do radar, Em espera, Sem internet (antes e durante o voo) e Dados fora do ar (seção 9).
 
