@@ -75,8 +75,8 @@ function useSomNativo(fonte: number | null, volume: number, tocando: boolean, in
     };
   }, [fonte, tocando, rota, pousoEm, reinicio]);
 
-  // Ao voltar ao app: retoma se outro app de música tinha pegado o foco; recomeça se o sistema
-  // encerrou o serviço.
+  // Ao voltar ao app: recomeça o som se o serviço foi encerrado (outro app de música pegou o foco,
+  // ou o sistema encerrou o serviço). Sempre com o app à vista, como pede o Android 17.
   useEffect(() => {
     if (!fonte || !tocando) return;
     const sub = AppState.addEventListener('change', (estado) => {

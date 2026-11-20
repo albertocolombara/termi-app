@@ -21,7 +21,9 @@ import androidx.media3.exoplayer.ExoPlayer
  * não mostra o player (pausar, voltar, duração). A notificação é a do voo, com a contagem até o pouso.
  *
  * - Loop sem corte (ExoPlayer, REPEAT_MODE_ONE) e foco de áudio do próprio ExoPlayer: uma ligação
- *   pausa e devolve o som; outro app de música pausa o som até o Termi ser aberto de novo.
+ *   pausa e devolve o som, com o serviço mantido. Outro app de música (perda definitiva do foco)
+ *   encerra o serviço, como pede o Android 17 ("Background audio hardening"); o som volta quando o
+ *   Termi é aberto de novo, num serviço novo iniciado com o app à vista.
  * - Entra com fade e para sozinho no horário do pouso, com fade, mesmo com o app fechado.
  */
 class FlightSoundService : Service() {
@@ -75,6 +77,14 @@ class FlightSoundService : Service() {
     p.setAudioAttributes(attributes, true)
     p.repeatMode = Player.REPEAT_MODE_ONE
     p.setMediaItem(MediaItem.fromUri(uri))
+    p.addListener(object : Player.Listener {
+      override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS) {
+          // A notificação do voo fica, com a contagem até o pouso.
+          finish(removeNotification = false)
+        }
+      }
+    })
     p.volume = if (fadeInMs > 0) 0f else volume
     p.prepare()
     p.playWhenReady = volume > 0f
