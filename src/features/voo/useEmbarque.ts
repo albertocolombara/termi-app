@@ -13,11 +13,13 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { env } from '@/config/env';
 import { baixarBlocos } from '@/data/blocos/baixarBlocos';
+import { baixarNuvensDaRota } from '@/data/nuvens/nuvens';
 import { useAjustes } from '@/data/preferencias/ajustes';
 import { criarSessao } from '@/data/sessoes/repositorio';
 import { CHAVE_SESSAO_EM_ANDAMENTO } from '@/data/sessoes/useSessaoEmAndamento';
 import { buscarVoosDisponiveis } from '@/data/voos/useVoos';
 import { DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
+import { nuvensDaRota } from '@/domain/janela/nuvens';
 import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
 import { agendaDePausas, horariosDasPausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { blocosSuficientes, camadasParaBaixar, dividirBlocos, MINUTOS_NO_EMBARQUE } from '@/domain/voos/blocosDaRota';
@@ -86,6 +88,9 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       const blocos = dividirBlocos(projetar(voo, agora), projetar(voo, limite), voo.destino, camadasParaBaixar(ajustes.qualidadeDaJanela)).noEmbarque;
       setEtapa({ tipo: 'baixando', voo, faltaKm, feitos: 0, total: blocos.length });
       const r = await baixarBlocos(blocos, (p) => setEtapa({ tipo: 'baixando', voo, faltaKm, ...p }), sinal);
+      if (sinal.aborted) return;
+      // Nuvens reais da rota inteira (~0,3 a 1 MB). Se falhar, a janela usa as nuvens geradas.
+      await baixarNuvensDaRota(nuvensDaRota(projetar(voo, agora), voo.destino), sinal).catch(() => {});
       if (sinal.aborted) return;
       if (!blocosSuficientes(r.total, r.falhas)) {
         setEtapa({ tipo: 'paisagem-falhou', voo, faltaKm });
