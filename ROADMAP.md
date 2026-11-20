@@ -141,9 +141,9 @@ flowchart LR
 - [ ] Sons de fundo e avisos por fase (áudio em segundo plano)
 - [ ] Serviço de bordo com avisos agendados como alarme exato
 - [ ] Notificação fixa com contagem
-- [ ] Pousar antes com confirmação
+- [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
 - [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo
-- [ ] Tela de pouso com carimbo e rendimentos
+- [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
 - [ ] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS
 
 ---
