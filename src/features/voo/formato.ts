@@ -1,4 +1,11 @@
 /** Formatação de horários e distâncias para as telas do voo (pt-BR, relógio do aparelho). */
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+/** Data curta do dia, como no cartão de embarque: "20 nov". */
+export const dataCurta = (ms: number) => {
+  const d = new Date(ms);
+  return `${d.getDate()} ${MESES[d.getMonth()]}`;
+};
+
 export const horaLocal = (ms: number) => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
 export const metros = (pes: number | null) => (pes === null ? null : `${Math.round(pes * 0.3048).toLocaleString('pt-BR')} m`);

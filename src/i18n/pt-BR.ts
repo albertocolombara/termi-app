@@ -74,7 +74,7 @@ export const ptBR = {
     confirmado: 'Confirmado',
     aeronave: 'Aeronave',
     assento: 'Assento',
-    terminal: 'Terminal',
+    data: 'Data',
     situacao: 'O avião já está a {altitude}, a {falta} de {cidade}. Você foca até o pouso, às {hora}.',
     situacaoSemAltitude: 'O avião está a {falta} de {cidade}. Você foca até o pouso, às {hora}.',
     embarcar: 'Embarcar',

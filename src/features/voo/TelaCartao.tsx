@@ -18,7 +18,7 @@ import { t } from '@/i18n';
 import { CodigoDeBarras } from './CodigoDeBarras';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { ImpressaoDoBilhete } from './ImpressaoDoBilhete';
-import { codigoDoLugar, duracao, horaLocal, km, metros, nomeDoLugar } from './formato';
+import { codigoDoLugar, dataCurta, duracao, horaLocal, km, metros, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
 export function TelaCartao() {
@@ -27,6 +27,8 @@ export function TelaCartao() {
   const [folhaAberta, setFolhaAberta] = useState(false);
   const q = useVoosDisponiveis();
   const [largura, setLargura] = useState(348);
+  // Data do dia em que o cartão foi impresso.
+  const [hoje] = useState(() => dataCurta(Date.now()));
   const voo = q.data?.voos.find((v) => v.hex === vooHex);
   const agora = q.data?.consultadoEm ?? 0;
 
@@ -90,7 +92,7 @@ export function TelaCartao() {
                 <Dado rotulo={t('cartao.status')} valor={t('cartao.confirmado')} />
                 <Dado rotulo={t('cartao.aeronave')} valor={voo.aeronave ?? '—'} />
                 <Dado rotulo={t('cartao.assento')} valor="23A" />
-                <Dado rotulo={t('cartao.terminal')} valor="—" />
+                <Dado rotulo={t('cartao.data')} valor={hoje} />
               </View>
               {/* Picote entre as duas partes do bilhete */}
               <LinhaTracejada cor={color.cartao.tracejado} traco={5} espaco={4} style={styles.picote} />
