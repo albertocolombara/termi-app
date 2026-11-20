@@ -74,7 +74,7 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
           </View>
         </View>
         <View style={{ flex: 1 }}>
-          <Letreiro texto={p.destino} style={[pixel(20), { color: C.text.accent }]} />
+          <Letreiro texto={p.destino} style={[pixel(20), { color: C.text.accent }]} correr />
         </View>
         <Text variant="Heading/Data 24" style={{ fontSize: 20, letterSpacing: -0.6 }}>
           {p.tempo}
