@@ -283,14 +283,18 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Dado rotulo={t('emVoo.horaLocal')} valor={horaLocal(agora)} />
         </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
-          <Button
-            variant="secondary"
-            size="mini"
-            label={t('emVoo.pousarAntes')}
-            onPress={() => setConfirmando(true)}
-            disabled={tempoAcabou}
-            style={{ alignSelf: 'center' }}
-          />
+          <View style={styles.acoes}>
+            <Button
+              variant="secondary"
+              size="mini"
+              label={t('emVoo.pousarAntes')}
+              onPress={() => setConfirmando(true)}
+              disabled={tempoAcabou}
+              style={{ alignSelf: 'center' }}
+            />
+            {/* Ajustes sem sair do voo: o voo segue no horário enquanto a tela está aberta. */}
+            <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
+          </View>
           {emPausa ? (
             // E2: o indicador vira "Serviço de bordo em andamento", em destaque, com a contagem regressiva.
             <Pressable
@@ -512,6 +516,7 @@ const styles = StyleSheet.create({
   },
   linhaTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
+  acoes: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
   servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 150 },
   servicoEmAndamento: {
     maxWidth: 190,
