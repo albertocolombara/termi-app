@@ -18,10 +18,11 @@ export function useTrilha(voo: Voo) {
       const agora = Date.now();
       // Horas desde a decolagem, estimadas pela distância da origem a ~700 km/h, com folga.
       const horas = Math.min(20, Math.ceil(distanciaKm(voo.origem, voo) / 700) + 1);
-      const amostras = await buscarAmostrasDoHistorico(env.flightCacheUrl, voo.regiao, agora, horas, signal);
+      const amostras = await buscarAmostrasDoHistorico(env.flightCacheUrl, voo.regiao, agora, horas, signal, voo.hex);
       return trilhaDoVoo(amostras, voo, agora);
     },
     staleTime: 10 * 60_000,
+    gcTime: 60 * 60_000, // ao voltar à tela do voo, não lê tudo de novo
     refetchInterval: 20 * 60_000,
     enabled: !!env.flightCacheUrl,
   });

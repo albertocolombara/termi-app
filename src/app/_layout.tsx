@@ -10,7 +10,12 @@ import { migrar } from '@/data/db/migracoes';
 import { queryClient } from '@/data/remote/queryClient';
 import { color } from '@/ds';
 import { SomDoVoo } from '@/features/voo/SomDoVoo';
+import { mostrarFerramentasDev } from '@/config/env';
 import { configurarAvisos } from '@/services/avisos';
+import { instalarMedidorDeDados } from '@/services/rede/medidor';
+
+// Builds de teste: medidor de dados baixados nos Ajustes (consumo de dados, build-37).
+if (mostrarFerramentasDev) instalarMedidorDeDados();
 
 export default function RootLayout() {
   useEffect(() => {
