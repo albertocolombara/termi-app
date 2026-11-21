@@ -72,6 +72,13 @@ class FlightSoundService : Service() {
       finish(removeNotification = uris != null)
       return START_NOT_STICKY
     }
+    // Parado antes de o serviço começar: o pedido de parar chegou com o de tocar ainda na fila
+    // (build-41, primeiro voo depois de atualizar: o som seguiu fora do voo depois de "Pousar antes").
+    val seq = intent?.getLongExtra(EXTRA_SEQ, 0L) ?: 0L
+    if (seq <= paradoAte) {
+      finish(removeNotification = removerAoParar)
+      return START_NOT_STICKY
+    }
     val volume = intent?.getFloatExtra(EXTRA_VOLUME, 1f) ?: 1f
     val fadeInMs = intent?.getLongExtra(EXTRA_FADE_IN_MS, 0L) ?: 0L
     play(uris, playlist, volume, fadeInMs, endAt)
@@ -100,8 +107,9 @@ class FlightSoundService : Service() {
     val p = builder.build()
     p.setAudioAttributes(attributes, true)
     if (playlist) {
-      p.setMediaItems(uris.map { MediaItem.fromUri(it) })
+      // Embaralha a lista antes: com o embaralhamento do ExoPlayer, a primeira faixa era sempre a mesma.
       p.shuffleModeEnabled = true
+      p.setMediaItems(uris.shuffled().map { MediaItem.fromUri(it) })
       p.repeatMode = Player.REPEAT_MODE_ALL
     } else {
       p.setMediaItem(MediaItem.fromUri(uris[0]))
@@ -215,6 +223,7 @@ class FlightSoundService : Service() {
     const val EXTRA_TITLE = "title"
     const val EXTRA_TEXT = "text"
     const val EXTRA_FADE_IN_MS = "fadeInMs"
+    const val EXTRA_SEQ = "seq"
     private const val FADE_OUT_MS = 1500L
     private const val FADE_STEP_MS = 50L
 
@@ -228,6 +237,21 @@ class FlightSoundService : Service() {
         LeastRecentlyUsedCacheEvictor(60L * 1024 * 1024),
         StandaloneDatabaseProvider(ctx),
       ).also { cacheDeMusica = it }
+
+    /** Número de cada pedido de tocar; o serviço ignora os pedidos até paradoAte (parados antes de começar). */
+    val pedidos = java.util.concurrent.atomic.AtomicLong(0)
+
+    @Volatile
+    var paradoAte = 0L
+
+    @Volatile
+    var removerAoParar = false
+
+    /** Para o som (o que toca e o que ainda está na fila para começar). */
+    fun parar(removerNotificacao: Boolean) {
+      removerAoParar = removerNotificacao
+      paradoAte = pedidos.get()
+    }
 
     /** O serviço em execução (só no processo do app, acessado na thread principal). */
     @Volatile

@@ -2,6 +2,7 @@ import { Skia, type SkData, type SkImage } from '@shopify/react-native-skia';
 import { Directory, File, Paths } from 'expo-file-system';
 
 import { env } from '@/config/env';
+import { ORIGEM_GLOBO } from '@/services/rede/medidor';
 import { PASTA_NO_APARELHO, caminhoDoBloco, caminhoNoAparelho, type Camada as CamadaDaPaisagem } from '@/domain/voos/blocosDaRota';
 
 /**
@@ -112,7 +113,7 @@ async function daPaisagem(camada: Camada, z: number, r: number, c: number): Prom
   } catch {
     // arquivo ilegível: baixa de novo
   }
-  const resposta = await fetch(`${env.tilesBaseUrl}/${caminhoDoBloco(b)}`);
+  const resposta = await fetch(`${env.tilesBaseUrl}/${caminhoDoBloco(b)}`, { headers: ORIGEM_GLOBO });
   if (resposta.status !== 200 && resposta.status !== 404) return null;
   try {
     new Directory(Paths.cache, `${PASTA_NO_APARELHO}/${b.camada}/${b.linha}`).create({ intermediates: true, idempotent: true });

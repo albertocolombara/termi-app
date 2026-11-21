@@ -15,12 +15,18 @@ const totais: Record<TipoDeDado, { bytes: number; pedidos: number }> = {
   outros: { bytes: 0, pedidos: 0 },
 };
 
-function tipoDa(url: string): TipoDeDado {
+/** Cabeçalho que o globo põe nos pedidos de blocos da paisagem, para separar no medidor. */
+export const ORIGEM_GLOBO = { 'X-Termi-Origem': 'globo' };
+
+function tipoDa(url: string, opcoes?: RequestInit): TipoDeDado {
   if (url.includes('/historico/')) return 'trilha';
+  // De perto o globo usa os blocos da paisagem (build-41: entravam como paisagem da janela).
+  const h = opcoes?.headers as Record<string, string> | undefined;
+  if (h?.['X-Termi-Origem'] === 'globo') return 'globo';
   if (url.includes('/voos/')) return 'voos';
   if (url.includes('/blocos/')) return 'paisagem';
   if (url.includes('/nuvens/')) return 'nuvens';
-  if (url.includes('gibs.earthdata')) return 'globo';
+  if (url.includes('gibs.earthdata') || url.includes('/globo/')) return 'globo';
   if (url.includes('/musica/')) return 'musica';
   return 'outros';
 }
@@ -34,7 +40,7 @@ export function instalarMedidorDeDados() {
   globalThis.fetch = async (entrada, opcoes) => {
     const resposta = await original(entrada, opcoes);
     const url = typeof entrada === 'string' ? entrada : entrada instanceof URL ? entrada.href : entrada.url;
-    const t = totais[tipoDa(url)];
+    const t = totais[tipoDa(url, opcoes)];
     t.pedidos++;
     t.bytes += Number(resposta.headers.get('content-length') ?? 0) || 0;
     return resposta;
