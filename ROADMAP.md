@@ -1,13 +1,13 @@
 # Roadmap — Termi: Focus Flights
 
 > Planejamento da evolução do produto em fases. Escopo e regras: [PRD.md](PRD.md). Decisões técnicas: [ARCHITECTURE.md](ARCHITECTURE.md).
-> Última atualização: 20/11/2026.
+> Última atualização: 21/11/2026.
 
 Prioridades: **P0** bloqueia o lançamento · **P1** necessário para a v1 · **P2** desejável · **P3** pós-lançamento.
 
 Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada).
 
-**Situação em 20/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento.**
+**Situação em 21/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento**, com o núcleo do voo usado pelo Alberto no M35 desde a build-26. Pendências da Fase 3 no fim da seção dela.
 
 ```mermaid
 flowchart LR
@@ -98,6 +98,11 @@ flowchart LR
 - [x] Criar a conta da Cloudflare e o bucket R2 no plano grátis (Alberto) e as chaves no GitHub — bucket `termi-dados`, publicação desde 20/11/2026 00:20 UTC (PR #1 do coletor)
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
 - [x] Gerar e enviar os blocos do mundo — toda a terra menos a Antártida (decisão do Alberto, 19/11/2026): 259.236 blocos, ~7,8 GB no R2 em 20/11/2026 (workflow "Blocos de paisagem" do coletor, PR #5; ARCHITECTURE §19)
+- [x] Trocar a paisagem pelo Sentinel-2 (ESA WorldCover 2021) e as luzes das cidades pela camada `l9` (decisão do Alberto, 20–21/11/2026; o R2 fica nos 10 GB grátis) — PR #10 e #11 do coletor: 256.922 blocos, ~8,0 GB, sem erros; rodada v2 da cor (mar no Blue Marble) gerada em 21/11/2026. O uso no app está no PR #47 (em teste)
+- [ ] Apagar do R2 os blocos que sobraram: Landsat não regravado (~0,15 GB; modo "limpar" do workflow, disparado pelo Alberto em 21/11/2026, a conferir no log) e a camada `i9` quando nenhum app em teste a usar
+- [x] Blocos do globo no R2 (Blue e Black Marble em WebP, níveis 1 a 7, 149 MB) — PR #46 e workflow "Blocos do globo" do coletor, 20/11/2026; 17 a 29 MB por voo medidos pelo Alberto na build-38 antes da troca
+- [x] Nuvens reais do mundo no R2, atualizadas a cada 3 h (VIIRS, ~22 MB fixos) — PR #40 e workflow "Nuvens" do coletor, 20/11/2026
+- [x] Lofi no R2 (31 faixas CC0, 64 MB, fora do APK) — PR #43 e workflow "Música" do coletor, 20/11/2026
 - [ ] Gerar texturas comprimidas (KTX2/Basis) [Proposta]
 - [ ] Monitorar o uso da cota do adsb.lol — hoje ~864 chamadas por dia (limite de 1.000 com a chave), visíveis no log de cada coleta
 - [ ] Cache atualizado a cada 10–20 min por 7 dias sem falha (em medição desde 20/11/2026 00:20 UTC)
@@ -126,25 +131,40 @@ flowchart LR
 ### Dados
 - [x] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query — `data/voos`, PR #18 (falta conferir no aparelho pela tela "Voos do cache")
 - [x] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12) — `data/voos`, PR #18
-- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; a janela segue a rota do voo da sessão no PR #24; falta tirar os pacotes do APK
+- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; a janela segue a rota do voo da sessão no PR #24; só a próxima 1 h da rota, conferida a cada 10 min, no PR #45 (consumo de dados medido pelo Alberto na build-38); falta tirar os pacotes do protótipo do APK (a tela de teste da janela ainda os usa)
 
 ### Telas e serviços
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
 - [ ] Render da janela com o avião no solo (taxiando ou no portão) para o estado Em solo **[Pendente]**
-- [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20 (falta conferir no aparelho)
-- [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20; no PR #27 as caudas viraram PNG (o SVG por linha derrubava o app ao rolar a lista no build-17)
+- [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20; Termi curioso no PR #35 e dica menor no PR #42, ajustes pedidos pelo Alberto depois de usar no M35
+- [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20; no PR #27 as caudas viraram PNG (o SVG por linha derrubava o app ao rolar a lista no build-17); letreiro no PR #34 e nome da cidade correndo no PR #44
 - [x] Sem voo: tempos próximos; dados fora do ar: voo de ontem — PR #18 e #20
-- [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22 (vai para o SQLite no embarque; falta conferir no aparelho)
+- [x] Cartão de embarque com motivo da viagem — cartão no PR #20; motivo da viagem (03b) com regras em `sessao/motivo.ts` no PR #22; impressão ao abrir no PR #33 e "Data" no lugar de "Terminal" no PR #38, pedidos pelo Alberto depois de usar no M35
 - [x] Caminho rápido no dial — "Embarcar no voo mais próximo" vai direto ao embarque, sem motivo da viagem (UC-03), PR #23
-- [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa (falta conferir no aparelho; a tela em voo ainda é provisória)
-- [ ] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); botão e folha de som (04D) no PR #29; falta conferir no aparelho
-- [ ] Sons de fundo e avisos por fase (áudio em segundo plano) — sons de fundo (motores, ruído branco, cabine, chuva) com o app aberto no PR #29; som em segundo plano com controle de mídia no PR #30; som sem controle de mídia no PR #39 (testado pelo Alberto na build 31); voo de cruzeiro grátis, motores na primeira classe e lofi em streaming no PR do lofi; faltam avisos por fase e conferir o lofi no aparelho com a tela bloqueada
-- [ ] Serviço de bordo com avisos agendados como alarme exato — estados E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") na tela em voo no PR do retorno da build-26; falta conferir no aparelho
-- [ ] Notificação fixa com contagem
+- [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa; Termi do Rive na esteira no PR #32; textos cortados corrigidos no PR #37 (retorno da build-27 no M35)
+- [x] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; aviso de boas-vindas no PR #27; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); botão e folha de som (04D) no PR #29; ajustes do voo no PR #38 e #41; nuvens reais e altitude real no PR #40; usada pelo Alberto no M35 desde a build-26 (retornos nos PR #36 a #46)
+- [x] Sons de fundo em segundo plano — sons (motores, ruído branco, cabine, chuva) no PR #29; com a tela bloqueada no PR #30; sem o controle de mídia do Android e com fade no embarque no PR #39 (testado pelo Alberto na build 31); voo de cruzeiro grátis, motores na primeira classe e lofi em streaming no PR #43
+- [ ] Conferir o lofi no aparelho com a tela bloqueada por um voo inteiro (se travar, avaliar `WAKE_LOCK`, que precisa de aprovação: não está na ARCHITECTURE §10)
+- [ ] Avisos por fase (avisos do comandante: embarque, cruzeiro, descida)
+- [ ] Serviço de bordo com avisos agendados como alarme exato — avisos agendados no embarque (PR #23; no horário num voo curto na build-6, ARCHITECTURE §15); E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") no PR #36; falta conferir no aparelho o ciclo completo com a tela bloqueada e o app fechado
+- [x] Notificação fixa com contagem — mostrada no embarque (PR #23); é a notificação do serviço do som desde o PR #39 (testado pelo Alberto na build 31)
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
-- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo
+- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet durante o voo
 - [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
-- [ ] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS
+- [x] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS — PR #37 (build-28): `useFrameCallback` + `useDerivedValue`, sem o teto de ~21 fps do timer; 30 fps opcional nos Ajustes (PR #42)
+- [ ] Medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica
+- [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 (build-41 em teste pelo Alberto): falta o teste no aparelho (memória e quadros da janela, globo no zoom máximo de dia e à noite) e o merge
+
+### Pendente na Fase 3 (21/11/2026)
+
+1. Testar no aparelho e fazer o merge do PR #47 (paisagem do Sentinel-2, luzes e globo até 61 m).
+2. Estados que faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet. Depende do render da janela no solo **[Pendente]**.
+3. Avisos por fase (avisos do comandante).
+4. Lugar sobrevoado (GeoNames) no painel e na tela de pouso.
+5. Conferir no aparelho, com a tela bloqueada e o app fechado: o ciclo do serviço de bordo (alarme exato) e o lofi por um voo inteiro.
+6. Medir 30 fps (bateria, temperatura, memória) no M35 e num Android mais fraco.
+7. Tirar os pacotes de paisagem do protótipo do APK.
+8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e a limpeza dos blocos antigos.
 
 ---
 
@@ -167,11 +187,11 @@ flowchart LR
 - [ ] Diário de bordo com filtro e detalhe
 - [ ] Estatísticas (semana; mês e ano na primeira classe)
 - [ ] RevenueCat: produtos, direitos, compra, restauração
-- [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR do retorno da build-26 (planos, condições, carrossel com os benefícios que já existem), sem compra: em builds de teste o botão liga a primeira classe de teste; faltam RevenueCat, Restaurar compras, Termos e Privacidade
-- [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR do retorno da build-26
-- [ ] Vistas da janela por plano; sons premium
+- [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR #36 (planos, condições, carrossel com os benefícios que já existem; etiqueta "Economize" corrigida no PR #44), sem compra: em builds de teste o botão liga a primeira classe de teste; o Alberto vai ajustar o visual no Figma; faltam RevenueCat, Restaurar compras, Termos e Privacidade
+- [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR #36; faltam os recursos que ainda não existem
+- [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; faltam as vistas "Com asa" e "Asa e motor" (render do Blender)
 - [ ] Backup do progresso e conta opcional
-- [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste), aberto por uma engrenagem no Início até o menu lateral existir; faltam os itens que dependem de recursos ainda não feitos
+- [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste) e janela a 30 fps no PR #42, aberto por uma engrenagem no Início até o menu lateral existir; créditos do M6 atualizados no Figma com ESA WorldCover e OpenStreetMap (21/11/2026), tela ainda não feita no app; faltam os itens que dependem de recursos ainda não feitos
 - [ ] Exportar e apagar dados
 - [ ] Estados vazios e aviso de avisos desligados no Início
 
@@ -247,7 +267,7 @@ flowchart LR
 - [ ] Produtos e preços no Play Console e no RevenueCat (R$ 14,90 / R$ 89,90 / R$ 179,90; oferta R$ 59,90)
 - [ ] Ficha da loja, capturas e vídeo
 - [ ] Avisar o adsb.lol da ida à produção; créditos ODbL no app
-- [ ] Preencher a data de acesso na citação do GMIS
+- [x] ~~Preencher a data de acesso na citação do GMIS~~ — não se aplica: o GMIS saiu em 21/11/2026 (ESA WorldCover, atribuição no Figma, tela M6)
 - [ ] Teste fechado com estudantes (público principal)
 - [ ] Lançamento em produção
 
