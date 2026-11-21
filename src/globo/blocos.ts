@@ -196,10 +196,13 @@ const N = 4;
 export const ladoDoMosaico = (camada: Camada, z: number) => (camada === 'noite' && doSentinel(z) ? 8 : N);
 
 /** Linha e coluna do canto do mosaico 4×4 centrado num ponto. */
-export function cantoDoMosaico(z: number, lat: number, lon: number, lado = N): [number, number] {
+export function cantoDoMosaico(z: number, lat: number, lon: number, lado?: number): [number, number] {
   'worklet';
+  // Sem valor padrão que leia variável de fora: no worklet, o padrão é avaliado antes de a variável
+  // capturada existir e o app fecha ao abrir o globo (build-41).
+  const l = lado ?? 4;
   const deg = 288 / 2 ** z;
-  return [Math.floor((90 - lat) / deg) - (lado >> 1) + 1, Math.floor((lon + 180) / deg) - (lado >> 1) + 1];
+  return [Math.floor((90 - lat) / deg) - (l >> 1) + 1, Math.floor((lon + 180) / deg) - (l >> 1) + 1];
 }
 
 /**
