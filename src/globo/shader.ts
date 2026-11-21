@@ -3,8 +3,8 @@
 //   1. mosaico perto (blocos da NASA no nível certo para o zoom, 2048 px);
 //   2. mosaico longe (2 níveis abaixo, cobre 16× a área);
 //   3. imagem mundial (Blue Marble 4096 × 2048), para o resto do planeta.
-// A noite usa o mosaico Black Marble (1024 px) e a imagem noturna mundial, misturados pela posição
-// real do sol. Memória de textura: ~70 MB (perto 16 + longe 16 + noite 4 + mundo dia 32 + noite 2).
+// A noite usa o mosaico Black Marble ou, de perto, as luzes l9 (2048 px) e a imagem noturna mundial, misturados pela posição
+// real do sol. Memória de textura: ~82 MB (perto 16 + longe 16 + noite 16 + mundo dia 32 + noite 2).
 // O globo e a janela não ficam montados ao mesmo tempo.
 
 export const TEX = {
@@ -12,7 +12,7 @@ export const TEX = {
   noite: { w: 2048, h: 1024 },
   perto: 2048,
   longe: 2048,
-  noiteMosaico: 1024,
+  noiteMosaico: 2048,
 } as const;
 
 export const SKSL_GLOBO = `
@@ -101,7 +101,7 @@ half4 main(float2 xy) {
   float2 un = noMosaico(bNoite, lon, lat);
   float wn = borda(un);
   if (wn > 0.0) {
-    half4 sn = noiteM.eval(un * 1024.0);
+    half4 sn = noiteM.eval(un * 2048.0);
     if (s2Noite > 0.5) {
       float built = float(sn.r) * float(sn.a);
       float rad = float(sn.g);

@@ -188,11 +188,18 @@ export const FORA: Limites = [1e3, 1e3, 1];
 
 const N = 4;
 
+/**
+ * Lado do mosaico em blocos. A noite de perto usa as luzes `l9` (nível 9, 0,56° por bloco): com 4×4
+ * cobria só 2,25° e, com o zoom nos níveis 8 e 9, a borda da tela caía no Black Marble borrado
+ * (build-40, Milão). Com 8×8 cobre 4,5°, como o mosaico de dia do nível 8.
+ */
+export const ladoDoMosaico = (camada: Camada, z: number) => (camada === 'noite' && doSentinel(z) ? 8 : N);
+
 /** Linha e coluna do canto do mosaico 4×4 centrado num ponto. */
-export function cantoDoMosaico(z: number, lat: number, lon: number): [number, number] {
+export function cantoDoMosaico(z: number, lat: number, lon: number, lado = N): [number, number] {
   'worklet';
   const deg = 288 / 2 ** z;
-  return [Math.floor((90 - lat) / deg) - (N >> 1) + 1, Math.floor((lon + 180) / deg) - (N >> 1) + 1];
+  return [Math.floor((90 - lat) / deg) - (lado >> 1) + 1, Math.floor((lon + 180) / deg) - (lado >> 1) + 1];
 }
 
 /**
@@ -200,12 +207,13 @@ export function cantoDoMosaico(z: number, lat: number, lon: number): [number, nu
  * Só remonta quando muda o nível ou o bloco central.
  */
 export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) => void) {
-  const celula = px / N;
   let chave = '';
   let pedido = 0;
   return {
     atualizar(z: number, lat: number, lon: number) {
-      const [r0, c0] = cantoDoMosaico(z, lat, lon);
+      const lado = ladoDoMosaico(camada, z);
+      const celula = px / lado;
+      const [r0, c0] = cantoDoMosaico(z, lat, lon, lado);
       const k = `${z}/${r0}/${c0}`;
       if (k === chave) return;
       chave = k;
@@ -213,9 +221,9 @@ export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) =
       const deg = grausDoBloco(z);
       const linhas = Math.ceil(180 / deg);
       const colunas = Math.ceil(360 / deg);
-      const blocos = [...Array(N * N)].map((_, i) => {
-        const r = r0 + Math.floor(i / N);
-        const c = c0 + (i % N);
+      const blocos = [...Array(lado * lado)].map((_, i) => {
+        const r = r0 + Math.floor(i / lado);
+        const c = c0 + (i % lado);
         if (r < 0 || r >= linhas || c < 0 || c >= colunas) return Promise.resolve(null);
         return baixar(camada, z, r, c);
       });
@@ -229,12 +237,12 @@ export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) =
         dados.forEach((d, i) => {
           const im = d ? Skia.Image.MakeImageFromEncoded(d) : null;
           if (!im) return;
-          const dst = Skia.XYWHRect((i % N) * celula, Math.floor(i / N) * celula, celula, celula);
+          const dst = Skia.XYWHRect((i % lado) * celula, Math.floor(i / lado) * celula, celula, celula);
           canvas.drawImageRect(im, Skia.XYWHRect(0, 0, im.width(), im.height()), dst, paint);
         });
         surface.flush();
         const snap = surface.makeImageSnapshot();
-        aoMudar({ imagem: snap.makeNonTextureImage() ?? snap, b: [c0 * deg - 180, 90 - r0 * deg, N * deg], sentinel: doSentinel(z) });
+        aoMudar({ imagem: snap.makeNonTextureImage() ?? snap, b: [c0 * deg - 180, 90 - r0 * deg, lado * deg], sentinel: doSentinel(z) });
       });
     },
   };
