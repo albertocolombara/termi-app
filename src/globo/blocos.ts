@@ -1,6 +1,8 @@
 import { Skia, type SkData, type SkImage } from '@shopify/react-native-skia';
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { env } from '@/config/env';
+
 /**
  * Blocos de imagem da NASA (GIBS, projeção geográfica EPSG:4326) para o globo.
  *
@@ -10,8 +12,10 @@ import { Directory, File, Paths } from 'expo-file-system';
  * Grade: blocos de 512 px; no nível z, cada bloco cobre 288 / 2^z graus. A linha 0 começa na
  * latitude 90 e a coluna 0 na longitude −180.
  *
- * No teste os blocos vêm direto do GIBS. Em produção vêm de uma cópia no Cloudflare R2
- * (`EXPO_PUBLIC_TILES_BASE_URL`), porque o GIBS não garante disponibilidade (ARCHITECTURE.md §9).
+ * Vêm de uma cópia no Cloudflare R2 (`EXPO_PUBLIC_TILES_BASE_URL`), recomprimida em WebP pelo
+ * workflow "Blocos do globo" do coletor: o Black Marble do GIBS só existe em PNG (~300 KB por bloco,
+ * ~30 KB em WebP) e o globo chegou a gastar 17 a 29 MB num voo de 25 min (build-38). Sem a URL do
+ * R2 (desenvolvimento), vem direto do GIBS. Bloco noturno ausente no R2 (404) = sem luzes (oceano).
  */
 
 const GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best';
@@ -20,10 +24,16 @@ const TAM = 512;
 
 export type Camada = 'dia' | 'noite';
 
-const url: Record<Camada, (z: number, r: number, c: number) => string> = {
+const doR2 = (camada: Camada) => (z: number, r: number, c: number) => `${env.tilesBaseUrl}/globo/${camada}/${z}/${r}/${c}.webp`;
+
+const doGibs: Record<Camada, (z: number, r: number, c: number) => string> = {
   dia: (z, r, c) => `${GIBS}/BlueMarble_NextGeneration/default/default/500m/${z}/${r}/${c}.jpeg`,
   noite: (z, r, c) => `${GIBS}/VIIRS_Black_Marble/default/2016-01-01/500m/${z}/${r}/${c}.png`,
 };
+
+const url: Record<Camada, (z: number, r: number, c: number) => string> = env.tilesBaseUrl
+  ? { dia: doR2('dia'), noite: doR2('noite') }
+  : doGibs;
 
 export const grausDoBloco = (z: number) => 288 / 2 ** z;
 
@@ -64,11 +74,20 @@ async function doAparelhoOuDaRede(camada: Camada, z: number, r: number, c: numbe
   conferirPasta();
   const arquivo = new File(Paths.cache, `${PASTA}/${camada}_${z}_${r}_${c}`);
   try {
-    if (arquivo.exists && arquivo.size > 0) return Skia.Data.fromBytes(await arquivo.bytes());
+    if (arquivo.exists) return arquivo.size > 0 ? Skia.Data.fromBytes(await arquivo.bytes()) : null;
   } catch {
     // arquivo ilegível: baixa de novo
   }
   const resposta = await fetch(url[camada](z, r, c));
+  if (resposta.status === 404) {
+    // Sem bloco (noite sobre o oceano): guarda vazio para não pedir de novo.
+    try {
+      arquivo.create({ overwrite: true });
+    } catch {
+      // só não fica guardado
+    }
+    return null;
+  }
   if (!resposta.ok) return null;
   const bytes = new Uint8Array(await resposta.arrayBuffer());
   try {
