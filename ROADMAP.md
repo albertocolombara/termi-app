@@ -99,7 +99,8 @@ flowchart LR
 - [ ] Configurar domínio próprio e cache no R2 (até lá, endereço r2.dev de desenvolvimento)
 - [x] Gerar e enviar os blocos do mundo — toda a terra menos a Antártida (decisão do Alberto, 19/11/2026): 259.236 blocos, ~7,8 GB no R2 em 20/11/2026 (workflow "Blocos de paisagem" do coletor, PR #5; ARCHITECTURE §19)
 - [x] Trocar a paisagem pelo Sentinel-2 (ESA WorldCover 2021) e as luzes das cidades pela camada `l9` (decisão do Alberto, 20–21/11/2026; o R2 fica nos 10 GB grátis) — PR #10 e #11 do coletor: 256.922 blocos, ~8,0 GB, sem erros; rodada v2 da cor (mar no Blue Marble) gerada em 21/11/2026. O uso no app está no PR #47 (em teste)
-- [ ] Apagar do R2 os blocos que sobraram: Landsat não regravado (~0,15 GB; modo "limpar" do workflow, disparado pelo Alberto em 21/11/2026, a conferir no log) e a camada `i9` quando nenhum app em teste a usar
+- [x] Apagar do R2 os blocos do Landsat que não foram regravados — 6.036 `w10` e 1.414 `w8` (0,15 GB), modo "limpar" do workflow disparado pelo Alberto em 21/11/2026 (log confirma)
+- [ ] Apagar a camada `i9` (0,11 GB) quando nenhum app em teste a usar
 - [x] Blocos do globo no R2 (Blue e Black Marble em WebP, níveis 1 a 7, 149 MB) — PR #46 e workflow "Blocos do globo" do coletor, 20/11/2026; 17 a 29 MB por voo medidos pelo Alberto na build-38 antes da troca
 - [x] Nuvens reais do mundo no R2, atualizadas a cada 3 h (VIIRS, ~22 MB fixos) — PR #40 e workflow "Nuvens" do coletor, 20/11/2026
 - [x] Lofi no R2 (31 faixas CC0, 64 MB, fora do APK) — PR #43 e workflow "Música" do coletor, 20/11/2026
@@ -164,7 +165,7 @@ flowchart LR
 5. Conferir no aparelho, com a tela bloqueada e o app fechado: o ciclo do serviço de bordo (alarme exato) e o lofi por um voo inteiro.
 6. Medir 30 fps (bateria, temperatura, memória) no M35 e num Android mais fraco.
 7. Tirar os pacotes de paisagem do protótipo do APK.
-8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e a limpeza dos blocos antigos.
+8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9` depois do PR #47.
 
 ---
 
