@@ -389,7 +389,7 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
   - Paisagem da janela: ~9 MB por hora de rota (~3 MB na qualidade Econômica), a próxima 1 h à frente; fica no cache do aparelho.
   - Posição do avião durante o voo: só o arquivo da região do avião (20 a 145 KB) a cada 5 min; antes eram as 12 regiões (~0,7 MB), só para atualizar um avião.
   - Trilha do globo: cada faixa de 20 min do histórico é baixada uma vez por abertura do app; antes todas eram baixadas de novo a cada 20 min.
-  - Globo: os blocos da NASA ficam no cache do aparelho (até ~800 arquivos); antes eram baixados a cada abertura do globo.
+  - Globo: blocos do Blue e do Black Marble recomprimidos em WebP no R2 (`globo/{dia|noite}/{z}/{linha}/{coluna}.webp`, níveis 1 a 7, 34.142 blocos, 149 MB, workflow "Blocos do globo" do coletor, 20/11/2026), guardados no cache do aparelho (até ~800 arquivos). O mosaico noturno só é baixado quando a região vista está de noite. Antes vinham do GIBS a cada abertura do globo (o Black Marble só existe em PNG, ~300 KB por bloco): 17 a 29 MB medidos pelo Alberto num voo de 25 min (build-38).
   - Nuvens: ~0,3 a 1 MB por voo. Lofi (primeira classe): ~40 MB por hora de música.
   - Builds de teste mostram nos Ajustes os dados baixados desde que o app abriu, por tipo (o lofi não entra na conta).
   - **[Pendente]** O R2 não comprime os JSON (o `r2.dev` serve sem gzip); com domínio próprio e compressão da Cloudflare, os arquivos de voos caem a uma fração.

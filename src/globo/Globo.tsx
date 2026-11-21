@@ -26,6 +26,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { color, Icon, radius, space, Text } from '@/ds';
 import { motion, timing } from '@/ds/motion';
 import { t } from '@/i18n';
+import { sun } from '@/janela/geo';
 import { FORA, cantoDoMosaico, criarMosaico, nivelPara, type Mosaico } from './blocos';
 import { cameraBasis, destino, FOV, grandeCirculo, project, projectZ, sunEcef, type Camera } from './camera';
 import { SKSL_GLOBO, TEX } from './shader';
@@ -197,7 +198,11 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
     const [mp, ml, mn] = mosaicos.current!;
     mp.atualizar(z, la, lo);
     ml.atualizar(Math.max(1, z - 2), la, lo);
-    mn.atualizar(Math.max(1, z - 1), la, lo);
+    // Luzes da cidade só quando a região vista está de noite ou no fim de tarde (build-38: o mosaico
+    // noturno era o maior gasto do globo e era baixado mesmo de dia). De longe (nível baixo) a vista
+    // pega o mundo todo, e os blocos são poucos: baixa sempre.
+    const elevacaoDoSol = (sun(Date.now(), la, lo).el * 180) / Math.PI;
+    if (z < 4 || elevacaoDoSol < 12) mn.atualizar(Math.max(1, z - 1), la, lo);
   }, []);
 
   useAnimatedReaction(
