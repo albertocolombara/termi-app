@@ -20,7 +20,7 @@ import { indiceDaQualidade, quadrosDaJanela, useAjustes } from '@/data/preferenc
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import { useVistaDaJanela } from '@/data/preferencias/vistaDaJanela';
 import { useTrilha } from '@/data/voos/useTrilha';
-import { useVoosDisponiveis } from '@/data/voos/useVoos';
+import { useVooAoVivo } from '@/data/voos/useVooAoVivo';
 import { CAMADAS_DA_VISTA, vistaEmUso } from '@/domain/janela/vistas';
 import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { somEmUso } from '@/domain/sons/catalogo';
@@ -448,12 +448,11 @@ const DESCIDA_DA_JANELA = 56;
 
 /**
  * O voo gravado no embarque, trocado pela leitura mais nova do cache quando ela chega (a cada 5 min
- * com a tela aberta). Assim a posição projetada se corrige pelo dado real. Só aceita o mesmo voo:
- * mesmo avião, mesmo destino e pouso previsto parecido.
+ * com a tela aberta, só a região do avião). Assim a posição projetada se corrige pelo dado real.
+ * Só aceita o mesmo voo: mesmo avião, mesmo destino e pouso previsto parecido.
  */
 function useVooAtualizado(gravado: Voo): Voo {
-  const cache = useVoosDisponiveis();
-  const vivo = cache.data?.voos.find((v) => v.hex === gravado.hex);
+  const vivo = useVooAoVivo(gravado).data;
   if (
     vivo &&
     vivo.coletadoEm > gravado.coletadoEm &&

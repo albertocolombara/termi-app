@@ -20,6 +20,7 @@ import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 
 import { LinhaComInterruptor, LinhaComValor, Secao } from './Grupo';
+import { MedidorDeDados } from './MedidorDeDados';
 
 const QUALIDADES: { valor: QualidadeDaJanela; nome: ChaveDeTexto; descricao: ChaveDeTexto }[] = [
   { valor: 'automatica', nome: 'ajustes.qualidade.automatica', descricao: 'ajustes.qualidade.automaticaDescricao' },
@@ -100,6 +101,8 @@ export function TelaAjustes() {
             onPress={() => (mostrarFerramentasDev ? trocarClasse(classe === 'primeira' ? 'economica' : 'primeira') : undefined)}
           />
         </Secao>
+
+        {mostrarFerramentasDev ? <MedidorDeDados /> : null}
       </ScrollView>
 
       <BottomSheet visible={folha === 'intervalo'} onClose={() => setFolha(null)} title={t('ajustes.intervalo')} subtitle={t('ajustes.intervaloSubtitulo')}>

@@ -101,6 +101,11 @@ export async function buscarIndice(base: string, sinal?: AbortSignal): Promise<R
   return Object.entries(i.regioes).map(([id, r]) => ({ id, nome: r.nome, coletadoEm: Date.parse(r.coletadoEm), voos: r.voos }));
 }
 
+/** Os voos de uma só região (para acompanhar o avião da sessão). */
+export async function buscarRegiao(base: string, regiao: string, sinal?: AbortSignal): Promise<Voo[]> {
+  return voosDaRegiao(await json<RegiaoJson>(`${base}/voos/${regiao}.json`, sinal));
+}
+
 export type VoosAoVivo = { voos: Voo[]; regioes: Regiao[]; atribuicao: string | null };
 
 /** Índice + todas as regiões em paralelo. Uma região que falhar não derruba as outras. */
@@ -160,20 +165,49 @@ export type AmostraDoHistorico = { hex: string; lat: number; lon: number; em: nu
  * Posições de uma região nas últimas `horas` (uma por faixa de 20 min), para montar a trilha real de um voo.
  * Arquivo que falhar é só uma amostra a menos.
  */
-export async function buscarAmostrasDoHistorico(base: string, regiao: string, agora: number, horas: number, sinal?: AbortSignal): Promise<AmostraDoHistorico[]> {
+// Faixas do histórico já lidas nesta abertura do app (só as amostras do avião procurado).
+// Uma faixa de hoje não muda até ser sobrescrita amanhã: na releitura da trilha (a cada 20 min)
+// só as faixas novas são baixadas (build-37: antes baixava todas de novo, ~60 a 145 KB cada).
+const faixasLidas = new Map<string, AmostraDoHistorico[]>();
+const LIMITE_FAIXAS = 200;
+
+export async function buscarAmostrasDoHistorico(
+  base: string,
+  regiao: string,
+  agora: number,
+  horas: number,
+  sinal?: AbortSignal,
+  hex?: string,
+): Promise<AmostraDoHistorico[]> {
   const faixas = new Set<string>();
   for (let t = agora; t >= agora - horas * 3_600_000; t -= 20 * 60_000) faixas.add(faixaDoDia(t));
-  const arquivos = await Promise.allSettled([...faixas].map((f) => json<RegiaoJson>(`${base}/historico/${regiao}/${f}.json`, sinal)));
-  const amostras: AmostraDoHistorico[] = [];
-  for (const a of arquivos) {
-    if (a.status !== 'fulfilled') continue;
+  const chave = (f: string) => `${base}|${regiao}|${hex ?? '*'}|${f}`;
+  const faltam = [...faixas].filter((f) => !faixasLidas.has(chave(f)));
+  const arquivos = await Promise.allSettled(faltam.map((f) => json<RegiaoJson>(`${base}/historico/${regiao}/${f}.json`, sinal)));
+  arquivos.forEach((a, i) => {
+    if (a.status !== 'fulfilled') return;
     try {
+      const doArquivo: AmostraDoHistorico[] = [];
       for (const v of voosDaRegiao(a.value)) {
-        amostras.push({ hex: v.hex, lat: v.lat, lon: v.lon, em: v.coletadoEm, destinoLat: v.destino.lat, destinoLon: v.destino.lon });
+        if (hex && v.hex !== hex) continue;
+        doArquivo.push({ hex: v.hex, lat: v.lat, lon: v.lon, em: v.coletadoEm, destinoLat: v.destino.lat, destinoLon: v.destino.lon });
+      }
+      // Arquivo de ontem (a faixa de hoje ainda não foi coletada): usa agora, mas não guarda.
+      if (Date.parse(a.value.coletadoEm) > agora - 22 * 3_600_000) {
+        faixasLidas.set(chave(faltam[i]), doArquivo);
+        if (faixasLidas.size > LIMITE_FAIXAS) faixasLidas.delete(faixasLidas.keys().next().value!);
+      } else {
+        faixasLidas.set(`${chave(faltam[i])}|ontem`, doArquivo);
       }
     } catch {
       // arquivo antigo ou quebrado: ignora
     }
+  });
+  const amostras: AmostraDoHistorico[] = [];
+  for (const f of faixas) {
+    const lidas = faixasLidas.get(chave(f)) ?? faixasLidas.get(`${chave(f)}|ontem`);
+    if (lidas) amostras.push(...lidas);
+    faixasLidas.delete(`${chave(f)}|ontem`);
   }
   return amostras;
 }

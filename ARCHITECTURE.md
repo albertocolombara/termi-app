@@ -385,6 +385,14 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
 - **Paisagem em resolução reduzida e ampliada;** asa e moldura em resolução cheia, redesenhadas só quando a luz muda.
 - **10 fps por padrão, 2 fps em economia, 30 fps opcional** (Ajustes > "Janela a 30 quadros por segundo", desligado por padrão). Desde a build-28 o relógio da janela roda na thread de interface (`useFrameCallback` + `useDerivedValue`): cada quadro é montado sem passar pelo JavaScript, o que tira o teto de ~21 fps do timer em JS. A posição e o deslocamento das nuvens são interpolados entre as leituras de 1 s da tela (antes a paisagem andava em degraus de 1 s). **[Pendente]** medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica.
 - **Segundo plano sem trabalho:** janela desmontada e relógios parados (1% de bateria em 25 min de tela bloqueada).
+- **Dados móveis (20/11/2026, depois de 2,01 GB num dia de testes na build 33).** O que o app baixa e como:
+  - Paisagem da janela: ~9 MB por hora de rota (~3 MB na qualidade Econômica), a próxima 1 h à frente; fica no cache do aparelho.
+  - Posição do avião durante o voo: só o arquivo da região do avião (20 a 145 KB) a cada 5 min; antes eram as 12 regiões (~0,7 MB), só para atualizar um avião.
+  - Trilha do globo: cada faixa de 20 min do histórico é baixada uma vez por abertura do app; antes todas eram baixadas de novo a cada 20 min.
+  - Globo: os blocos da NASA ficam no cache do aparelho (até ~800 arquivos); antes eram baixados a cada abertura do globo.
+  - Nuvens: ~0,3 a 1 MB por voo. Lofi (primeira classe): ~40 MB por hora de música.
+  - Builds de teste mostram nos Ajustes os dados baixados desde que o app abriu, por tipo (o lofi não entra na conta).
+  - **[Pendente]** O R2 não comprime os JSON (o `r2.dev` serve sem gzip); com domínio próprio e compressão da Cloudflare, os arquivos de voos caem a uma fração.
 - **Texturas comprimidas** (KTX2/Basis) no app nativo [Proposta].
 - **Blocos baixados no embarque,** fora do APK (o protótipo embute ~21 MB de blocos só para Barcelona → Londres; ~26 MB com renders e mapas-base).
 - **Escala:** o servidor não cresce com usuários; o custo é de leitura na CDN (~US$ 0,40/mês com 1.000 usuários ativos por dia).
@@ -543,7 +551,7 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 
 Por voo: ~250 blocos (~9 MB) por hora, baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
 
-**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo) e o resto baixa durante o voo, com a tela aberta (`data/blocos/useBlocosDoVoo.ts`). Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
+**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo). Durante o voo, com a tela aberta, o app mantém baixada só a **próxima 1 h** à frente do avião e confere a cada 10 min (`data/blocos/useBlocosDoVoo.ts`); antes baixava a rota inteira até o destino de uma vez. Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
 
 **Níveis de qualidade.**
 

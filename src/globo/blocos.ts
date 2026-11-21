@@ -1,4 +1,5 @@
 import { Skia, type SkData, type SkImage } from '@shopify/react-native-skia';
+import { Directory, File, Paths } from 'expo-file-system';
 
 /**
  * Blocos de imagem da NASA (GIBS, projeção geográfica EPSG:4326) para o globo.
@@ -38,6 +39,46 @@ export function nivelPara(kmPorPixel: number): number {
 const LIMITE_CACHE = 120;
 const cache = new Map<string, Promise<SkData | null>>();
 
+// Cópia no aparelho (build-37, consumo de dados): antes, cada abertura do globo baixava os
+// blocos de novo. Passando de ~800 arquivos (~100 MB), a pasta é esvaziada e recomeça.
+const PASTA = 'globo';
+const LIMITE_ARQUIVOS = 800;
+let pastaConferida = false;
+
+function conferirPasta() {
+  if (pastaConferida) return;
+  pastaConferida = true;
+  try {
+    const pasta = new Directory(Paths.cache, PASTA);
+    if (!pasta.exists) pasta.create({ intermediates: true, idempotent: true });
+    else if (pasta.list().length > LIMITE_ARQUIVOS) {
+      pasta.delete();
+      pasta.create({ intermediates: true, idempotent: true });
+    }
+  } catch {
+    // sem a cópia no aparelho, só baixa de novo
+  }
+}
+
+async function doAparelhoOuDaRede(camada: Camada, z: number, r: number, c: number): Promise<SkData | null> {
+  conferirPasta();
+  const arquivo = new File(Paths.cache, `${PASTA}/${camada}_${z}_${r}_${c}`);
+  try {
+    if (arquivo.exists && arquivo.size > 0) return Skia.Data.fromBytes(await arquivo.bytes());
+  } catch {
+    // arquivo ilegível: baixa de novo
+  }
+  const resposta = await fetch(url[camada](z, r, c));
+  if (!resposta.ok) return null;
+  const bytes = new Uint8Array(await resposta.arrayBuffer());
+  try {
+    await arquivo.write(bytes);
+  } catch {
+    // sem espaço: usa só da memória
+  }
+  return Skia.Data.fromBytes(bytes);
+}
+
 function baixar(camada: Camada, z: number, r: number, c: number): Promise<SkData | null> {
   const k = `${camada}/${z}/${r}/${c}`;
   const atual = cache.get(k);
@@ -46,7 +87,7 @@ function baixar(camada: Camada, z: number, r: number, c: number): Promise<SkData
     cache.set(k, atual);
     return atual;
   }
-  const p = Skia.Data.fromURI(url[camada](z, r, c)).catch(() => null);
+  const p = doAparelhoOuDaRede(camada, z, r, c).catch(() => null);
   cache.set(k, p);
   if (cache.size > LIMITE_CACHE) cache.delete(cache.keys().next().value!);
   return p;
