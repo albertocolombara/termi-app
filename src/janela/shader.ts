@@ -91,15 +91,23 @@ float3 ground(float2 g, out float3 night) {
   }
   half4 m = atlMid(g); c = mix(c, grade(float3(m.rgb)), float(m.a));
   half4 n = atlNear(g); c = mix(c, grade(float3(n.rgb)), float(n.a));
-  half4 im = atlImp(g); float bm = max(max(night.r, night.g), night.b);
-  // Fora da Europa (as imagens-base noturnas do protótipo só cobrem a Europa), o brilho vem
-  // das próprias áreas construídas: assim as cidades acendem no mundo inteiro (build-31).
-  float eb = inside(tb) ? smoothstep(0.0, 0.03, min(min(tb.x, 1.0 - tb.x), min(tb.y, 1.0 - tb.y))) : 0.0;
-  // Calibrado para ficar no mesmo nível da Europa (onde o brilho vem do Black Marble).
-  bm = mix(float(im.r), bm, eb);
-  float sp = vn(g * float2(900.0 * cos(radians(g.y)), 900.0)) * vn(g * float2(2300.0 * cos(radians(g.y)), 2300.0) + 7.0);
-  float3 city = float3(1.0, 0.72, 0.42) * pow(float(im.r), 1.3) * (0.12 + 2.0 * bm) * (0.3 + 2.2 * sp);
-  night = mix(night, city, float(im.a));
+  // Luzes das cidades (21/11/2026, Sentinel-2): a camada l9 traz em R a fração de área construída
+  // (ESA WorldCover, 10 m) e em G a luz real medida à noite (Black Marble). A forma vem da área
+  // construída; o brilho, da luz real (centros mais claros e brancos, periferia fraca e laranja);
+  // por cima, pontos de luz na escala de quadras. Antes a luz virava um liga/desliga de cor fixa
+  // e as metrópoles saturavam em manchas lisas.
+  // Imagens-base da Europa (protótipo): a luz delas vira cor, como antes.
+  night = float3(1.0, 0.72, 0.35) * smoothstep(0.25, 0.85, max(max(night.r, night.g), night.b));
+  half4 im = atlImp(g);
+  float built = float(im.r);
+  float rad = float(im.g);
+  // Ruído em km dentro do grau (fract): com graus × milhares o float perde precisão no aparelho.
+  float2 q = fract(g) * float2(111.2 * cos(radians(g.y)), 111.2);
+  float pts = smoothstep(0.58, 0.92, vn(q * 24.0) * 0.55 + vn(q * 65.0 + 3.1) * 0.6);
+  float intens = 0.06 + 0.94 * pow(rad, 1.7);
+  float lz = built * intens * (0.12 + 0.7 * pts * sqrt(built));
+  float3 tint = mix(float3(1.0, 0.5, 0.16), float3(1.0, 0.82, 0.58), smoothstep(0.3, 1.2, lz));
+  night = mix(night, max(night * 0.4, tint * lz), float(im.a) * clamp(built * 6.0, 0.0, 1.0));
   return c;
 }
 
@@ -152,7 +160,7 @@ half4 main(float2 fc) {
     float2 sh = p.xy + sunD.xy / max(sunD.z, 0.15) * (-3.0);
     float cs = hq > 0.5 ? cloudAt(ll(sh), sh + F.xy * drift) : 0.0;
     gc = gc * (0.16 + 1.15 * lit * (1.0 - 0.55 * cs)) * day + gc * 0.03;
-    float lg = smoothstep(0.25, 0.85, max(max(nl.r, nl.g), nl.b)); gc += float3(1.0, 0.72, 0.35) * lg * (1.0 - day) * 1.5;
+    gc += nl * (1.0 - day) * 1.5;
     gc = mix(gc, float3(0.42, 0.52, 0.68) * (lit * day + 0.02), 0.14 * day);
     col = mix(gc, hor * 0.92, 1.0 - exp(-t / 75.0));
   }

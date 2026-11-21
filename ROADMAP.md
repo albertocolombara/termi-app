@@ -247,7 +247,7 @@ flowchart LR
 - [ ] Produtos e preços no Play Console e no RevenueCat (R$ 14,90 / R$ 89,90 / R$ 179,90; oferta R$ 59,90)
 - [ ] Ficha da loja, capturas e vídeo
 - [ ] Avisar o adsb.lol da ida à produção; créditos ODbL no app
-- [ ] Preencher a data de acesso na citação do GMIS
+- [ ] ~~Preencher a data de acesso na citação do GMIS~~ (GMIS substituído pelo ESA WorldCover em 21/11/2026; atribuição do WorldCover já no Figma, tela M6)
 - [ ] Teste fechado com estudantes (público principal)
 - [ ] Lançamento em produção
 

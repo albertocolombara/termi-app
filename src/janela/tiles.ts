@@ -2,6 +2,8 @@ import { Asset } from 'expo-asset';
 import { File, Paths } from 'expo-file-system';
 import { Skia, SkImage } from '@shopify/react-native-skia';
 
+import { caminhoNoAparelho, type Camada } from '@/domain/voos/blocosDaRota';
+
 // Blocos da rota: primeiro os baixados do R2 no embarque; senão, os pacotes do protótipo
 // (Barcelona → Londres), que ainda vêm no APK para a tela de teste e saem antes do lançamento.
 const INDEX: Record<string, [string, number, number]> = require('../../assets/janela/pk/index.json');
@@ -49,13 +51,13 @@ function packFile(name: string) {
 const decodificar = (bytes: Uint8Array) => Skia.Image.MakeImageFromEncoded(Skia.Data.fromBytes(bytes));
 
 /**
- * Bloco baixado no embarque (data/blocos), em `cache/blocos/{camada}/{linha}/{coluna}.webp`.
+ * Bloco baixado no embarque (data/blocos), em `cache/paisagem/{camada}/{linha}/{coluna}.webp`.
  * Arquivo vazio = oceano (404 no R2). `undefined` = não baixado: cai nos pacotes do protótipo.
  */
 async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
   const [camada, rc] = key.split('/');
   const [linha, coluna] = rc.split('_');
-  const f = new File(Paths.cache, `blocos/${camada}/${linha}/${coluna}.webp`);
+  const f = new File(Paths.cache, caminhoNoAparelho({ camada: camada as Camada, linha: Number(linha), coluna: Number(coluna) }));
   if (!f.exists) return undefined;
   if (f.size === 0) return null;
   try {
@@ -68,7 +70,8 @@ async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
 async function tile(key: string): Promise<SkImage | null> {
   const baixado = await blocoBaixado(key);
   if (baixado !== undefined) return baixado;
-  const ix = INDEX[key];
+  // Pacotes do protótipo: as luzes ainda são a antiga camada i9 (GMIS em cinza: R = G = área construída).
+  const ix = INDEX[key] ?? INDEX[key.replace(/^l9\//, 'i9/')];
   if (!ix) return null;
   const [p, offset, length] = ix;
   const f = await packFile(p);
@@ -93,7 +96,7 @@ const N = 4;
  * Só remonta quando o avião muda de bloco.
  */
 export function makeAtlas(
-  dir: 'w10' | 'w8' | 'i9',
+  dir: 'w10' | 'w8' | 'l9',
   z: number,
   px: number,
   onChange: (s: AtlasState) => void,

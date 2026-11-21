@@ -134,7 +134,7 @@ export function Janela({
     atlases.current = [
       makeAtlas('w10', 10, ATLAS_PX.near, setNear),
       makeAtlas('w8', 8, ATLAS_PX.mid, setMid),
-      makeAtlas('i9', 9, ATLAS_PX.imp, setImp),
+      makeAtlas('l9', 9, ATLAS_PX.imp, setImp),
     ];
   }
   // Nuvens reais (satélite, a cada 3 h), em volta do avião.
