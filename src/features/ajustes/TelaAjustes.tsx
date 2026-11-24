@@ -96,9 +96,10 @@ export function TelaAjustes() {
         <Secao titulo={t('ajustes.contaECompras')}>
           <LinhaComValor
             titulo={t('ajustes.primeiraClasse')}
-            descricao={t('ajustes.primeiraClasseDescricao')}
+            descricao={mostrarFerramentasDev ? t('ajustes.primeiraClasseDescricao') : undefined}
             valor={classe === 'primeira' ? t('ajustes.classePrimeira') : t('ajustes.classeEconomica')}
-            onPress={() => (mostrarFerramentasDev ? trocarClasse(classe === 'primeira' ? 'economica' : 'primeira') : undefined)}
+            // No app de teste, troca a classe; nos outros, abre o Plus (paywall ou gerenciar).
+            onPress={() => (mostrarFerramentasDev ? trocarClasse(classe === 'primeira' ? 'economica' : 'primeira') : router.push('/primeira-classe'))}
           />
         </Secao>
 

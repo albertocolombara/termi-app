@@ -70,6 +70,8 @@ export const color = {
   status: {
     warning: p['orange-intl/500'],
     success: p['green/500'],
+    /** Fundo da etiqueta "Pousou" (Figma M3b): verde a 16%. */
+    successSubtle: 'rgba(68,206,50,0.16)',
   },
   text: {
     primary: p['white/100'],
@@ -101,6 +103,20 @@ export const color = {
     leitura: '#C4A1FF',
     criacao: '#FF92BE',
     outro: '#B3B1BA',
+  },
+  /** Fundo das tags de categoria (Figma: "Categoria / Tag"): a cor da categoria a 10%. */
+  categoriaFundo: {
+    estudo: 'rgba(127,176,255,0.10)',
+    trabalho: 'rgba(94,214,200,0.10)',
+    leitura: 'rgba(196,161,255,0.10)',
+    criacao: 'rgba(255,146,190,0.10)',
+    outro: 'rgba(179,177,186,0.10)',
+  },
+  /** Tintas dos carimbos do passaporte (Figma M2): ouro, laranja, rosa, verde e azul. */
+  carimbo: {
+    papel: '#EFEDD6',
+    bordaDoPapel: '#C4C4C4',
+    tintas: ['#C99B1D', '#FF9F1C', '#FF7A9C', '#44CE32', '#7FB2FF'],
   },
   /** Esteira de bagagem da tela de embarque (Figma "05 · Embarcando"; cores locais da ilustração). */
   esteira: {

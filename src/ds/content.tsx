@@ -100,6 +100,29 @@ export function Avatar({ tamanho = 'botao' }: { tamanho?: 'botao' | 'grande' }) 
   );
 }
 
+// ───────── Categoria / Tag ─────────
+export type CategoriaDaTag = 'estudo' | 'trabalho' | 'leitura' | 'criacao' | 'outro';
+const ICONE_DA_CATEGORIA: Record<CategoriaDaTag, IconName> = {
+  estudo: 'categoriaEstudo',
+  trabalho: 'categoriaTrabalho',
+  leitura: 'categoriaLeitura',
+  criacao: 'categoriaCriacao',
+  outro: 'categoriaOutro',
+};
+
+/** Tag de categoria do motivo da viagem (Figma: "Categoria / Tag", Tamanho = Pequeno ou Médio). */
+export function CategoriaTag({ categoria, rotulo, tamanho = 'pequeno' }: { categoria: CategoriaDaTag; rotulo: string; tamanho?: 'pequeno' | 'medio' }) {
+  const medio = tamanho === 'medio';
+  return (
+    <View style={[styles.tag, { backgroundColor: C.categoriaFundo[categoria] }, medio && styles.tagMedia]}>
+      <Icon name={ICONE_DA_CATEGORIA[categoria]} size={medio ? 14 : 12} />
+      <Text variant="Caption/Medium 12" style={[styles.tagTexto, { color: C.categoria[categoria] }, !medio && styles.tagTextoPequeno]}>
+        {rotulo}
+      </Text>
+    </View>
+  );
+}
+
 // ───────── Icon button ─────────
 export type IconButtonProps = {
   icon: IconName;
@@ -271,6 +294,10 @@ const styles = StyleSheet.create({
   sealTexto: { paddingVertical: 6, paddingLeft: space[12] },
   sealText: { color: C.text.primary, textTransform: 'uppercase', letterSpacing: 12 * 0.08, lineHeight: 16 },
   sealTextMenor: { fontSize: 8, letterSpacing: 8 * 0.08 },
+  tag: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: space[4], height: 20, paddingLeft: space[6], paddingRight: space[8], borderRadius: radius.md },
+  tagMedia: { height: 24, gap: 5, paddingLeft: space[8], paddingRight: space[10] },
+  tagTexto: { letterSpacing: 0, lineHeight: 16 },
+  tagTextoPequeno: { fontSize: 11, lineHeight: 14 },
   plus: {
     alignSelf: 'flex-start',
     paddingVertical: space[6],

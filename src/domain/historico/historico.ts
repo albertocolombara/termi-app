@@ -98,3 +98,25 @@ export function dataRelativa(ms: number, agora: number): string {
   const d = new Date(ms);
   return `${d.getDate()} ${MESES[d.getMonth()]}`;
 }
+
+const DIAS_DA_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+/** Cabeçalho de um dia no diário: "Hoje", "Ontem" ou "Seg, 16 nov". */
+export function rotuloDoDia(ms: number, agora: number): string {
+  const r = dataRelativa(ms, agora);
+  if (r === 'hoje') return 'Hoje';
+  if (r === 'ontem') return 'Ontem';
+  return `${DIAS_DA_SEMANA[new Date(ms).getDay()]}, ${r}`;
+}
+
+/** Agrupa os voos por dia (já ordenados do mais recente para o mais antigo). */
+export function voosPorDia<T extends { encerrouEm: number }>(voos: readonly T[], agora: number): { dia: string; voos: T[] }[] {
+  const grupos: { dia: string; voos: T[] }[] = [];
+  for (const v of voos) {
+    const dia = rotuloDoDia(v.encerrouEm, agora);
+    const ultimo = grupos.at(-1);
+    if (ultimo && ultimo.dia === dia) ultimo.voos.push(v);
+    else grupos.push({ dia, voos: [v] });
+  }
+  return grupos;
+}

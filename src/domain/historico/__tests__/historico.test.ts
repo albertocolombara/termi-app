@@ -1,6 +1,6 @@
 import type { Aeroporto } from '@/domain/voos/tipos';
 
-import { dataRelativa, inicioDoPeriodo, resumoDoDiario, rotasVoadas, voosDoPeriodo, type VooDoDiario } from '../historico';
+import { dataRelativa, inicioDoPeriodo, resumoDoDiario, rotasVoadas, rotuloDoDia, voosDoPeriodo, voosPorDia, type VooDoDiario } from '../historico';
 
 const aeroporto = (iata: string, lat: number, lon: number): Aeroporto => ({ iata, icao: null, nome: null, cidade: iata, pais: null, lat, lon });
 const BCN = aeroporto('BCN', 41.3, 2.08);
@@ -77,5 +77,21 @@ describe('dataRelativa', () => {
     expect(dataRelativa(em(25, 8), AGORA)).toBe('hoje');
     expect(dataRelativa(em(24, 23), AGORA)).toBe('ontem');
     expect(dataRelativa(em(20), AGORA)).toBe('20 nov');
+  });
+});
+
+describe('diário por dia', () => {
+  it('rótulos dos dias', () => {
+    expect(rotuloDoDia(em(25, 8), AGORA)).toBe('Hoje');
+    expect(rotuloDoDia(em(24), AGORA)).toBe('Ontem');
+    expect(rotuloDoDia(em(16), AGORA)).toBe('Seg, 16 nov');
+  });
+
+  it('agrupa voos do mesmo dia', () => {
+    const grupos = voosPorDia([voo('1', BCN, LHR, em(25, 9)), voo('2', BCN, LHR, em(25, 8)), voo('3', BCN, LHR, em(16))], AGORA);
+    expect(grupos.map((g) => [g.dia, g.voos.length])).toEqual([
+      ['Hoje', 2],
+      ['Seg, 16 nov', 1],
+    ]);
   });
 });

@@ -21,6 +21,8 @@ export {
 export {
   ActionRow,
   Avatar,
+  CategoriaTag,
+  type CategoriaDaTag,
   Plus,
   FirstClassSeal,
   IconButton,
