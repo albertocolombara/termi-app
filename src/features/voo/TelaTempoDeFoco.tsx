@@ -16,6 +16,7 @@ import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
 import { DialDeTempo, LegendaDoDial } from './DialDeTempo';
+import { duracao } from './formato';
 import { useNovoVoo } from './novoVoo';
 import { SeletorDeTempo } from './SeletorDeTempo';
 
@@ -84,7 +85,7 @@ export function TelaTempoDeFoco() {
               variant="link"
               size="medium"
               style={{ alignSelf: 'center' }}
-              label={t('dial.maisProximo', { min: maisProximo.minutosAtePouso })}
+              label={t('dial.maisProximo', { tempo: duracao(maisProximo.minutosAtePouso) })}
               onPress={() => {
                 setVoo(maisProximo.voo.hex);
                 router.push('/voo/embarque?rapido=1'); // UC-03: sem partidas e sem cartão

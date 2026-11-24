@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
-import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useMotivoDaSessao, useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { useIndicesQueVoltaram, useVoltouAoFoco } from '@/data/sessoes/voltouAoFoco';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
 import { indiceDaQualidade, quadrosDaJanela, useAjustes } from '@/data/preferencias/ajustes';
@@ -23,6 +23,7 @@ import { useTrilha } from '@/data/voos/useTrilha';
 import { useVooAoVivo } from '@/data/voos/useVooAoVivo';
 import { CAMADAS_DA_VISTA, vistaEmUso } from '@/domain/janela/vistas';
 import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
+import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
 import { somEmUso } from '@/domain/sons/catalogo';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
 import { minutosAte, pausaEmAndamento, pausaRecemTerminada, proximaPausa, relogioRegressivo } from '@/domain/sessao/progresso';
@@ -40,6 +41,7 @@ import { useClasse } from '@/services/compras';
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { AvisoNoApp } from './AvisoNoApp';
+import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
 import { FolhaSons } from './FolhaSons';
@@ -85,6 +87,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const { escolhida, escolher } = useVistaDaJanela();
   const vistaDaJanela = vistaEmUso(escolhida, classe);
   const [escolhendoSom, setEscolhendoSom] = useState(false);
+  const [vendoMotivo, setVendoMotivo] = useState(false);
+  const motivoDaSessao = useMotivoDaSessao(sessao.id);
   const som = useSomDeFundo();
   // O som em si toca no layout raiz (SomDoVoo), também com a tela bloqueada.
   const somAtual = somEmUso(som.escolhido, classe);
@@ -241,16 +245,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           {avisoDaPausa ? (
             <AvisoNoApp
               key={`pausa-${emPausa.indice}`}
-              icone={<Icon name="crewServiceTile" size={28} />}
+              icone="servicoDeBordo"
               titulo={t('servico.avisoTitulo')}
-              texto={t('servico.avisoTexto', { hora: horaLocal(emPausa.fimEm) })}
+              texto={t('servico.avisoTexto')}
               rotuloFechar={t('servico.fecharAviso')}
               onFechar={() => setAvisoFechado(`pausa-${emPausa.indice}`)}
             />
           ) : avisoDeVolta && pausaTerminada ? (
             <AvisoNoApp
               key={`fim-${pausaTerminada.indice}`}
-              icone={<Icon name="crewServiceTile" size={28} />}
+              icone="servicoDeBordo"
               titulo={t('servico.deVoltaTitulo')}
               texto={t('servico.deVoltaTexto', { hora: horaLocal(pousoPrevistoEm) })}
               rotuloFechar={t('servico.fecharDeVolta')}
@@ -274,6 +278,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         {/* Ajustes acima do som (Alberto, build-31): o voo segue no horário com os Ajustes abertos. */}
         <View style={styles.botoesDaDireita} pointerEvents="box-none">
           <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
+          {/* Motivo da viagem em voo (anotação do Figma v3): ver, marcar e editar as tarefas. */}
+          <IconButton icon="logbook" accessibilityLabel={t('motivo.botaoEmVoo')} onPress={() => setVendoMotivo(true)} />
           <IconButton icon="speaker" accessibilityLabel={t('sons.botao')} onPress={() => setEscolhendoSom(true)} />
         </View>
       </View>
@@ -303,43 +309,21 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             style={{ alignSelf: 'center' }}
           />
           {emPausa ? (
-            // E2: o indicador vira "Serviço de bordo em andamento", em destaque, com a contagem regressiva.
-            <Pressable
-              style={({ pressed }) => [styles.servico, styles.servicoEmAndamento, pressed && { opacity: 0.8 }]}
-              accessibilityRole="button"
-              accessibilityLabel={t('servico.emAndamentoAcessivel', { tempo: relogioRegressivo(emPausa.restanteMs) })}
-              hitSlop={8}
+            // E2: "Pausa em andamento" com a contagem regressiva (Figma v3: "Em andamento att").
+            <IndicadorDoServico
+              texto={t('servico.emAndamento', { tempo: relogioRegressivo(emPausa.restanteMs) })}
+              rotulo={t('servico.emAndamentoAcessivel', { tempo: relogioRegressivo(emPausa.restanteMs) })}
               onPress={() => setExplicandoServico(true)}
-            >
-              <Icon name="crewServiceTile" size={24} />
-              <Text variant="Caption/Medium 12" style={{ color: color.text.accent, fontVariant: ['tabular-nums'] }}>
-                {t('servico.emAndamento', { tempo: relogioRegressivo(emPausa.restanteMs) })}
-              </Text>
-            </Pressable>
+            />
           ) : pausa ? (
-            <Pressable
-              style={({ pressed }) => [styles.servico, pressed && { opacity: 0.8 }]}
-              accessibilityRole="button"
-              accessibilityLabel={t('emVoo.servicoEm', { min: pausa.emMin })}
-              accessibilityHint={t('servico.dica')}
-              hitSlop={8}
+            <IndicadorDoServico
+              texto={t('emVoo.servicoEm', { tempo: duracao(pausa.emMin) })}
+              rotulo={t('emVoo.servicoEm', { tempo: duracao(pausa.emMin) })}
+              dica={t('servico.dica')}
               onPress={() => setExplicandoServico(true)}
-            >
-              <Icon name="crewServiceTile" size={24} />
-              <Text variant="Caption/Medium 12">{t('emVoo.servicoEm', { min: pausa.emMin })}</Text>
-            </Pressable>
+            />
           ) : sessao.intervaloServico === 'desligado' ? null : (
-            <Pressable
-              style={({ pressed }) => [styles.servico, pressed && { opacity: 0.8 }]}
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={() => setExplicandoServico(true)}
-            >
-              <Icon name="crewServiceTile" size={24} />
-              <Text variant="Caption/Medium 12" tone="tertiary">
-                {t('servico.semMaisPausas')}
-              </Text>
-            </Pressable>
+            <IndicadorDoServico texto={t('servico.semMaisPausas')} apagado onPress={() => setExplicandoServico(true)} />
           )}
         </View>
       </View>
@@ -348,6 +332,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         visible={explicandoServico}
         onClose={() => setExplicandoServico(false)}
         title={t('servico.titulo')}
+        icone={<IconeDoServico />}
         subtitle={emPausa ? undefined : t('servico.subtitulo')}
         footer={
           emPausa ? (
@@ -366,7 +351,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           // E2 (Figma 194:4652): contagem regressiva e barra da pausa.
           <View style={{ gap: space[16], paddingTop: space[4] }}>
             <View style={styles.contagem} accessible accessibilityLabel={t('servico.emAndamentoAcessivel', { tempo: relogioRegressivo(emPausa.restanteMs) })}>
-              <Text variant="Heading/Screen 32" style={styles.relogio}>
+              <Text variant="Display/Data 52" style={styles.relogio}>
                 {relogioRegressivo(emPausa.restanteMs)}
               </Text>
               <Text variant="Body/Medium 14" tone="secondary">
@@ -421,6 +406,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           router.push('/primeira-classe');
         }}
         onFechar={() => setEscolhendoVista(false)}
+      />
+
+      <FolhaMotivoDaViagem
+        visivel={vendoMotivo}
+        inicial={motivoDaSessao.motivo ?? MOTIVO_VAZIO}
+        resumo
+        // Cada mudança (marcar, editar, salvar o objetivo) vai para o SQLite na hora.
+        onSalvar={motivoDaSessao.salvar}
+        onFechar={() => setVendoMotivo(false)}
       />
 
       <FolhaPousarAntes
@@ -479,6 +473,34 @@ function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotul
   );
 }
 
+/** Quadrado do ícone do serviço de bordo (Figma v3): xícara laranja; apagado quando não há mais pausas. */
+function IconeDoServico({ apagado }: { apagado?: boolean }) {
+  return (
+    <View style={[styles.iconeDoServico, apagado && { backgroundColor: color.bg.system }]}>
+      <Icon name="servicoDeBordo" color={apagado ? color.text.tertiary : color.status.warning} />
+    </View>
+  );
+}
+
+/** Figma v3: componente "Serviço de bordo" (próximo serviço, pausa em andamento, sem mais pausas). */
+function IndicadorDoServico({ texto, rotulo, dica, apagado, onPress }: { texto: string; rotulo?: string; dica?: string; apagado?: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.servico, pressed && { opacity: 0.8 }]}
+      accessibilityRole="button"
+      accessibilityLabel={rotulo ?? texto.replace('\n', ' ')}
+      accessibilityHint={dica}
+      hitSlop={8}
+      onPress={onPress}
+    >
+      <IconeDoServico apagado={apagado} />
+      <Text variant="Caption/Regular 12" style={{ letterSpacing: 0, fontVariant: ['tabular-nums'] }}>
+        {texto}
+      </Text>
+    </Pressable>
+  );
+}
+
 function Lugar({ cidade, codigo, direita }: { cidade: string; codigo: string; direita?: boolean }) {
   return (
     <View style={{ gap: space[8], alignItems: direita ? 'flex-end' : 'flex-start', maxWidth: 96 }}>
@@ -524,19 +546,10 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
   linhaDosControles: { alignItems: 'flex-end' },
   botoesDaDireita: { gap: space[8] },
-  servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 150 },
-  servicoEmAndamento: {
-    maxWidth: 190,
-    paddingVertical: space[6],
-    paddingLeft: space[6],
-    paddingRight: space[10],
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.accent.default,
-    backgroundColor: color.accent.subtle,
-  },
+  servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 180 },
+  iconeDoServico: { width: 32, height: 32, borderRadius: radius.md, backgroundColor: color.aviso.icone, alignItems: 'center', justifyContent: 'center' },
   contagem: { flexDirection: 'row', alignItems: 'baseline', gap: space[12] },
-  relogio: { fontSize: 56, lineHeight: 64, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  relogio: { fontVariant: ['tabular-nums'] },
   trilhoDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.surface.track, overflow: 'hidden' },
   barraDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
   modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-start', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },

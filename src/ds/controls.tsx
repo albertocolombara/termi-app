@@ -55,7 +55,7 @@ export type CategoriaFiltroProps = { label: string; icon: IconName; selected?: b
 
 /**
  * Filtro de categoria (Figma: "Categoria / Filtro"). Chip de 32 num alvo de 48.
- * Selecionado: fundo accent/subtle, contorno amarelo e marca de confirmação (não depende só da cor).
+ * Selecionado: fundo accent/subtle, contorno amarelo e a marca de confirmação no lugar do ícone (não depende só da cor).
  */
 export function CategoriaFiltro({ label, icon, selected, onPress }: CategoriaFiltroProps) {
   return (
@@ -70,8 +70,8 @@ export function CategoriaFiltro({ label, icon, selected, onPress }: CategoriaFil
       style={({ pressed }) => [styles.chipHit, pressed && { opacity: 0.8 }]}
     >
       <View style={[styles.categoria, selected ? styles.categoriaSelecionada : styles.categoriaPadrao]}>
-        {selected ? <Icon name="confirmacao" /> : null}
-        <Icon name={icon} />
+        {/* Selecionado: a marca de confirmação entra no lugar do ícone da categoria (Figma v3). */}
+        <Icon name={selected ? 'confirmacao' : icon} />
         <Text variant="Label/Medium 14">{label}</Text>
       </View>
     </Pressable>

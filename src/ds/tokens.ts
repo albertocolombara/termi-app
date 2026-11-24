@@ -147,6 +147,8 @@ export const color = {
   aviso: {
     fundo: p['orange-intl/a05'],
     borda: p['orange-intl/a08'],
+    /** Quadrado do ícone nos avisos em voo e no serviço de bordo (Figma v3): laranja a 10%. */
+    icone: 'rgba(244,74,34,0.10)',
   },
   /** Globo de rotas do Início e das Estatísticas (Figma: "Globo/Detalhes da rota"; cores locais da ilustração). */
   globo: {

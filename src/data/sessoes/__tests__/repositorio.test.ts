@@ -1,6 +1,6 @@
 import { voo, AGORA } from '@/domain/voos/__tests__/fabrica';
 
-import { criarSessao, encerrarSessao, sessaoEmAndamento, type BancoDeSessoes } from '../repositorio';
+import { criarSessao, encerrarSessao, salvarMotivoDaSessao, sessaoEmAndamento, type BancoDeSessoes } from '../repositorio';
 
 function bancoFalso(linha: unknown = null, mudancasDoUpdate = 1) {
   const transacoes: { sql: string; params: unknown[] }[][] = [];
@@ -121,5 +121,34 @@ describe('repositório de sessões', () => {
     });
     expect(ok).toBe(false);
     expect(transacoes[0]).toHaveLength(1);
+  });
+});
+
+describe('motivo da viagem em voo', () => {
+  it('atualiza o motivo e as tarefas sem apagar linhas', async () => {
+    const operacoes: string[] = [];
+    const db: BancoDeSessoes = {
+      withExclusiveTransactionAsync: async (tarefa) => {
+        await tarefa({
+          runAsync: async (sql) => {
+            operacoes.push(sql.trim().split(/\s+/)[0]);
+            return { changes: 1 };
+          },
+        });
+      },
+      getFirstAsync: async <T,>() => null as T,
+      // Já havia 3 tarefas (ordens 0, 1 e 2).
+      getAllAsync: async <T,>() => [{ ordem: 0 }, { ordem: 1 }, { ordem: 2 }] as T[],
+    };
+    await salvarMotivoDaSessao(db, 's1', {
+      categoria: 'estudo',
+      foco: 'Cálculo',
+      tarefas: [
+        { texto: 'Lista 2', feita: true },
+        { texto: 'Teoremas', feita: false },
+      ],
+    });
+    expect(operacoes).toEqual(['INSERT', 'UPDATE', 'UPDATE', 'UPDATE']);
+    expect(operacoes).not.toContain('DELETE');
   });
 });

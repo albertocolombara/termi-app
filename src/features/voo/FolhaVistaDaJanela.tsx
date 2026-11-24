@@ -59,7 +59,6 @@ export function FolhaVistaDaJanela({
         onFechar();
       }}
       title={t('vista.titulo')}
-      subtitle={t('vista.subtitulo')}
     >
       <View style={styles.grade} accessibilityRole="radiogroup">
         {VISTAS.map((v) => {
@@ -88,7 +87,7 @@ export function FolhaVistaDaJanela({
                 )}
               </View>
               <View style={styles.rotulo}>
-                {cadeado ? <Icon name="lock" size={12} color={color.accent.default} /> : null}
+                {cadeado ? <Icon name="lock" size={12} color={selecionada ? color.accent.default : color.text.secondary} /> : null}
                 <Text variant="Caption/Medium 12" style={{ color: selecionada ? color.text.accent : color.text.secondary }} numberOfLines={1}>
                   {t(NOME[v])}
                 </Text>
@@ -97,9 +96,12 @@ export function FolhaVistaDaJanela({
           );
         })}
       </View>
-      <Text variant="Caption/Regular 12" tone={aviso ? 'primary' : 'tertiary'} style={{ paddingTop: space[8] }} accessibilityLiveRegion="polite">
-        {aviso ? t(aviso) : t('vista.rodape')}
-      </Text>
+      {/* Figma v3: sem rodapé fixo; o texto só aparece para avisar de uma vista que ainda não está pronta. */}
+      {aviso ? (
+        <Text variant="Caption/Regular 12" style={{ paddingTop: space[8] }} accessibilityLiveRegion="polite">
+          {t(aviso)}
+        </Text>
+      ) : null}
     </BottomSheet>
   );
 }

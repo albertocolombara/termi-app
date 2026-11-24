@@ -3,7 +3,7 @@
  * "Adicionar motivo da viagem" abre a folha 03b.
  */
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,14 +12,22 @@ import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import { motivoVazio, type MotivoDaViagem } from '@/domain/sessao/motivo';
-import { ActionRow, Button, color, Icon, InfoBanner, LinhaTracejada, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { ActionRow, Button, color, Icon, InfoBanner, LinhaTracejada, radius, screenGutter, space, Suitcase, Text, TopBar, type IconName } from '@/ds';
 import { t } from '@/i18n';
 
 import { CodigoDeBarras } from './CodigoDeBarras';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { ImpressaoDoBilhete } from './ImpressaoDoBilhete';
-import { codigoDoLugar, dataCurta, duracao, horaLocal, km, metros, nomeDoLugar } from './formato';
+import { codigoDoLugar, dataCurta, duracao, duracaoCompacta, horaLocal, km, metros, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
+
+const ICONE_DA_CATEGORIA: Record<string, IconName> = {
+  estudo: 'categoriaEstudo',
+  trabalho: 'categoriaTrabalho',
+  leitura: 'categoriaLeitura',
+  criacao: 'categoriaCriacao',
+  outro: 'categoriaOutro',
+};
 
 export function TelaCartao() {
   const insets = useSafeAreaInsets();
@@ -61,7 +69,7 @@ export function TelaCartao() {
         }}
       >
         <View style={{ gap: space[12] }}>
-          <TopBar title={t('partidas.titulo')} onBack={() => router.back()} time={`${tempoMin}min`} step={3} />
+          <TopBar title={t('partidas.titulo')} onBack={() => router.back()} time={duracaoCompacta(tempoMin)} step={3} />
           <Text variant="Display/Pixel 32" style={{ color: color.text.accent, paddingTop: space[8] }} accessibilityRole="header">
             {t('cartao.titulo')}
           </Text>
@@ -99,7 +107,7 @@ export function TelaCartao() {
             </View>
             <View style={[styles.papel, styles.papelDeBaixo]} onLayout={(e) => setLargura(e.nativeEvent.layout.width - 2 * space[16])}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
-                <Suitcase size={42} />
+                <Suitcase size={36} />
                 <Text variant="Caption/Medium 12" style={{ flex: 1, color: color.cartao.textoSecundario }}>
                   {altitude
                     ? t('cartao.situacao', { altitude, falta: km(falta), cidade, hora: horaLocal(voo.pousoPrevistoEm) })
@@ -110,11 +118,25 @@ export function TelaCartao() {
             </View>
             </ImpressaoDoBilhete>
           </View>
-          <ActionRow
-            title={motivoVazio(motivo) ? t('cartao.adicionarMotivo') : t('cartao.editarMotivo')}
-            description={motivoVazio(motivo) ? t('cartao.adicionarMotivoDescricao') : resumoDoMotivo(motivo)}
-            onPress={() => setFolhaAberta(true)}
-          />
+          {motivoVazio(motivo) ? (
+            <ActionRow title={t('cartao.adicionarMotivo')} description={t('cartao.adicionarMotivoDescricao')} onPress={() => setFolhaAberta(true)} />
+          ) : (
+            // 03c (Figma v3): com o motivo preenchido, o bloco mostra o ícone da categoria e o objetivo.
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${t('cartao.editarMotivo')}: ${resumoDoMotivo(motivo)}`}
+              onPress={() => setFolhaAberta(true)}
+              style={({ pressed }) => [styles.motivo, pressed && { opacity: 0.85 }]}
+            >
+              <View style={styles.iconeDoMotivo}>
+                <Icon name={motivo.categoria ? ICONE_DA_CATEGORIA[motivo.categoria] : 'logbook'} size={16} />
+              </View>
+              <Text variant="Body/Large 16" style={{ flex: 1 }} numberOfLines={1}>
+                {motivo.foco || resumoDoMotivo(motivo)}
+              </Text>
+              <Icon name="chevronRight" />
+            </Pressable>
+          )}
         </View>
         <Button label={t('cartao.embarcar')} onPress={() => router.push('/voo/embarque')} />
       </ScrollView>
@@ -143,7 +165,7 @@ function resumoDoMotivo(m: MotivoDaViagem): string {
 
 function Lugar({ cidade, codigo, direita }: { cidade: string; codigo: string; direita?: boolean }) {
   return (
-    <View style={{ gap: space[8], alignItems: direita ? 'flex-end' : 'flex-start', maxWidth: 110 }}>
+    <View style={{ gap: space[4], alignItems: direita ? 'flex-end' : 'flex-start', maxWidth: 110 }}>
       <Text variant="Body/Medium 14" style={{ color: color.cartao.textoSecundario }} numberOfLines={1}>
         {cidade}
       </Text>
@@ -156,7 +178,7 @@ function Lugar({ cidade, codigo, direita }: { cidade: string; codigo: string; di
 
 function Dado({ rotulo, valor, grande, direita }: { rotulo: string; valor: string; grande?: boolean; direita?: boolean }) {
   return (
-    <View style={{ gap: space[8], alignItems: direita ? 'flex-end' : 'flex-start' }}>
+    <View style={{ gap: space[4], alignItems: direita ? 'flex-end' : 'flex-start' }}>
       <Text variant="Body/Medium 14" style={{ color: grande ? color.cartao.textoMedio : color.cartao.textoSecundario }}>
         {rotulo}
       </Text>
@@ -184,10 +206,12 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: color.cartao.bordaDoCabecalho,
   },
-  papel: { backgroundColor: color.cartao.papel, paddingHorizontal: space[16], paddingVertical: space[24] },
-  papelDeCima: { gap: space[32], borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
+  papel: { backgroundColor: color.cartao.papel, paddingHorizontal: space[16], paddingVertical: space[20] },
+  papelDeCima: { gap: space[24], borderBottomLeftRadius: 12, borderBottomRightRadius: 12 },
   picote: { position: 'absolute', left: 12, right: 12, bottom: 0 },
-  papelDeBaixo: { gap: space[20], borderRadius: 12 },
+  papelDeBaixo: { gap: space[16], borderRadius: 12 },
+  motivo: { flexDirection: 'row', alignItems: 'center', gap: space[12], padding: space[16], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  iconeDoMotivo: { width: 28, height: 28, borderRadius: 14, backgroundColor: color.surface.subtle, alignItems: 'center', justifyContent: 'center' },
   linha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   rota: { flex: 1, flexDirection: 'row', alignItems: 'center', marginHorizontal: space[12] },
 });

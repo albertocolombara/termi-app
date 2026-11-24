@@ -11,7 +11,7 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Classe } from '@/domain/sessao/duracao';
 import { DURACAO_MAXIMA_ECONOMICA_MIN, DURACAO_MAXIMA_PRIMEIRA_MIN, DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { anguloDoTempo, PASSO_DIAL_MIN, rotuloDoTempo, tempoDoAngulo, type BarraDoDial } from '@/domain/voos/dial';
-import { color, FirstClassSeal, gold, space, Text } from '@/ds';
+import { color, gold, Plus, space, Text } from '@/ds';
 import { TermiAnimado } from '@/features/termi/TermiAnimado';
 import { t } from '@/i18n';
 
@@ -148,7 +148,7 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
             {rotuloDoTempo(minutos)}
           </Text>
           {premium ? (
-            <FirstClassSeal variant="menor" />
+            <Plus tamanho="pequeno" />
           ) : (
             <Text variant="Body/Medium 14" style={{ color: color.text.muted, textAlign: 'center', paddingHorizontal: space[16] }}>
               {t('dial.dica')}

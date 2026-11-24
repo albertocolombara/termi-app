@@ -12,7 +12,7 @@ import { Button, color, Icon, InfoBanner, radius, screenGutter, space, Text, typ
 import { t } from '@/i18n';
 
 import { Carimbo } from './Carimbo';
-import { codigoDoLugar, nomeDoLugar } from './formato';
+import { codigoDoLugar, duracao, nomeDoLugar } from './formato';
 
 const ICONE_DA_CATEGORIA: Record<string, IconName> = {
   estudo: 'categoriaEstudo',
@@ -61,7 +61,7 @@ export function TelaPouso({ id }: { id: string | undefined }) {
             {pousou ? t('pouso.titulo', { cidade }) : t('pouso.tituloAntes')}
           </Text>
           <Text variant="Body/Large 16" tone="secondary">
-            {pousou ? t('pouso.subtitulo', { min: s.minutosFoco }) : t('pouso.subtituloAntes', { voados: s.minutosFoco, total })}
+            {pousou ? t('pouso.subtitulo', { tempo: duracao(s.minutosFoco) }) : t('pouso.subtituloAntes', { voados: duracao(s.minutosFoco), total: duracao(total) })}
           </Text>
         </View>
 
@@ -73,7 +73,7 @@ export function TelaPouso({ id }: { id: string | undefined }) {
         </View>
 
         <View style={styles.grade}>
-          <Cartao valor={t('pouso.minutos', { min: s.minutosFoco })} rotulo={t('pouso.focados')} />
+          <Cartao valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
           <Cartao valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={pousou ? t('pouso.milhasRotulo') : t('pouso.milhasTrecho')} />
           <Cartao valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={pousou ? t('pouso.paraSouvenirs') : t('pouso.proximoPouso')} />
           {pousou ? <Cartao valor={codigo} rotulo={t('pouso.carimboNoPassaporte')} /> : <Cartao valor="—" rotulo={t('pouso.semLoja')} apagado />}
