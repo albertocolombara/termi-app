@@ -19,6 +19,25 @@ export function useSessaoEncerrada(id: string | undefined) {
   return useQuery({ queryKey: ['sessao', id], queryFn: () => sessaoEncerrada(db, id ?? ''), enabled: !!id });
 }
 
+/**
+ * Marca ou desmarca tarefas de um voo já encerrado (Diário de bordo · detalhe). Só muda o "feita" da
+ * bagagem de mão: nada de voo, milhas ou carimbo é tocado.
+ */
+export function useAtualizarMotivoDoVoo(id: string | undefined) {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+  const chave = ['sessao', id];
+  const m = useMutation({
+    mutationFn: (motivo: MotivoDaViagem) => salvarMotivoDaSessao(db, id ?? '', motivo),
+    onMutate: (motivo) => {
+      queryClient.setQueryData<Awaited<ReturnType<typeof sessaoEncerrada>>>(chave, (s) => (s ? { ...s, motivo } : s));
+    },
+    // Prefixo: invalida também ['sessao', id, 'motivo'].
+    onSettled: () => queryClient.invalidateQueries({ queryKey: chave }),
+  });
+  return m.mutate;
+}
+
 /** Motivo da viagem da sessão em voo (04B), lido e salvo no SQLite. */
 export function useMotivoDaSessao(id: string) {
   const db = useSQLiteContext();

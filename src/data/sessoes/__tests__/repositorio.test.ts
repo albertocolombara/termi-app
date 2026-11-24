@@ -1,6 +1,6 @@
 import { voo, AGORA } from '@/domain/voos/__tests__/fabrica';
 
-import { criarSessao, encerrarSessao, salvarMotivoDaSessao, sessaoEmAndamento, type BancoDeSessoes } from '../repositorio';
+import { cancelarEmbarque, criarSessao, encerrarSessao, salvarMotivoDaSessao, sessaoEmAndamento, type BancoDeSessoes } from '../repositorio';
 
 function bancoFalso(linha: unknown = null, mudancasDoUpdate = 1) {
   const transacoes: { sql: string; params: unknown[] }[][] = [];
@@ -150,5 +150,23 @@ describe('motivo da viagem em voo', () => {
     });
     expect(operacoes).toEqual(['INSERT', 'UPDATE', 'UPDATE', 'UPDATE']);
     expect(operacoes).not.toContain('DELETE');
+  });
+});
+
+describe('embarque cancelado', () => {
+  it('marca a sessão em voo como cancelada, sem minutos nem milhas', async () => {
+    const { db, transacoes } = bancoFalso();
+    expect(await cancelarEmbarque(db, 's1', AGORA)).toBe(true);
+    expect(transacoes).toHaveLength(1);
+    const [u] = transacoes[0];
+    expect(u.sql).toContain("resultado = 'cancelado'");
+    expect(u.sql).toContain("WHERE id = ? AND resultado = 'em_voo'");
+    expect(u.sql).not.toContain('DELETE');
+    expect(u.params).toEqual([AGORA, 's1']);
+  });
+
+  it('não mexe numa sessão que já pousou', async () => {
+    const { db } = bancoFalso(null, 0);
+    expect(await cancelarEmbarque(db, 's1', AGORA)).toBe(false);
   });
 });

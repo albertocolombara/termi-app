@@ -109,6 +109,25 @@ export type Encerramento = {
 };
 
 /**
+ * Embarque cancelado depois de a sessão já estar gravada (voltar ou cancelar enquanto a janela era
+ * preparada): marca como `cancelado`, sem crédito nenhum, e ela some do diário, das estatísticas e do
+ * globo (que só leem `pousou`/`pousou_antes`). Só toca numa sessão ainda em voo, então nunca desfaz um
+ * pouso. Não é `DELETE`: o registro fica, só não conta (CLAUDE.md §6.6).
+ */
+export async function cancelarEmbarque(db: BancoDeSessoes, id: string, quando: number): Promise<boolean> {
+  let cancelou = false;
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    const r = await txn.runAsync(
+      "UPDATE sessoes SET resultado = 'cancelado', encerrou_em = ?, minutos_foco = 0, milhas = 0 WHERE id = ? AND resultado = 'em_voo'",
+      quando,
+      id,
+    );
+    cancelou = r.changes > 0;
+  });
+  return cancelou;
+}
+
+/**
  * Encerra a sessão e credita o que ela rendeu, numa única transação (CLAUDE.md §6.5):
  * resultado na sessão, lançamento de saldo e, no pouso, o carimbo.
  * Só encerra uma sessão que ainda está em voo: chamar duas vezes não credita duas vezes.

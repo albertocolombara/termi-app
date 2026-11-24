@@ -20,7 +20,7 @@ type Estado = 'feita' | 'atual' | 'pendente';
 
 export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const insets = useSafeAreaInsets();
-  const { etapa, tentarDeNovo, embarcarComGlobo, cancelar, recomecar } = useEmbarque({ caminhoRapido });
+  const { etapa, tentarDeNovo, embarcarComGlobo, cancelar, confirmarEmbarque, recomecar } = useEmbarque({ caminhoRapido });
 
   const reduzirMovimento = useReducedMotion();
   const [pulou, setPulou] = useState(false);
@@ -36,6 +36,7 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
     if (etapa.tipo !== 'embarcou') return;
     const abrir = () => {
       // Depois do embarque, "voltar" não leva ao cartão nem ao embarque.
+      confirmarEmbarque();
       router.dismissTo('/');
       router.push('/voo/em-voo');
     };

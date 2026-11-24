@@ -6,15 +6,15 @@
  * - Arrastar gira; pinça dá um zoom pequeno (até 1,8×).
  * - Tocar numa rota mostra um bloco compacto do voo (Figma "Globo/Detalhes da rota") e gira o globo
  *   até ela; tocar fora ou no × fecha.
- * - Um cometa corre em cada rota e o destino pulsa quando ele chega (como no código de referência do
- *   Alberto); sem animação com "reduzir movimento".
+ * - As rotas ficam paradas (sem cometa nem pulso no destino: Alberto, build-46).
+ * - Vinheta nas bordas, na cor do fundo, para o globo com zoom não aparecer "cortado" em cima e embaixo.
  *
  * A Terra é desenhada num shader (pontos de terra por uma máscara 1024 × 512) e os arcos numa Picture
  * refeita a cada quadro na thread de interface. Fora de foco (`ativo` falso) o quadro para.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Canvas, Fill, ImageShader, Picture, Shader, Skia, createPicture, useImage } from '@shopify/react-native-skia';
+import { Canvas, Fill, ImageShader, LinearGradient, Picture, Rect, Shader, Skia, createPicture, useImage, vec } from '@shopify/react-native-skia';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures, useTapGesture } from 'react-native-gesture-handler';
 import Animated, {
   ReduceMotion,
@@ -32,7 +32,7 @@ import { motion } from '@/ds/motion';
 import { dataRelativa, type RotaVoada } from '@/domain/historico/historico';
 import { t } from '@/i18n';
 
-import { arcoNaTela, centroDaRota, escondido, maisPerto, projetar, rotaNoToque, SEGMENTOS_DO_ARCO, vetor, type Vec3 } from './geometria';
+import { arcoNaTela, centroDaRota, escondido, maisPerto, projetar, rotaNoToque, vetor, type Vec3 } from './geometria';
 import { MASCARA, SKSL_GLOBO_DE_ROTAS } from './shader';
 
 const efeito = Skia.RuntimeEffect.Make(SKSL_GLOBO_DE_ROTAS)!;
@@ -49,15 +49,18 @@ const LINHAS = 230;
 /** Giro automático (rad/s) e espera depois do último toque. */
 const GIRO = 0.06;
 const ESPERA_MS = 2500;
-/** Cometas só nas rotas mais recentes (custo por quadro). */
-const MAX_COMETAS = 12;
 /** Rotas desenhadas (as mais recentes). */
 const MAX_ROTAS = 80;
-const CICLO_S = 3.6;
+/** Vinheta: fração da altura (em cima e embaixo) e da largura (nas laterais) que esmaece para o fundo. */
+const VINHETA_V = 0.2;
+const VINHETA_H = 0.08;
+/** Um toque logo depois de soltar um arrasto (ou com o globo ainda girando pela inércia) não seleciona rota. */
+const PAUSA_APOS_ARRASTO_MS = 250;
+const GIRO_QUE_IGNORA_TOQUE = 0.4;
 const ALCANCE_DO_TOQUE = 22;
 const LARGURA_DO_BLOCO = 184;
 
-type RotaNoGlobo = { a: Vec3; b: Vec3; deslocamento: number };
+type RotaNoGlobo = { a: Vec3; b: Vec3 };
 
 export type GloboDeRotasProps = {
   rotas: RotaVoada[];
@@ -79,10 +82,9 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
   const visiveis = useMemo(() => rotas.slice(0, MAX_ROTAS), [rotas]);
   const geometria = useMemo<RotaNoGlobo[]>(
     () =>
-      visiveis.map((r, i) => ({
+      visiveis.map((r) => ({
         a: vetor(r.origem.lat, r.origem.lon),
         b: vetor(r.destino.lat, r.destino.lon),
-        deslocamento: i / Math.max(1, Math.min(visiveis.length, MAX_COMETAS)),
       })),
     [visiveis],
   );
@@ -105,7 +107,7 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
   const vt = useSharedValue(0);
   const arrastando = useSharedValue(false);
   const ultimoToque = useSharedValue(0);
-  const tempo = useSharedValue(0);
+  const fimDoArrasto = useSharedValue(0);
   const selecionada = useSharedValue(-1);
   const [indiceSelecionado, setIndiceSelecionado] = useState(-1);
   const alturaDoBloco = useSharedValue(77);
@@ -124,7 +126,6 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
   const quadro = useFrameCallback((info) => {
     'worklet';
     const dt = Math.min(0.05, (info.timeSincePreviousFrame ?? 16) / 1000);
-    if (!reduzir) tempo.set(tempo.get() + dt);
     if (arrastando.get()) return;
     const v1 = vy.get();
     const v2 = vt.get();
@@ -182,13 +183,25 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
       vy.set(-e.velocityX / r);
       vt.set(dentroDeRolagem ? 0 : e.velocityY / r);
       arrastando.set(false);
+      fimDoArrasto.set(Date.now());
       ultimoToque.set(Date.now());
     },
   });
+  // Toque curto e quase parado: passar o dedo sobre uma linha enquanto gira não abre a rota.
   const toque = useTapGesture({
+    maxDistance: 8,
+    maxDuration: 300,
     onActivate: (e) => {
       'worklet';
-      ultimoToque.set(Date.now());
+      const agoraMs = Date.now();
+      ultimoToque.set(agoraMs);
+      if (arrastando.get() || agoraMs - fimDoArrasto.get() < PAUSA_APOS_ARRASTO_MS) return;
+      // Globo ainda girando pela inércia: o toque só segura o giro.
+      if (Math.abs(vy.get()) > GIRO_QUE_IGNORA_TOQUE || Math.abs(vt.get()) > GIRO_QUE_IGNORA_TOQUE) {
+        vy.set(0);
+        vt.set(0);
+        return;
+      }
       const r = raioBase * zoom.get();
       const i = rotaNoToque(e.x, e.y, rotasSV.get(), yaw.get(), tilt.get(), cx, cy, r, ALCANCE_DO_TOQUE);
       selecionada.set(i);
@@ -232,7 +245,6 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
     const tl = tilt.get();
     const lista = rotasSV.get();
     const sel = selecionada.get();
-    const t0 = tempo.get();
     return createPicture((canvas) => {
       const linha = Skia.Paint();
       linha.setAntiAlias(true);
@@ -260,19 +272,6 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
         linha.setAlphaf(destaque ? 1 : 0.4 * atenuar);
         canvas.drawPath(frente.detach(), linha);
 
-        // Cometa: cabeça clara com cauda que some; o destino pulsa quando ele chega.
-        let fase = 0.999;
-        if (i < MAX_COMETAS && !reduzir) fase = (t0 / CICLO_S + lista[i].deslocamento) % 1;
-        if (i < MAX_COMETAS && !reduzir && sel < 0) {
-          const cabeca = Math.floor(Math.min(1, fase / 0.7) * SEGMENTOS_DO_ARCO);
-          linha.setStrokeWidth(2);
-          for (let k = Math.max(0, cabeca - 8); k < cabeca; k++) {
-            if (escondido(pts[k], cx, cy, r)) continue;
-            linha.setAlphaf((1 - (cabeca - k) / 8) * 0.95);
-            canvas.drawLine(pts[k].x, pts[k].y, pts[k + 1].x, pts[k + 1].y, linha);
-          }
-        }
-
         // Pontas: origem pequena, destino com anel.
         const ini = pts[0];
         const fim = pts[pts.length - 1];
@@ -286,11 +285,6 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
           linha.setStrokeWidth(1.2);
           linha.setAlphaf(destaque ? 0.9 : 0.3 * atenuar);
           canvas.drawCircle(fim.x, fim.y, destaque ? 6 : 4.5, linha);
-          if (i < MAX_COMETAS && !reduzir && sel < 0 && fase > 0.7) {
-            const k = (fase - 0.7) / 0.3;
-            linha.setAlphaf((1 - k) * 0.8);
-            canvas.drawCircle(fim.x, fim.y, 4 + k * 12, linha);
-          }
         }
       }
     });
@@ -331,6 +325,17 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
 
   const rota = indiceSelecionado >= 0 ? visiveis[indiceSelecionado] : null;
 
+  // Vinheta: do fundo da tela (opaco) ao fundo transparente. Mesma cor nas duas pontas para o
+  // gradiente não escurecer no meio.
+  const vinheta = useMemo(() => {
+    const opaco = Skia.Color(color.bg.app);
+    const transparente = Float32Array.from(opaco);
+    transparente[3] = 0;
+    return [opaco, transparente];
+  }, []);
+  const vv = altura * VINHETA_V;
+  const vh = largura * VINHETA_H;
+
   return (
     <GestureDetector gesture={gestos}>
       <View style={{ width: largura, height: altura }}>
@@ -349,6 +354,18 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
                 </Shader>
               </Fill>
               <Picture picture={arcos} />
+              <Rect x={0} y={0} width={largura} height={vv}>
+                <LinearGradient start={vec(0, 0)} end={vec(0, vv)} colors={vinheta} />
+              </Rect>
+              <Rect x={0} y={altura - vv} width={largura} height={vv}>
+                <LinearGradient start={vec(0, altura)} end={vec(0, altura - vv)} colors={vinheta} />
+              </Rect>
+              <Rect x={0} y={0} width={vh} height={altura}>
+                <LinearGradient start={vec(0, 0)} end={vec(vh, 0)} colors={vinheta} />
+              </Rect>
+              <Rect x={largura - vh} y={0} width={vh} height={altura}>
+                <LinearGradient start={vec(largura, 0)} end={vec(largura - vh, 0)} colors={vinheta} />
+              </Rect>
             </Canvas>
           ) : null}
         </View>

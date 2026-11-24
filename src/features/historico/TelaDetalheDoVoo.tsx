@@ -3,11 +3,11 @@
  * Lê o que foi gravado no encerramento: nada é recalculado, exceto o serviço de bordo, que sai da
  * agenda do voo (RN-05 a RN-07) até o fim dele.
  */
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
+import { useAtualizarMotivoDoVoo, useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { dataRelativa } from '@/domain/historico/historico';
 import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { Cauda, CategoriaTag, Checkbox, color, InfoBanner, radius, screenGutter, space, Text, TopBar } from '@/ds';
@@ -20,6 +20,7 @@ import { useRelogio } from '../voo/useRelogio';
 export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
   const insets = useSafeAreaInsets();
   const q = useSessaoEncerrada(id);
+  const atualizarMotivo = useAtualizarMotivoDoVoo(id);
   const { agora } = useRelogio(60_000);
   const s = q.data;
 
@@ -114,12 +115,20 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
           {motivo.tarefas.length ? (
             <View style={{ gap: space[12] }}>
               {motivo.tarefas.map((tarefa, i) => (
-                <View key={i} style={styles.tarefa} accessible accessibilityRole="checkbox" accessibilityState={{ checked: tarefa.feita }} accessibilityLabel={tarefa.texto}>
+                // Dá para marcar a tarefa depois do pouso (Alberto, build-46).
+                <Pressable
+                  key={i}
+                  style={styles.tarefa}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: tarefa.feita }}
+                  accessibilityLabel={tarefa.texto}
+                  onPress={() => atualizarMotivo({ ...motivo, tarefas: motivo.tarefas.map((x, j) => (j === i ? { ...x, feita: !x.feita } : x)) })}
+                >
                   <Checkbox checked={tarefa.feita} />
-                  <Text variant="Body/Large 16" tone={tarefa.feita ? 'tertiary' : 'primary'}>
+                  <Text variant="Body/Large 16" tone={tarefa.feita ? 'tertiary' : 'primary'} style={{ flex: 1 }}>
                     {tarefa.texto}
                   </Text>
-                </View>
+                </Pressable>
               ))}
             </View>
           ) : null}
@@ -178,7 +187,7 @@ const styles = StyleSheet.create({
   carimbo: { position: 'absolute', right: space[8], top: -space[4] },
   motivo: { gap: space[24], padding: space[16], borderRadius: radius.lg, backgroundColor: color.bg.sheet },
   linhaDoMotivo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[6] },
-  tarefa: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
+  tarefa: { flexDirection: 'row', alignItems: 'center', gap: space[10], minHeight: 48 },
   servico: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
   ponto: { width: 8, height: 8, borderRadius: 4, backgroundColor: color.status.success },
 });

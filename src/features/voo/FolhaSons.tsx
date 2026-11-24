@@ -1,5 +1,5 @@
 /**
- * 04D · Som da cabine (bottom sheet). PRD: RF-18, RN-18, RN-20.
+ * 04D · Som da cabine (bottom sheet, Figma v3: sem ícones). PRD: RF-18, RN-18, RN-20.
  * Motores e ruído branco são grátis; cabine, chuva e lofi são da primeira classe.
  * Na econômica, tocar num som com selo abriria o paywall (RN-20), que entra na Fase 4.
  * "Sem som" não está no Figma: sem ele, só dava para silenciar baixando o volume a zero.
@@ -9,17 +9,8 @@ import { View } from 'react-native';
 
 import { SOM_PREMIUM, SOM_PRONTO, SONS, somLiberado, type Som } from '@/domain/sons/catalogo';
 import type { Classe } from '@/domain/sessao/duracao';
-import { BottomSheet, ListOption, Slider, space, Text, type IconName } from '@/ds';
+import { BottomSheet, ListOption, Slider, space, Text } from '@/ds';
 import { t, type ChaveDeTexto } from '@/i18n';
-
-const ICONE: Record<Som, IconName> = {
-  cruzeiro: 'plane',
-  motores: 'soundEngine',
-  'ruido-branco': 'soundWhiteNoise',
-  cabine: 'soundCabin',
-  chuva: 'soundRain',
-  lofi: 'soundLofi',
-};
 
 export function FolhaSons({
   visivel,
@@ -65,7 +56,6 @@ export function FolhaSons({
         {SONS.map((s) => (
           <ListOption
             key={s}
-            icon={ICONE[s]}
             title={t(`sons.${s}.nome` as ChaveDeTexto)}
             description={SOM_PRONTO[s] ? t(`sons.${s}.descricao` as ChaveDeTexto) : t('sons.emBreve')}
             selected={emUso === s}
@@ -73,7 +63,7 @@ export function FolhaSons({
             onPress={() => tocar(s)}
           />
         ))}
-        <ListOption icon="speaker" title={t('sons.nenhum')} selected={emUso === null} onPress={() => onEscolher('nenhum')} />
+        <ListOption title={t('sons.nenhum')} selected={emUso === null} onPress={() => onEscolher('nenhum')} />
       </View>
       {aviso ? (
         <Text variant="Caption/Regular 12" accessibilityLiveRegion="polite">

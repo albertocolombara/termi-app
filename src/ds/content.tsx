@@ -150,7 +150,8 @@ export function IconButton({ icon, accessibilityLabel, onPress, indicator, style
 
 // ───────── List option ─────────
 export type ListOptionProps = {
-  icon: IconName;
+  /** Opcional: a folha de sons do Figma v3 não tem ícones. */
+  icon?: IconName;
   title: string;
   description?: string;
   selected?: boolean;
@@ -178,9 +179,11 @@ export function ListOption({ icon, title, description, selected, locked, onPress
       style={({ pressed }) => [pressed && { opacity: 0.85 }]}
     >
       <Animated.View style={[styles.option, fundo]}>
-      <View style={styles.tile}>
-        <Icon name={icon} />
-      </View>
+      {icon ? (
+        <View style={styles.tile}>
+          <Icon name={icon} />
+        </View>
+      ) : null}
       <View style={styles.texts}>
         <Text variant="Body/Large Medium 16" tone={selected ? 'primary' : 'secondary'}>
           {title}

@@ -302,12 +302,15 @@ function LinhaEmEdicao({
         accessibilityLabel={t('motivo.novaTarefa')}
         style={styles.campoDaTarefa}
       />
-      <Pressable accessibilityRole="button" accessibilityLabel={t('motivo.confirmarTarefa')} hitSlop={12} onPress={() => onConfirmar(false)}>
-        <Icon name="confirmarTarefa" />
-      </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel={t('motivo.removerTarefa')} hitSlop={12} onPress={onExcluir}>
-        <Icon name="excluir" />
-      </Pressable>
+      {/* Espaço maior entre confirmar e excluir, para não tocar no errado (Alberto, build-46). */}
+      <View style={styles.acoesDaTarefa}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('motivo.confirmarTarefa')} hitSlop={10} onPress={() => onConfirmar(false)} style={styles.acao}>
+          <Icon name="confirmarTarefa" />
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('motivo.removerTarefa')} hitSlop={10} onPress={onExcluir} style={styles.acao}>
+          <Icon name="excluir" />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -344,5 +347,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.bg.system,
   },
   adicionar: { alignSelf: 'flex-start', paddingVertical: space[12] },
+  acoesDaTarefa: { flexDirection: 'row', alignItems: 'center', gap: space[16] },
+  acao: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
   objetivo: { gap: space[6], padding: space[16], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
 });

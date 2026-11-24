@@ -44,7 +44,8 @@ export function TelaTempoDeFoco() {
       <InfoBanner
         type="live"
         title={t(elegiveis.length === 1 ? 'dial.umVoo' : 'dial.voosNoAr', { n: elegiveis.length })}
-        detail={q.data?.origem === 'ontem' ? t('dial.vooDeOntem') : t('dial.podePousar')}
+        // Só o aviso do voo de ontem: a linha "pode pousar antes ou depois" saiu para o botão caber na tela (Alberto, build-46).
+        detail={q.data?.origem === 'ontem' ? t('dial.vooDeOntem') : undefined}
       />
     );
 
