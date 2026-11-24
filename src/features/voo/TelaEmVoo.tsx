@@ -41,6 +41,7 @@ import { useClasse } from '@/services/compras';
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { AvisoNoApp } from './AvisoNoApp';
+import { FolhaInfoDoVoo } from './FolhaInfoDoVoo';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
@@ -90,6 +91,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const vistaDaJanela = vistaEmUso(escolhida, classe);
   const [escolhendoSom, setEscolhendoSom] = useState(false);
   const [vendoMotivo, setVendoMotivo] = useState(false);
+  const [vendoInfo, setVendoInfo] = useState(false);
   const motivoDaSessao = useMotivoDaSessao(sessao.id);
   const som = useSomDeFundo();
   // O som em si toca no layout raiz (SomDoVoo), também com a tela bloqueada.
@@ -107,7 +109,10 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const radarFechado = avisosFechados.some((k) => k === 'sem-sinal' || k === 'sem-internet');
   if (radar === 'ok' && radarFechado) setAvisosFechados((f) => f.filter((k) => k !== 'sem-sinal' && k !== 'sem-internet'));
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
-  useBlocosDoVoo(voo, ativo);
+  // Só com a janela à vista: no globo ou com a tela desligada a paisagem não é baixada
+  // (voo de 5h45 no globo: 36,7 MB de paisagem que ninguém viu). Ao voltar para a janela,
+  // baixa da posição atual em diante e a janela refaz o mosaico quando os blocos chegam.
+  useBlocosDoVoo(voo, ativo && vista === 'janela');
   const pos = projetar(voo, agora);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
   // Onde o avião estará daqui a 1 s: a janela interpola o caminho entre as leituras do relógio.
@@ -202,14 +207,24 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       >
         <View style={styles.linhaTopo} pointerEvents="box-none">
           <View style={{ gap: space[16] }} pointerEvents="box-none">
-            <View style={{ gap: space[6] }}>
-              <Text variant="Body/Medium 14">{voo.callsign}</Text>
+            {/* Toque no código do voo: "Sobre este voo" (pedido do Alberto, 24/11/2026). */}
+            <Pressable
+              onPress={() => setVendoInfo(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('infoDoVoo.abrir', { voo: voo.callsign })}
+              hitSlop={8}
+              style={({ pressed }) => [{ gap: space[6], alignSelf: 'flex-start' }, pressed && { opacity: 0.7 }]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+                <Text variant="Body/Medium 14">{voo.callsign}</Text>
+                <Icon name="chevronRight" color={color.text.tertiary} />
+              </View>
               {voo.companhiaNome ? (
                 <Text variant="Body/Medium 14" tone="tertiary">
                   {voo.companhiaNome}
                 </Text>
               ) : null}
-            </View>
+            </Pressable>
             <View style={{ alignSelf: 'flex-start' }}>
               <SegmentedControl
                 segments={[
@@ -432,6 +447,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         onFechar={() => setVendoMotivo(false)}
       />
 
+      <FolhaInfoDoVoo visivel={vendoInfo} voo={voo} pos={pos} radar={radar} agora={agora} onFechar={() => setVendoInfo(false)} />
+
       <FolhaPousarAntes
         visivel={confirmando}
         sessao={sessao}
@@ -457,23 +474,26 @@ const DESCIDA_DA_JANELA = 56;
 
 /**
  * O voo gravado no embarque, trocado pela leitura mais nova do cache quando ela chega (a cada 5 min
- * com a tela aberta, só a região do avião). Assim a posição projetada se corrige pelo dado real.
+ * com a tela aberta). Assim a posição projetada se corrige pelo dado real.
+ * Guarda a última leitura boa: sem sinal, o voo segue projetado a partir dela (antes voltava para
+ * a leitura do embarque) e a próxima busca usa a região onde o avião foi visto por último.
  * Só aceita o mesmo voo: mesmo avião, mesmo destino e pouso previsto parecido.
  */
 function useVooAtualizado(gravado: Voo): { voo: Voo; radar: 'ok' | 'sem-sinal' | 'sem-internet' } {
-  const q = useVooAoVivo(gravado);
+  const [ultimo, setUltimo] = useState(gravado);
+  const q = useVooAoVivo(ultimo);
   const vivo = q.data;
   // X4: a leitura falhou (sem conexão). E4: a leitura chegou, mas o avião não está nela.
   const radar = q.isError ? 'sem-internet' : q.isSuccess && vivo === null ? 'sem-sinal' : 'ok';
   if (
     vivo &&
-    vivo.coletadoEm > gravado.coletadoEm &&
+    vivo.coletadoEm > ultimo.coletadoEm &&
     distanciaKm(vivo.destino, gravado.destino) < 5 &&
     Math.abs(vivo.pousoPrevistoEm - gravado.pousoPrevistoEm) < 3 * 3_600_000
   ) {
-    return { voo: vivo, radar };
+    setUltimo(vivo);
   }
-  return { voo: gravado, radar };
+  return { voo: ultimo, radar };
 }
 
 function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotulo: string; ativo: boolean; onPress: () => void }) {
