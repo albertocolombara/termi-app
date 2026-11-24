@@ -18,7 +18,7 @@ flowchart LR
   subgraph Externos
     ADSB[adsb.lol<br/>posições ao vivo]
     VRS[VRS Standing Data<br/>rotas, companhias, aeroportos]
-    GIBS[NASA GIBS<br/>Landsat, GMIS, Blue/Black Marble, VIIRS]
+    GIBS[NASA GIBS<br/>Blue/Black Marble, VIIRS, OSM Land/Water<br/>+ ESA WorldCover Sentinel-2]
     GEO[GeoNames<br/>lugares]
   end
 
@@ -301,7 +301,8 @@ Funções puras em `src/domain`:
 |---|---|---|
 | **adsb.lol** | Posições ao vivo (só pelo coletor) | Dados ODbL; crédito obrigatório; chave concedida com uso comercial; 1.000 chamadas/dia e 300/hora com chave; avisar ida à produção; planejar receptor ADS-B próprio |
 | **VRS Standing Data** | Rotas e aeroportos | Cobertura de rotas varia: 51% (Los Angeles) a 91% (Tóquio) |
-| **NASA GIBS** | Blue/Black Marble, Landsat WELD 30 m, GMIS, VIIRS | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
+| **NASA GIBS** | Blue/Black Marble, VIIRS, OSM Land/Water (máscara do mar; © colaboradores do OpenStreetMap, ODbL) | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
+| **ESA WorldCover 2021** (AWS Open Data, `esa-worldcover-s2` e `esa-worldcover`) | Composto Sentinel-2 RGBNIR (10 m) e mapa de cobertura (área construída) para a paisagem e as luzes | CC BY 4.0, uso comercial com crédito: "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium" (Sobre o Termi). Desde 21/11/2026, no lugar do Landsat WELD e do GMIS |
 | **OpenFlights** | País de cada companhia (bandeira na cauda) | Dados ODbL; crédito obrigatório; base desatualizada em companhias novas, corrigida à mão no coletor |
 | **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
 | **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | Blocos do mundo (menos a Antártida): ~7,8 GB, medidos em 20/11/2026 |
@@ -453,7 +454,7 @@ Observabilidade:
 | ADR-08 | Local-first com SQLite e livro-caixa | Decidido | Funciona offline; facilita sincronização por união. |
 | ADR-09 | Expo Router, Zustand e TanStack Query | Decidido | Padrão atual do Expo. |
 | ADR-10 | Supabase para conta e sincronização | Decidido | Postgres combina com o livro-caixa e com a sincronização por união; plano grátis suficiente para o beta (~1 a 3 mil usuários sincronizando por alguns meses; o limite é o banco de 500 MB); sem backup automático no grátis. Ver seção 8. |
-| ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada; para mais perto, usar os blocos Landsat da janela. No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
+| ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada. **v3 (21/11/2026, decidido pelo Alberto):** do nível 8 ao 10 o globo usa os blocos da paisagem da janela (Sentinel-2, `w8` e `w10`, até 61 m por pixel), com a cor levada ao tom do Blue Marble no shader; o mosaico de longe continua no Blue Marble (cobre o mar); de perto as luzes vêm da camada `l9`. Mesma pasta do aparelho da janela (`cache/paisagem`). Sem arquivos novos no R2. Descartados: Google Maps SDK (plano, sem globo), Maps 3D SDK (experimental, sem pacote para React Native, sem visual próprio), Mapbox (custo por usuário acima de 25 mil por mês) e MapLibre Native (sem globo). No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |
 | ADR-14 | Catálogo da coleção remoto e versionado | Proposta | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
@@ -526,11 +527,11 @@ No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `
 
 | Camada | Fonte | Textura na GPU |
 |---|---|---|
-| Terra perto do avião | Landsat WELD 30 m sem nuvens (NASA), blocos no nível 10 (~61 m/px) | Atlas 2048 × 2048 |
-| Terra a média distância | Landsat, blocos no nível 8 (~244 m/px) | Atlas 1024 × 1024 |
+| Terra perto do avião | Sentinel-2 (ESA WorldCover 2021, 10 m), blocos no nível 10 (~61 m/px) | Atlas 2048 × 2048 |
+| Terra a média distância | Sentinel-2, blocos no nível 8 (~244 m/px) | Atlas 1024 × 1024 |
 | Terra longe (dia) | Blue Marble, mapa-base `base_dia.jpg` | 2048 × 1792 |
 | Terra longe (noite) | Black Marble, `base_noite.jpg`, e detalhe `det_noite.jpg` | 2048 × 1792 e 1280 × 1536 |
-| Cidades à noite | Áreas construídas GMIS (blocos nível 9), moduladas pelo Black Marble na Europa (onde há a imagem-base noturna) e pela própria densidade das áreas construídas no resto do mundo | Atlas 1024 × 1024 |
+| Cidades à noite | Camada `l9` (nível 9): R = área construída do WorldCover (forma), G = luz real do Black Marble (brilho). O shader soma um brilho de fundo e pontos de luz na escala de quadras; a cor vai do laranja da periferia ao branco quente dos centros (21/11/2026; antes, GMIS num liga/desliga de cor fixa que saturava) | Atlas 1024 × 1024 |
 | Nuvens | Máscara de nuvens do VIIRS (NOAA-20) do mundo inteiro, atualizada a cada 3 h pela coleta "Nuvens" (passagens diurna e noturna; a janela usa a mais recente pela hora solar local), usada como cobertura por região das nuvens geradas por ruído (fbm). Camada a 7,5 km de altitude: na descida o avião a atravessa e as nuvens ficam por cima. Sem rede: só as geradas | Dois mosaicos 2×2 de 1024 × 1024 (dia e noite) |
 | Céu | Calculado: cor pela altura do sol, horizonte, brilho quente no nascer e no pôr, disco do sol, estrelas à noite, névoa pela distância | — |
 
@@ -538,7 +539,9 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 
 **Nuvens no R2 [Decidido em 20/11/2026 pelo Alberto]:** `nuvens/{dia|noite}/{linha}/{coluna}.webp` (20 × 10 blocos de 18°, nível 4 da grade do GIBS, ~4 km/px, cinza 0 = céu limpo, 255 = nuvem) e `nuvens/indice.json` com a versão. Mesmos nomes a cada atualização: o espaço fica fixo em ~22 MB, sem apagar nada. O app baixa os blocos da rota no embarque (`data/nuvens`), pede com `?v=versão` e guarda no cache em `nuvens/{versão}/`, apagando as versões antigas. Por voo, ~0,3 a 1 MB.
 
-**Blocos de terra.** Vêm do NASA GIBS (EPSG:4326, blocos de 512 px; cada bloco cobre 288/2^z graus) e são recomprimidos em WebP (qualidade 78), como no protótipo: `w10` (Landsat WELD, nível 10, ~61 m/px), `w8` (Landsat WELD, nível 8, ~244 m/px) e `i9` (GMIS em cinza, nível 9). No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
+**Blocos de terra.** Grade EPSG:4326 do GIBS (blocos de 512 px; cada bloco cobre 288/2^z graus), em WebP. No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
+
+**Sentinel-2 no lugar do Landsat [Decidido em 21/11/2026 pelo Alberto]:** `w10` e `w8` regravadas com o composto Sentinel-2 2021 do ESA WorldCover (WebP 70) e a camada de luzes `l9` no lugar da `i9`. Gerador `blocos/gerar_s2.py` do coletor. Cor casada com o Landsat (a janela foi calibrada nele); rios e lagos com a cor real (meia saturação, brilho limitado); o mar (máscara do OSM) fica todo com a cor do Blue Marble (rodada v2, 21/11/2026: na v1 a água rasa e barrenta do mar virava manchas laranja na Coreia e o mosaico deixava retângulos de 1° no mar). O R2 tem de ficar nos 10 GB grátis (Alberto): gerados em 21/11/2026 (20 partes, ~55 min, sem erros): `w10` 208.462 blocos, 7,22 GB; `w8` 14.855, 0,52 GB; `l9` 33.605, 0,26 GB; total ~8,0 GB (R2 inteiro ~8,3 GB). Sobraram 6.036 blocos `w10` e 1.414 `w8` do Landsat (0,15 GB) que não foram regravados, a apagar com o modo "limpar" do workflow; a `i9` só sai quando nenhum app em teste a usar. No aparelho a pasta mudou de `cache/blocos` para `cache/paisagem` (a antiga é apagada no primeiro download). Antes (Landsat WELD e GMIS, 20/11/2026):
 
 **Em produção [Decidido, 20/11/2026]:** um arquivo por bloco no R2, em `/blocos/{camada}/{linha}/{coluna}.webp`, com cache de 1 ano (imutável). Bloco ausente = oceano ou nada a desenhar (o app trata 404 como vazio). Cobre toda a terra menos a Antártida (decisão do Alberto, 19/11/2026). Gerado pelo workflow "Blocos de paisagem" do coletor (`blocos/gerar.py`), em 20/11/2026:
 
@@ -546,7 +549,7 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 |---|---|---|
 | `w10` (perto do avião) | 212.788 | 7,20 GB |
 | `w8` (distância média) | 16.076 | 0,52 GB |
-| `i9` (cidades à noite) | 30.372 | 0,11 GB |
+| `i9` (cidades à noite, GMIS; sai depois da troca) | 30.372 | 0,11 GB |
 | **Total** | **259.236** | **~7,8 GB** (dentro dos 10 GB grátis do R2) |
 
 Por voo: ~250 blocos (~9 MB) por hora, baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
@@ -565,7 +568,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 **Rota e sol.** Posição por arco de grande círculo, rumo e altura do sol calculados pela data, hora e posição (`geo.ts`). O protótipo voa Barcelona → Londres na velocidade real, porque os blocos empacotados cobrem esse trajeto.
 
-**Pendências da janela.** Renderizar "Com asa" e "Asa e motor"; o mosaico Landsat é de ~2000 e com cara de verão (falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
+**Pendências da janela.** Renderizar "Com asa" e "Asa e motor"; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
 
 ### 19.2 Souvenirs (medalhas)
 

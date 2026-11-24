@@ -2,6 +2,8 @@ import { Asset } from 'expo-asset';
 import { File, Paths } from 'expo-file-system';
 import { Skia, SkImage } from '@shopify/react-native-skia';
 
+import { caminhoNoAparelho, type Camada } from '@/domain/voos/blocosDaRota';
+
 // Blocos da rota: primeiro os baixados do R2 no embarque; senão, os pacotes do protótipo
 // (Barcelona → Londres), que ainda vêm no APK para a tela de teste e saem antes do lançamento.
 const INDEX: Record<string, [string, number, number]> = require('../../assets/janela/pk/index.json');
@@ -49,13 +51,13 @@ function packFile(name: string) {
 const decodificar = (bytes: Uint8Array) => Skia.Image.MakeImageFromEncoded(Skia.Data.fromBytes(bytes));
 
 /**
- * Bloco baixado no embarque (data/blocos), em `cache/blocos/{camada}/{linha}/{coluna}.webp`.
+ * Bloco baixado no embarque (data/blocos), em `cache/paisagem/{camada}/{linha}/{coluna}.webp`.
  * Arquivo vazio = oceano (404 no R2). `undefined` = não baixado: cai nos pacotes do protótipo.
  */
 async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
   const [camada, rc] = key.split('/');
   const [linha, coluna] = rc.split('_');
-  const f = new File(Paths.cache, `blocos/${camada}/${linha}/${coluna}.webp`);
+  const f = new File(Paths.cache, caminhoNoAparelho({ camada: camada as Camada, linha: Number(linha), coluna: Number(coluna) }));
   if (!f.exists) return undefined;
   if (f.size === 0) return null;
   try {
@@ -65,11 +67,15 @@ async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
   }
 }
 
-async function tile(key: string): Promise<SkImage | null> {
+/** Ainda não baixado (nem nos pacotes do protótipo): o atlas tenta de novo daqui a pouco. */
+const PENDENTE = Symbol('pendente');
+
+async function tile(key: string): Promise<SkImage | null | typeof PENDENTE> {
   const baixado = await blocoBaixado(key);
   if (baixado !== undefined) return baixado;
-  const ix = INDEX[key];
-  if (!ix) return null;
+  // Pacotes do protótipo: as luzes ainda são a antiga camada i9 (GMIS em cinza: R = G = área construída).
+  const ix = INDEX[key] ?? INDEX[key.replace(/^l9\//, 'i9/')];
+  if (!ix) return PENDENTE;
   const [p, offset, length] = ix;
   const f = await packFile(p);
   if (!f) return null;
@@ -93,16 +99,20 @@ const N = 4;
  * Só remonta quando o avião muda de bloco.
  */
 export function makeAtlas(
-  dir: 'w10' | 'w8' | 'i9',
+  dir: 'w10' | 'w8' | 'l9',
   z: number,
   px: number,
   onChange: (s: AtlasState) => void,
 ) {
   const cell = px / N;
   const deg = 288 / 2 ** z;
-  const cache = new Map<string, Promise<SkImage | null>>();
+  const cache = new Map<string, Promise<SkImage | null | typeof PENDENTE>>();
   let key = '';
   let pending = 0;
+  // Bloco que ainda não tinha baixado ficava vazio até o avião sair dele: a janela mostrava só o
+  // nível 8, borrado (build-40, logo depois de instalar). Agora o mosaico é refeito a cada 5 s
+  // enquanto faltar algum.
+  let tentarDeNovoEm = 0;
   const img = (r: number, c: number) => {
     const k = `${dir}/${r}_${c}`;
     if (!cache.has(k)) cache.set(k, tile(k));
@@ -113,7 +123,8 @@ export function makeAtlas(
       const r0 = Math.floor((90 - la) / deg) - (N >> 1);
       const c0 = Math.floor((lo + 180) / deg) - (N >> 1);
       const k = `${r0}/${c0}`;
-      if (k === key) return;
+      if (k === key && !(tentarDeNovoEm && Date.now() >= tentarDeNovoEm)) return;
+      tentarDeNovoEm = 0;
       key = k;
       const my = ++pending;
       // Se algo falhar (bloco ilegível, sem memória para a superfície), esquece a chave para
@@ -127,13 +138,16 @@ export function makeAtlas(
         // Guarda só os blocos do mosaico atual: o cache não cresce durante voos longos.
         const atuais = new Set(chaves.map(([r, c]) => `${dir}/${r}_${c}`));
         for (const k2 of cache.keys()) if (!atuais.has(k2)) cache.delete(k2);
+        const faltando = chaves.filter((_, i) => ims[i] === PENDENTE);
+        for (const [r, c] of faltando) cache.delete(`${dir}/${r}_${c}`);
+        if (faltando.length) tentarDeNovoEm = Date.now() + 5000;
         const surface = Skia.Surface.Make(px, px);
         if (!surface) return falhou();
         const canvas = surface.getCanvas();
         const paint = Skia.Paint();
         canvas.clear(Skia.Color('transparent'));
         ims.forEach((im, i) => {
-          if (!im) return;
+          if (!im || im === PENDENTE) return;
           const dst = Skia.XYWHRect((i % N) * cell, Math.floor(i / N) * cell, cell, cell);
           canvas.drawImageRect(im, Skia.XYWHRect(0, 0, im.width(), im.height()), dst, paint);
         });

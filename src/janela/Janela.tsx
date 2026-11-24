@@ -134,7 +134,7 @@ export function Janela({
     atlases.current = [
       makeAtlas('w10', 10, ATLAS_PX.near, setNear),
       makeAtlas('w8', 8, ATLAS_PX.mid, setMid),
-      makeAtlas('i9', 9, ATLAS_PX.imp, setImp),
+      makeAtlas('l9', 9, ATLAS_PX.imp, setImp),
     ];
   }
   // Nuvens reais (satélite, a cada 3 h), em volta do avião.
@@ -161,11 +161,23 @@ export function Janela({
   useEffect(() => {
     intervalo.set(1000 / fps);
   }, [fps, intervalo]);
-  useFrameCallback(() => {
+  // A 30 fps o relógio corre na thread de interface, a cada quadro da tela. A 10 fps (padrão) e a
+  // 2 fps (economia) um timer do JavaScript basta: o callback a cada quadro acordava a thread de
+  // interface 60 a 120 vezes por segundo e segurava a tela na taxa máxima, para desenhar só 10
+  // (build-43: 9 min de CPU em 11 min de uso a 10 fps). O desenho continua fora do JavaScript.
+  const porQuadro = fps > 10;
+  const quadro = useFrameCallback(() => {
     'worklet';
     const agora = Date.now();
     if (agora - relogio.value >= intervalo.value - 4) relogio.value = agora;
-  });
+  }, porQuadro);
+  useEffect(() => {
+    quadro.setActive(porQuadro);
+    if (porQuadro) return;
+    const id = setInterval(() => relogio.set(Date.now()), 1000 / fps);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [porQuadro, fps]);
   const desenhos = useSharedValue(0);
   const meter = useRef({ js: 0, jsFrames: 0, jsLast: Date.now(), drawsLast: 0 });
   const [meterText, setMeterText] = useState('');

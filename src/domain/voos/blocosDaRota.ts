@@ -8,13 +8,18 @@
  */
 import { distanciaKm, interpolar, type Ponto } from './geo';
 
-export type Camada = 'w10' | 'w8' | 'i9';
+/**
+ * Camadas no R2 (coletor, `blocos/gerar_s2.py`; ARCHITECTURE §15). Desde 21/11/2026 vêm do
+ * Sentinel-2 (ESA WorldCover 2021): `w10` e `w8` cor; `l9` e `l10` luzes (R = área construída,
+ * G = luz real do Black Marble). `l10` só o globo usa, de perto.
+ */
+export type Camada = 'w10' | 'w8' | 'l9' | 'l10';
 
 /** Camadas da janela e o nível de cada uma (iguais às de src/janela/Janela.tsx). */
 export const CAMADAS: { camada: Camada; z: number }[] = [
-  { camada: 'w10', z: 10 }, // Landsat 61 m, perto do avião
-  { camada: 'w8', z: 8 }, // Landsat 244 m, distância média
-  { camada: 'i9', z: 9 }, // áreas construídas, cidades à noite
+  { camada: 'w10', z: 10 }, // Sentinel-2, 61 m, perto do avião
+  { camada: 'w8', z: 8 }, // Sentinel-2, 244 m, distância média
+  { camada: 'l9', z: 9 }, // luzes das cidades à noite
 ];
 
 /** Lado do mosaico em blocos (mesmo N do atlas da janela). */
@@ -67,8 +72,19 @@ export function blocosDaRota(de: Ponto, ate: Ponto, camadas = CAMADAS, passoKm =
   return blocos;
 }
 
-/** Caminho do bloco no R2 e no cache do aparelho. */
+/** Caminho do bloco no R2. */
 export const caminhoDoBloco = (b: Bloco) => `blocos/${b.camada}/${b.linha}/${b.coluna}.webp`;
+
+/**
+ * Pasta dos blocos no cache do aparelho, compartilhada pela janela e pelo globo. Mudou de `blocos`
+ * para `paisagem` com a troca do Landsat pelo Sentinel-2 (21/11/2026): os blocos antigos guardados
+ * no aparelho não se misturam aos novos.
+ */
+export const PASTA_NO_APARELHO = 'paisagem';
+export const PASTA_ANTIGA_NO_APARELHO = 'blocos';
+
+/** Caminho do bloco no cache do aparelho. */
+export const caminhoNoAparelho = (b: Bloco) => `${PASTA_NO_APARELHO}/${b.camada}/${b.linha}/${b.coluna}.webp`;
 
 /**
  * A janela aguenta até 5% de blocos que não baixaram (aparecem sem terra naquele trecho).

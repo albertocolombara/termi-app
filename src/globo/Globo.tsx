@@ -27,7 +27,7 @@ import { color, Icon, radius, space, Text } from '@/ds';
 import { motion, timing } from '@/ds/motion';
 import { t } from '@/i18n';
 import { sun } from '@/janela/geo';
-import { FORA, cantoDoMosaico, criarMosaico, nivelPara, type Mosaico } from './blocos';
+import { FORA, cantoDoMosaico, criarMosaico, nivelDaNoite, nivelDeLonge, nivelDoDia, nivelPara, type Mosaico } from './blocos';
 import { cameraBasis, destino, FOV, grandeCirculo, project, projectZ, sunEcef, type Camera } from './camera';
 import { SKSL_GLOBO, TEX } from './shader';
 
@@ -183,9 +183,9 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   }));
 
   // ── Blocos da NASA: mosaicos perto, longe e noite, no nível do zoom ──
-  const [perto, setPerto] = useState<Mosaico>({ imagem: null, b: FORA });
-  const [longe, setLonge] = useState<Mosaico>({ imagem: null, b: FORA });
-  const [noiteM, setNoiteM] = useState<Mosaico>({ imagem: null, b: FORA });
+  const [perto, setPerto] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const [longe, setLonge] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const [noiteM, setNoiteM] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
   const mosaicos = useRef<ReturnType<typeof criarMosaico>[] | null>(null);
   if (mosaicos.current == null) {
     mosaicos.current = [
@@ -196,13 +196,15 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   }
   const atualizarBlocos = useCallback((z: number, la: number, lo: number) => {
     const [mp, ml, mn] = mosaicos.current!;
-    mp.atualizar(z, la, lo);
-    ml.atualizar(Math.max(1, z - 2), la, lo);
+    // De perto (nível 8 em diante) o dia vem do Sentinel-2; o de longe continua no Blue Marble,
+    // que cobre o mar (onde não há bloco do Sentinel-2).
+    mp.atualizar(nivelDoDia(z), la, lo);
+    ml.atualizar(nivelDeLonge(z), la, lo);
     // Luzes da cidade só quando a região vista está de noite ou no fim de tarde (build-38: o mosaico
     // noturno era o maior gasto do globo e era baixado mesmo de dia). De longe (nível baixo) a vista
     // pega o mundo todo, e os blocos são poucos: baixa sempre.
     const elevacaoDoSol = (sun(Date.now(), la, lo).el * 180) / Math.PI;
-    if (z < 4 || elevacaoDoSol < 12) mn.atualizar(Math.max(1, z - 1), la, lo);
+    if (z < 4 || elevacaoDoSol < 12) mn.atualizar(nivelDaNoite(z), la, lo);
   }, []);
 
   useAnimatedReaction(
@@ -213,7 +215,7 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
       // Inclinada, a câmera vê mais à frente: centra os blocos um pouco adiante.
       const frente = c.dist * Math.sin(c.tilt) * 0.6;
       const alvo = frente > 1 ? destino(c.lat, c.lon, c.heading / RAD, frente) : [c.lat, c.lon];
-      const [r, col] = cantoDoMosaico(z, alvo[0], alvo[1]);
+      const [r, col] = cantoDoMosaico(nivelDoDia(z), alvo[0], alvo[1]);
       return { chave: `${z}/${r}/${col}`, z, la: alvo[0], lo: alvo[1] };
     },
     (atual, anterior) => {
@@ -224,9 +226,11 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   const bPerto = perto.imagem ? perto.b : FORA;
   const bLonge = longe.imagem ? longe.b : FORA;
   const bNoite = noiteM.imagem ? noiteM.b : FORA;
+  const s2Perto = perto.sentinel ? 1 : 0;
+  const s2Noite = noiteM.sentinel ? 1 : 0;
   const uniforms = useDerivedValue(() => {
     const b = cameraBasis(camera.value);
-    return { res: [width, height], cp: b.pos, cf: b.f, cr: b.right, cu: b.up, k: K, sunD: sol.value, bPerto, bLonge, bNoite };
+    return { res: [width, height], cp: b.pos, cf: b.f, cr: b.right, cu: b.up, k: K, sunD: sol.value, bPerto, bLonge, bNoite, s2Perto, s2Noite };
   });
 
   // ── Rota: trecho voado em linha; o que falta em pontos no chão (diminuem com a distância) ──
