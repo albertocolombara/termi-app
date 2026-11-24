@@ -159,7 +159,10 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
   });
   const arrasto = usePanGesture({
     maxPointers: 1,
-    ...(dentroDeRolagem ? { activeOffsetX: [-8, 8] as [number, number], failOffsetY: [-12, 12] as [number, number] } : {}),
+    // Dentro de uma tela que rola, só ativa com movimento horizontal (o vertical fica para a rolagem).
+    // Sem spread aqui: o plugin do Worklets não aceita `...` na configuração dos gestos (build de 24/11).
+    activeOffsetX: dentroDeRolagem ? [-8, 8] : undefined,
+    failOffsetY: dentroDeRolagem ? [-12, 12] : undefined,
     onActivate: () => {
       'worklet';
       arrastando.set(true);
