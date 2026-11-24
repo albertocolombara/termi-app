@@ -104,6 +104,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 #### Início e navegação
 
 - **RF-05** O Início deve mostrar o Termi animado no centro, o botão "Novo voo" na base, o perfil (abre o menu lateral) e o saldo em $ no topo. Para a econômica, mostra também o Termi Premium, que abre o paywall.
+  - **Início v3 (Figma, 24/11/2026; decidido pelo Alberto):** no lugar do Termi, um globo pontilhado com as rotas já voadas, girando devagar e interativo (gira, zoom pequeno, tocar numa rota mostra um bloco do voo); resumo do diário (voos e tempo de foco) com "Ver diário"; "Último voo" com "Repetir" (caminho rápido com o mesmo tempo de foco, UC-03); a marca **Plus** no cabeçalho (na econômica, abre o paywall).
 - **RF-06** Tocar no Termi deve abrir a tela Sua mala, com a transição da mala abrindo.
 - **RF-07** Ao tocar em "Novo voo", o Termi comemora antes de ir para o dial (animação pulável).
 - **RF-08** O menu lateral deve dar acesso a: Perfil, Sua mala, Passaporte, Diário de bordo, Estatísticas, Primeira classe, Ajustes, Sobre o Termi e Ajuda e sugestões.
@@ -145,7 +146,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 #### Histórico
 
 - **RF-34** O diário de bordo deve listar todos os voos agrupados por dia, filtráveis por categoria, com detalhe de horários, rendimentos, motivo da viagem, tarefas e serviços de bordo.
-- **RF-35** As estatísticas devem mostrar total da semana com comparação, foco por dia e por categoria, voos, pousos, pousos antecipados, serviços de bordo, sequência de dias e recorde. Na econômica, só a semana; na primeira classe, também mês e ano.
+- **RF-35** As estatísticas devem mostrar total da semana com comparação, foco por dia e por categoria, voos, pousos, pousos antecipados, serviços de bordo, sequência de dias e recorde. ~~Na econômica, só a semana; na primeira classe, também mês e ano.~~ **Figma v3 (24/11/2026, decidido pelo Alberto):** dia, semana, mês e ano liberados para todos, com o globo das rotas do período; o Plus libera os blocos a partir de "Por categoria" (e os blocos de desempenho que ainda serão desenhados depois dela).
 
 #### Monetização
 

@@ -178,15 +178,15 @@ flowchart LR
 - **Critérios de conclusão:** fluxo completo do onboarding ao souvenir na mala; compra de teste na Play com restauração; progresso restaurado após reinstalar.
 
 - [ ] Onboarding (5 telas) com permissões explicadas e "Alarmes e lembretes"
-- [ ] Início com o Termi em Rive (`pensando`, `novoVoo`) e transição da mala
-- [ ] Menu lateral e Perfil
+- [ ] Início com o Termi em Rive (`pensando`, `novoVoo`) e transição da mala — **trocado pelo Início v3** (Figma, 24/11/2026): globo de rotas, resumo do diário, último voo com "Repetir" e a marca Plus no PR "Telas v3" (falta testar no aparelho)
+- [ ] Menu lateral e Perfil — menu lateral v3 (Econômica e Plus) com o status de viajante no PR "Telas v3" (falta testar no aparelho; "Criar conta" ainda mostra "em breve")
 - [ ] Catálogo da coleção remoto e versionado (13 países; novos sem nova versão do app) [Proposta]
 - [ ] Loja do destino com prévia na mala e limite de 3 souvenirs na econômica
 - [ ] Sua mala e vitrine 3D (validar react-native-filament: peso e memória)
-- [ ] Passaporte
+- [ ] Passaporte — M2 v3 com os carimbos de pouso no PR "Telas v3" (falta testar no aparelho)
 - [ ] Status de viajante e recompensas
-- [ ] Diário de bordo com filtro e detalhe
-- [ ] Estatísticas (semana; mês e ano na primeira classe)
+- [ ] Diário de bordo com filtro e detalhe — M3 e M3b v3 no PR "Telas v3" (falta testar no aparelho)
+- [ ] Estatísticas — M4 v3 (dia a ano para todos, globo do período, "Por categoria" no Plus) no PR "Telas v3"; faltam os blocos de desempenho depois de "Por categoria" (ainda não desenhados)
 - [ ] RevenueCat: produtos, direitos, compra, restauração
 - [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR #36 (planos, condições, carrossel com os benefícios que já existem; etiqueta "Economize" corrigida no PR #44), sem compra: em builds de teste o botão liga a primeira classe de teste; o Alberto vai ajustar o visual no Figma; faltam RevenueCat, Restaurar compras, Termos e Privacidade
 - [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR #36; faltam os recursos que ainda não existem

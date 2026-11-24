@@ -30,7 +30,10 @@
 |---|---|---|
 | **Termi** | Mala laranja com olhinhos; avatar do app e guardiã da coleção | Decidido; animações em Rive |
 | **Ícone do app** | Mala laranja com olhinhos sobre fundo preto | Decidido |
-| **Termi Premium** | Termi em ouro com reflexo. Variante Grande (≥ ~36 px) com etiqueta de bagagem prioritária creme e estrela dourada; variante Pequena (16–24 px) sem etiqueta. Só marca status; nunca substitui o Termi laranja das telas | Decidido |
+| **Plus** (Figma v3, 24/11/2026) | Nome da assinatura, no lugar de "Termi Premium" e "Primeira classe". Identidade simples, sem o mascote: pílula com fundo e borda amarelos leves (`color.plus.*`) e "Plus" em Geist Pixel Grid amarelo (componente `Plus`, tamanhos padrão e pequeno). Substitui o selo dourado nas listas (sons, vistas) e no dial | Decidido |
+| **Termi · Painel de partidas** (Figma v3) | Painel de placas giratórias com olhos em placas amarelas. É o ícone dos avisos do Termi em voo (`PainelDePartidas`). Faz parte da direção visual com menos foco na mala; o Alberto ainda decide se a mala sai ou é trocada | Em teste |
+| **Globo de rotas** (Figma v3) | Globo pontilhado (terra em pontos azul-acinzentados, mar azul-marinho, halo) com as rotas voadas em amarelo. Início e Estatísticas. Diferente do globo do voo. Código: `src/globo-rotas` | Decidido |
+| **Termi Premium** (substituído pelo Plus) | Termi em ouro com reflexo. Variante Grande (≥ ~36 px) com etiqueta de bagagem prioritária creme e estrela dourada; variante Pequena (16–24 px) sem etiqueta. Só marca status; nunca substitui o Termi laranja das telas | Decidido |
 | **Dourado** | Reservado à primeira classe (selo, Termi Premium, anel do avatar) | Decidido |
 | **Souvenirs** | Medalhas cunhadas em metal realista: países em níquel/prata, cidades em cobre, raras em latão; nome do país na forma nativa, em arco, fonte Bahnschrift (日本 em Yu Gothic Bold) | Decidido |
 | **Companhias** | Cauda pintada com a bandeira do país; nunca logo ou pintura real | Decidido |

@@ -330,24 +330,25 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
 
   return (
     <GestureDetector gesture={gestos}>
-      <View
-        style={{ width: largura, height: altura }}
-        accessible
-        accessibilityRole="image"
-        accessibilityLabel={
-          rotas.length === 1 ? t('globoDeRotas.acessivelUma') : t('globoDeRotas.acessivel', { n: rotas.length })
-        }
-      >
-        {mascara ? (
-          <Canvas style={StyleSheet.absoluteFill}>
-            <Fill>
-              <Shader source={efeito} uniforms={uniforms}>
-                <ImageShader image={mascara} tx="repeat" ty="clamp" fit="fill" rect={{ x: 0, y: 0, width: MASCARA.w, height: MASCARA.h }} />
-              </Shader>
-            </Fill>
-            <Picture picture={arcos} />
-          </Canvas>
-        ) : null}
+      <View style={{ width: largura, height: altura }}>
+        {/* Só o desenho é a "imagem" para o leitor de tela; o bloco da rota (com o ×) continua acessível. */}
+        <View
+          style={StyleSheet.absoluteFill}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={rotas.length === 1 ? t('globoDeRotas.acessivelUma') : t('globoDeRotas.acessivel', { n: rotas.length })}
+        >
+          {mascara ? (
+            <Canvas style={StyleSheet.absoluteFill}>
+              <Fill>
+                <Shader source={efeito} uniforms={uniforms}>
+                  <ImageShader image={mascara} tx="repeat" ty="clamp" fit="fill" rect={{ x: 0, y: 0, width: MASCARA.w, height: MASCARA.h }} />
+                </Shader>
+              </Fill>
+              <Picture picture={arcos} />
+            </Canvas>
+          ) : null}
+        </View>
 
         {!rotas.length && dica ? (
           <View pointerEvents="none" style={[styles.bloco, styles.dica, { left: largura * 0.07, top: altura * 0.28 }]}>

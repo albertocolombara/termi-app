@@ -65,7 +65,7 @@ Regras de dependência: `domain` não importa nada de UI ou E/S; `ds` não conhe
 - Arquivos de componente em `PascalCase.tsx`; hooks `useAlgo.ts`; funções e variáveis `camelCase`; constantes `UPPER_SNAKE_CASE`; pastas em `kebab-case`.
 - Rotas em português (`/voo/partidas`, `/mala`, `/primeira-classe`).
 - Textos de interface nunca fixos no componente: sempre em `src/i18n` (pt-BR primeiro).
-- Terminologia de interface fixa: Econômica / Primeira classe, Novo voo, Partidas, Cartão de embarque, Serviço de bordo, Pousar antes / Pousou antes, Sua mala, Passaporte, Diário de bordo. Nunca "Desembarcar" nem "desistir".
+- Terminologia de interface fixa: Econômica / Plus (a assinatura; antes "Primeira classe" e "Termi Premium", renomeada pelo Alberto no Figma v3 em 24/11/2026; no código os nomes internos `primeira`, `primeiraClasse` continuam), Novo voo, Partidas, Cartão de embarque, Serviço de bordo, Pousar antes / Pousou antes, Sua mala, Passaporte, Diário de bordo. Nunca "Desembarcar" nem "desistir".
 
 ## 6. Implementando funcionalidades
 
