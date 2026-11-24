@@ -77,8 +77,10 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [confirmando, setConfirmando] = useState(false);
   const [boasVindasFechada, setBoasVindasFechada] = useState(false);
   const [explicandoServico, setExplicandoServico] = useState(false);
-  // Aviso de serviço de bordo fechado no "×" (ex.: "pausa-0", "fim-0"); some sozinho quando o estado muda.
-  const [avisoFechado, setAvisoFechado] = useState<string | null>(null);
+  // Avisos fechados no "×" (ex.: "pausa-0", "fim-0", "sem-sinal"). É uma lista, não um único valor:
+  // com dois avisos ao mesmo tempo, fechar um não pode reabrir o outro (loop do build-47).
+  const [avisosFechados, setAvisosFechados] = useState<readonly string[]>([]);
+  const fecharAviso = (chave: string) => setAvisosFechados((f) => (f.includes(chave) ? f : [...f, chave]));
   const voltaram = useIndicesQueVoltaram(sessao.id);
   const voltarAoFoco = useVoltouAoFoco((s) => s.voltar);
   const [escolhendoVista, setEscolhendoVista] = useState(false);
@@ -101,6 +103,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
   const { voo, radar } = useVooAtualizado(sessao.voo);
+  // O radar voltou: um sinal perdido de novo volta a avisar.
+  const radarFechado = avisosFechados.some((k) => k === 'sem-sinal' || k === 'sem-internet');
+  if (radar === 'ok' && radarFechado) setAvisosFechados((f) => f.filter((k) => k !== 'sem-sinal' && k !== 'sem-internet'));
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
   useBlocosDoVoo(voo, ativo);
   const pos = projetar(voo, agora);
@@ -130,8 +135,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   // A janela é 4:3; para preencher a altura, fica mais larga que a tela e é cortada nas laterais.
   const larguraDaJanela = Math.max(width, Math.round((alturaDaPaisagem * 3) / 4));
   const mostrarBoasVindas = !boasVindasFechada && agora - embarcouEm < BOAS_VINDAS_MS;
-  const avisoDaPausa = emPausa && avisoFechado !== `pausa-${emPausa.indice}`;
-  const avisoDeVolta = !!pausaTerminada && !voltaram.includes(pausaTerminada.indice) && avisoFechado !== `fim-${pausaTerminada.indice}`;
+  const avisoDaPausa = emPausa && !avisosFechados.includes(`pausa-${emPausa.indice}`);
+  const avisoDeVolta = !!pausaTerminada && !voltaram.includes(pausaTerminada.indice) && !avisosFechados.includes(`fim-${pausaTerminada.indice}`);
 
   const encerrarPausa = () => {
     if (!emPausa) return;
@@ -249,7 +254,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               titulo={t('servico.avisoTitulo')}
               texto={t('servico.avisoTexto')}
               rotuloFechar={t('servico.fecharAviso')}
-              onFechar={() => setAvisoFechado(`pausa-${emPausa.indice}`)}
+              onFechar={() => fecharAviso(`pausa-${emPausa.indice}`)}
             />
           ) : avisoDeVolta && pausaTerminada ? (
             <AvisoNoApp
@@ -258,9 +263,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               titulo={t('servico.deVoltaTitulo')}
               texto={t('servico.deVoltaTexto', { hora: horaLocal(pousoPrevistoEm) })}
               rotuloFechar={t('servico.fecharDeVolta')}
-              onFechar={() => setAvisoFechado(`fim-${pausaTerminada.indice}`)}
+              onFechar={() => fecharAviso(`fim-${pausaTerminada.indice}`)}
             />
-          ) : radar !== 'ok' && avisoFechado !== radar ? (
+          ) : radar !== 'ok' && !avisosFechados.includes(radar) ? (
             // E4 e X4 (Figma v3): o foco continua; a posição passa a ser estimada.
             <AvisoNoApp
               key={radar}
@@ -268,7 +273,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               titulo={radar === 'sem-internet' ? t('emVoo.semInternetTitulo') : t('emVoo.semSinalTitulo')}
               texto={radar === 'sem-internet' ? t('emVoo.semInternetTexto', { hora: horaLocal(pousoPrevistoEm) }) : t('emVoo.semSinalTexto')}
               rotuloFechar={t('emVoo.fecharAviso')}
-              onFechar={() => setAvisoFechado(radar)}
+              onFechar={() => fecharAviso(radar)}
             />
           ) : mostrarBoasVindas ? (
             <AvisoDeBoasVindas voo={voo.callsign} origem={origem} destino={destino} onFechar={() => setBoasVindasFechada(true)} />
@@ -565,7 +570,8 @@ const styles = StyleSheet.create({
   relogio: { fontVariant: ['tabular-nums'] },
   trilhoDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.surface.track, overflow: 'hidden' },
   barraDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
-  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-start', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },
+  // Embaixo, na linha do botão de som (Figma 04A; Alberto, build-47).
+  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-end', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },
   modo: { width: 40, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   modoAtivo: { backgroundColor: color.surface.track },
 });

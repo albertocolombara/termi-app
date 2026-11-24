@@ -42,3 +42,22 @@ export function statusDeViajante(milhasAcumuladas: number): StatusDeViajante {
     progresso: (milhas - atual.milhas) / (proximo.milhas - atual.milhas),
   };
 }
+
+export type EtapaDaProgressao = {
+  nivel: Nivel;
+  /** alcancado: já passou; atual: onde a pessoa está; futuro: ainda não chegou. */
+  estado: 'alcancado' | 'atual' | 'futuro';
+  /** Milhas que faltam para chegar ao nível (0 nos alcançados e no atual). */
+  faltam: number;
+};
+
+/** Todos os níveis da RN-15 com o estado de cada um, para a tela de progressão de milhas. */
+export function progressaoDeNiveis(milhasAcumuladas: number): EtapaDaProgressao[] {
+  const milhas = Math.max(0, Math.floor(Number.isFinite(milhasAcumuladas) ? milhasAcumuladas : 0));
+  const { atual } = statusDeViajante(milhas);
+  return NIVEIS.map((nivel) => ({
+    nivel,
+    estado: nivel.id === atual.id ? 'atual' : nivel.milhas <= milhas ? 'alcancado' : 'futuro',
+    faltam: Math.max(0, nivel.milhas - milhas),
+  }));
+}

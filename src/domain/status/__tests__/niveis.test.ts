@@ -1,4 +1,4 @@
-import { NIVEIS, statusDeViajante } from '../niveis';
+import { NIVEIS, progressaoDeNiveis, statusDeViajante } from '../niveis';
 
 describe('statusDeViajante (RN-15)', () => {
   it('começa como Turista, a caminho de Mochileiro', () => {
@@ -26,5 +26,25 @@ describe('statusDeViajante (RN-15)', () => {
   it('trata valores inválidos como zero', () => {
     expect(statusDeViajante(-50).atual.nome).toBe('Turista');
     expect(statusDeViajante(Number.NaN).faltam).toBe(1000);
+  });
+});
+
+describe('progressaoDeNiveis (RN-15)', () => {
+  it('marca os níveis alcançados, o atual e quanto falta para os próximos', () => {
+    const p = progressaoDeNiveis(4820);
+    expect(p).toHaveLength(NIVEIS.length);
+    expect(p.map((e) => e.estado)).toEqual(['alcancado', 'atual', 'futuro', 'futuro', 'futuro', 'futuro', 'futuro']);
+    expect(p[2].faltam).toBe(180);
+    expect(p[1].faltam).toBe(0);
+  });
+
+  it('no último nível não há futuro', () => {
+    const p = progressaoDeNiveis(200_000);
+    expect(p[p.length - 1].estado).toBe('atual');
+    expect(p.filter((e) => e.estado === 'futuro')).toHaveLength(0);
+  });
+
+  it('milhas inválidas contam como zero', () => {
+    expect(progressaoDeNiveis(Number.NaN)[0].estado).toBe('atual');
   });
 });

@@ -2,11 +2,11 @@
  * Menu lateral (Figma v3: "Menu lateral / Drawer", Classe = Econômica e Plus). Abre pelo avatar do Início.
  * PRD: RF-08. Perfil com o status de viajante (RN-15), seu progresso, conta e app.
  *
- * Na econômica aparece o item "Termi Plus" (abre o paywall, RN-20); no Plus ele sai e a seção vira
- * "Conta e app".
+ * Na econômica aparece o item "Termi Plus" (abre o paywall, RN-20); no Plus ele dá lugar a
+ * "Gerenciar assinatura" (Figma 239:7335). As milhas abrem a tela de progressão (/milhas).
  */
 import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router, type Href } from 'expo-router';
 import Constants from 'expo-constants';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -66,6 +66,11 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
     onFechar();
     router.push(rota);
   };
+  // A assinatura é da Google Play: gerenciar abre a página de assinaturas da loja para este app.
+  const gerenciarAssinatura = () => {
+    const pacote = Constants.expoConfig?.android?.package;
+    Linking.openURL(`https://play.google.com/store/account/subscriptions${pacote ? `?package=${pacote}` : ''}`).catch(() => {});
+  };
 
   return (
     <Modal visible={montado} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onFechar}>
@@ -95,10 +100,18 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                   )}
                 </View>
               </View>
-              <View style={{ gap: space[8] }}>
-                <Text variant="Body/Small 13" tone="tertiary">
-                  {t('menu.milhasAcumuladas', { milhas: milhas.toLocaleString('pt-BR') })}
-                </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityHint={t('menu.verProgressao')}
+                onPress={() => ir('/milhas')}
+                style={({ pressed }) => [{ gap: space[8], paddingVertical: space[4] }, pressed && { opacity: 0.7 }]}
+              >
+                <View style={styles.linhaDasMilhas}>
+                  <Text variant="Body/Small 13" tone="tertiary">
+                    {t('menu.milhasAcumuladas', { milhas: milhas.toLocaleString('pt-BR') })}
+                  </Text>
+                  <Icon name="chevronRight" size={16} />
+                </View>
                 <View style={styles.trilho} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(status.progresso * 100) }}>
                   <View style={[styles.barra, { width: `${Math.round(status.progresso * 100)}%` }]} />
                 </View>
@@ -107,7 +120,7 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                     ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
                     : t('menu.nivelMaximo')}
                 </Text>
-              </View>
+              </Pressable>
             </View>
 
             <View style={{ gap: space[8] }}>
@@ -128,31 +141,24 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                 <Item icone="stats" titulo={t('menu.estatisticas')} onPress={() => ir('/estatisticas')} />
               </Secao>
 
-              {plus ? (
-                <Secao titulo={t('menu.contaEApp')}>
-                  <Item icone="userAdd" titulo={t('menu.criarConta')} descricao={t('menu.salveSeuProgresso')} onPress={() => setContaEmBreve(true)} />
-                  <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
-                  <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
-                  <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
-                </Secao>
-              ) : (
-                <>
-                  <Secao titulo={t('menu.contaECompras')}>
-                    <Item
-                      icone="userAdd"
-                      titulo={t('menu.criarContaESincronizar')}
-                      descricao={t('menu.salveSeuProgresso')}
-                      onPress={() => setContaEmBreve(true)}
-                    />
-                    <Item icone="plus" titulo={t('menu.termiPlus')} descricao={t('menu.termiPlusDescricao')} plus onPress={() => ir('/primeira-classe')} />
-                  </Secao>
-                  <Secao titulo={t('menu.app')}>
-                    <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
-                    <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
-                    <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
-                  </Secao>
-                </>
-              )}
+              <Secao titulo={t('menu.contaECompras')}>
+                <Item
+                  icone="userAdd"
+                  titulo={plus ? t('menu.criarConta') : t('menu.criarContaESincronizar')}
+                  descricao={t('menu.salveSeuProgresso')}
+                  onPress={() => setContaEmBreve(true)}
+                />
+                {plus ? (
+                  <Item icone="gerenciarAssinatura" titulo={t('menu.gerenciarAssinatura')} onPress={gerenciarAssinatura} />
+                ) : (
+                  <Item icone="plus" titulo={t('menu.termiPlus')} descricao={t('menu.termiPlusDescricao')} plus onPress={() => ir('/primeira-classe')} />
+                )}
+              </Secao>
+              <Secao titulo={t('menu.app')}>
+                <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
+                <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
+                <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
+              </Secao>
 
               {mostrarFerramentasDev ? (
                 <Secao titulo={t('inicio.ferramentas')}>
@@ -246,6 +252,7 @@ const styles = StyleSheet.create({
     borderColor: color.border.subtle,
     backgroundColor: color.surface.subtle,
   },
+  linhaDasMilhas: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
   trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },
   barra: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
   item: { flexDirection: 'row', alignItems: 'center', gap: space[14], padding: space[12], borderRadius: radius.lg, minHeight: 48 },

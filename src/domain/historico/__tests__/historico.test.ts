@@ -42,6 +42,11 @@ describe('rotasVoadas', () => {
   it('sem voos, sem rotas', () => {
     expect(rotasVoadas([])).toEqual([]);
   });
+
+  it('só pousos completos fecham a rota (pousou antes fica fora do globo)', () => {
+    const rotas = rotasVoadas([voo('1', BCN, LHR, em(20)), voo('2', GRU, BCN, em(21), { resultado: 'pousou_antes' })]);
+    expect(rotas.map((r) => r.chave)).toEqual(['BCN>LHR']);
+  });
 });
 
 describe('resumoDoDiario', () => {

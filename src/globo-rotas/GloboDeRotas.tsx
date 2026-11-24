@@ -258,17 +258,15 @@ export function GloboDeRotas({ rotas, largura, altura, agora, ativo = true, dent
 
       for (let i = 0; i < lista.length; i++) {
         const pts = arcoNaTela(lista[i].a, lista[i].b, y, tl, cx, cy, r);
+        // Só o que está na frente: o globo é opaco, o lado de trás não aparece (Alberto, build-47).
         const frente = Skia.PathBuilder.Make();
-        const atras = Skia.PathBuilder.Make();
         for (let k = 0; k < pts.length - 1; k++) {
-          const alvo = escondido(pts[k], cx, cy, r) ? atras : frente;
-          alvo.moveTo(pts[k].x, pts[k].y);
-          alvo.lineTo(pts[k + 1].x, pts[k + 1].y);
+          if (escondido(pts[k]) || escondido(pts[k + 1])) continue;
+          frente.moveTo(pts[k].x, pts[k].y);
+          frente.lineTo(pts[k + 1].x, pts[k + 1].y);
         }
         const destaque = i === sel;
         linha.setStrokeWidth(destaque ? 2 : 1.1);
-        linha.setAlphaf(0.07 * atenuar);
-        canvas.drawPath(atras.detach(), linha);
         linha.setAlphaf(destaque ? 1 : 0.4 * atenuar);
         canvas.drawPath(frente.detach(), linha);
 

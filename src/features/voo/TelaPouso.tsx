@@ -53,7 +53,8 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           <Text variant="Caption/Medium 12" tone="tertiary">
             {t('pouso.cabecalho', { voo: s.voo.callsign, origem: nomeDoLugar(s.voo.origem), destino: cidade })}
           </Text>
-          <Text variant="Display/Pixel 32" tone="accent" accessibilityRole="header">
+          {/* Geist (Heading/Screen 32), não a Pixel: pedido do Alberto no build-47. */}
+          <Text variant="Heading/Screen 32" tone="accent" accessibilityRole="header">
             {pousou ? t('pouso.titulo', { cidade }) : t('pouso.tituloAntes')}
           </Text>
         </View>
@@ -76,14 +77,13 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           ) : null}
         </View>
 
-        {/* O que o voo rendeu */}
-        <View style={styles.grade}>
-          <Bloco valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
-          <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
-          <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} />
-        </View>
-
+        {/* O que o voo rendeu (E7: com a linha de carimbo e loja logo abaixo, sem caixa) */}
         <View style={{ gap: space[12] }}>
+          <View style={styles.grade}>
+            <Bloco valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
+            <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
+            <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} />
+          </View>
           {pousou ? null : (
             <View style={styles.aviso}>
               <Icon name="info" size={16} color={color.text.muted} />
@@ -92,6 +92,9 @@ export function TelaPouso({ id }: { id: string | undefined }) {
               </Text>
             </View>
           )}
+        </View>
+
+        <View style={{ gap: space[12] }}>
           {pousou && temMotivo ? (
             <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, pressed && { opacity: 0.85 }]}>
               {tudoFeito ? <Icon name="incluido" size={20} /> : <Icon name="logbook" />}
@@ -111,7 +114,7 @@ export function TelaPouso({ id }: { id: string | undefined }) {
               <Icon name="chevronRight" />
             </Pressable>
           ) : (
-            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, pressed && { opacity: 0.85 }]}>
+            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, styles.linhaApagada, pressed && { opacity: 0.85 }]}>
               <Icon name="logbook" />
               <Text variant="Label/Medium 14" style={{ flex: 1 }}>
                 {t('pouso.vooSalvoNoDiario')}
@@ -150,7 +153,9 @@ const styles = StyleSheet.create({
   areaDoCarimbo: { paddingVertical: space[8], alignItems: 'center' },
   grade: { flexDirection: 'row', gap: space[8] },
   bloco: { flex: 1, gap: space[2], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
-  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[6], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle },
+  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle, backgroundColor: color.surface.default },
+  // E7 (Figma 443:11349): a linha do diário fica no fundo da tela, só com a borda.
+  linhaApagada: { backgroundColor: color.bg.app },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
 });

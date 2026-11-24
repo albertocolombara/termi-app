@@ -76,10 +76,13 @@ export function arcoNaTela(a: Vec3, b: Vec3, yaw: number, tilt: number, cx: numb
   return pts;
 }
 
-/** Um ponto do arco está escondido se fica atrás da esfera (z < 0 e dentro do disco na tela). */
-export function escondido(p: NaTela, cx: number, cy: number, raio: number): boolean {
+/**
+ * Um ponto do arco está escondido se está do lado de trás do globo (z < 0). Inclui o trecho elevado
+ * que passaria da borda: o globo é opaco e nada do outro lado aparece (Alberto, build-47).
+ */
+export function escondido(p: NaTela): boolean {
   'worklet';
-  return p.z < 0 && Math.hypot(p.x - cx, p.y - cy) < raio;
+  return p.z < 0;
 }
 
 /** Distância de um ponto a um segmento, na tela. */
@@ -113,7 +116,7 @@ export function rotaNoToque(
   for (let i = 0; i < rotas.length; i++) {
     const pts = arcoNaTela(rotas[i].a, rotas[i].b, yaw, tilt, cx, cy, raio);
     for (let k = 0; k < pts.length - 1; k++) {
-      if (escondido(pts[k], cx, cy, raio)) continue;
+      if (escondido(pts[k])) continue;
       const d = distanciaAoSegmento(px, py, pts[k], pts[k + 1]);
       if (d < menor) {
         menor = d;

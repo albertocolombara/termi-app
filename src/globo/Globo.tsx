@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PixelRatio, Pressable, StyleSheet, View } from 'react-native';
+import { PixelRatio, StyleSheet, View } from 'react-native';
 import {
   Canvas,
   Fill,
@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { color, Icon, radius, space, Text } from '@/ds';
+import { color, Icon, IconButton, space, Text } from '@/ds';
 import { motion, timing } from '@/ds/motion';
 import { t } from '@/i18n';
 import { sun } from '@/janela/geo';
@@ -362,14 +362,8 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
           <Icon name="plane" size={28} color={color.accent.default} />
         </Animated.View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('globo.centralizar')}
-          onPress={centralizar}
-          style={({ pressed }) => [styles.centralizar, { top: topoDosControles }, pressed && { opacity: 0.8 }]}
-        >
-          <Icon name="centralizar" />
-        </Pressable>
+        {/* Mesmo IconButton de Ajustes, diário e som (Alberto, build-47: estava maior que eles). */}
+        <IconButton icon="centralizar" accessibilityLabel={t('globo.centralizar')} onPress={centralizar} style={[styles.centralizar, { top: topoDosControles }]} />
       </View>
     </GestureDetector>
   );
@@ -401,5 +395,5 @@ const styles = StyleSheet.create({
   ponto: { position: 'absolute', left: 0, top: 0, flexDirection: 'row', alignItems: 'center', gap: space[6] },
   pontoMarca: { width: PONTO, height: PONTO, borderRadius: PONTO / 2, backgroundColor: color.text.primary },
   pontoTexto: { textShadowColor: color.bg.flight, textShadowRadius: 4 },
-  centralizar: { position: 'absolute', right: space[16], width: 48, height: 48, borderRadius: radius.lg, backgroundColor: color.surface.strong, alignItems: 'center', justifyContent: 'center' },
+  centralizar: { position: 'absolute', right: space[16] },
 });

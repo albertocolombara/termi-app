@@ -21,7 +21,7 @@ describe('geometria do globo de rotas', () => {
   it('o lado oposto do planeta fica escondido', () => {
     const atras = projetar(vetor(0, 180), 1, 0, 0, 100, 100, 50);
     expect(atras.z).toBeLessThan(0);
-    expect(escondido(atras, 100, 100, 50)).toBe(true);
+    expect(escondido(atras)).toBe(true);
   });
 
   it('o arco começa e termina nos aeroportos e sobe no meio', () => {

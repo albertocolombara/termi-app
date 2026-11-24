@@ -35,10 +35,14 @@ export type RotaVoada = {
 
 const codigo = (a: Aeroporto) => a.iata ?? a.icao ?? `${a.lat.toFixed(2)},${a.lon.toFixed(2)}`;
 
-/** Agrupa os voos por trecho (origem → destino), do mais recente para o mais antigo. */
+/**
+ * Rotas do globo: agrupa os voos por trecho (origem → destino), do mais recente para o mais antigo.
+ * Só entram pousos completos: quem pousou antes não chegou ao destino, então a rota não fecha
+ * (Alberto, build-47). O voo continua contando no diário, nas milhas e nos totais.
+ */
 export function rotasVoadas(voos: readonly VooDoDiario[]): RotaVoada[] {
   const porChave = new Map<string, RotaVoada>();
-  const ordenados = [...voos].sort((a, b) => b.encerrouEm - a.encerrouEm);
+  const ordenados = voos.filter((v) => v.resultado === 'pousou').sort((a, b) => b.encerrouEm - a.encerrouEm);
   for (const v of ordenados) {
     const chave = `${codigo(v.origem)}>${codigo(v.destino)}`;
     const existente = porChave.get(chave);

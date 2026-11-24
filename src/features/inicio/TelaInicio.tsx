@@ -114,7 +114,8 @@ export function TelaInicio() {
             altura={Math.min(alturaDoGlobo, width + space[24])}
             agora={agora}
             ativo={focada && ativo && !menuAberto}
-            dica={semHistorico ? { titulo: t('inicio.dicaTitulo'), texto: t('inicio.dicaTexto') } : null}
+            // Também quando só há voos que pousaram antes: eles não desenham rota.
+            dica={voos.isSuccess && rotas.length === 0 ? { titulo: t('inicio.dicaTitulo'), texto: t('inicio.dicaTexto') } : null}
           />
         ) : null}
       </View>
