@@ -2,6 +2,8 @@ import { Skia, type SkData, type SkImage } from '@shopify/react-native-skia';
 import { Directory, File, Paths } from 'expo-file-system';
 
 import { env } from '@/config/env';
+import { ORIGEM_GLOBO } from '@/services/rede/medidor';
+import { PASTA_NO_APARELHO, caminhoDoBloco, caminhoNoAparelho, type Camada as CamadaDaPaisagem } from '@/domain/voos/blocosDaRota';
 
 /**
  * Blocos de imagem da NASA (GIBS, projeção geográfica EPSG:4326) para o globo.
@@ -12,6 +14,10 @@ import { env } from '@/config/env';
  * Grade: blocos de 512 px; no nível z, cada bloco cobre 288 / 2^z graus. A linha 0 começa na
  * latitude 90 e a coluna 0 na longitude −180.
  *
+ * De perto (níveis 8 a 10, desde 21/11/2026), o globo usa os mesmos blocos da paisagem da janela,
+ * do Sentinel-2 (ESA WorldCover 2021): dia `w8`/`w10` (61 m por pixel no nível 10) e luzes `l9`
+ * (área construída × luz real). Ficam na mesma pasta do aparelho que a janela usa. Só com o R2.
+ *
  * Vêm de uma cópia no Cloudflare R2 (`EXPO_PUBLIC_TILES_BASE_URL`), recomprimida em WebP pelo
  * workflow "Blocos do globo" do coletor: o Black Marble do GIBS só existe em PNG (~300 KB por bloco,
  * ~30 KB em WebP) e o globo chegou a gastar 17 a 29 MB num voo de 25 min (build-38). Sem a URL do
@@ -19,7 +25,10 @@ import { env } from '@/config/env';
  */
 
 const GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best';
-export const NIVEL_MAX = 7;
+/** Último nível do Blue/Black Marble (500 m por pixel). */
+export const NIVEL_NASA = 7;
+/** Com o R2, o zoom vai até o nível 10 (blocos do Sentinel-2); sem ele, para no 7. */
+export const NIVEL_MAX = env.tilesBaseUrl ? 10 : NIVEL_NASA;
 const TAM = 512;
 
 export type Camada = 'dia' | 'noite';
@@ -36,6 +45,32 @@ const url: Record<Camada, (z: number, r: number, c: number) => string> = env.til
   : doGibs;
 
 export const grausDoBloco = (z: number) => 288 / 2 ** z;
+
+/** Nível do mosaico de dia para o nível de zoom: 1–7 NASA; 8 e 9 usam `w8`; 10 usa `w10`. */
+export function nivelDoDia(z: number): number {
+  'worklet';
+  return z <= NIVEL_NASA ? z : z < 10 ? 8 : 10;
+}
+
+/** Nível do mosaico de longe (sempre NASA: cobre o mar, onde não há bloco do Sentinel-2). */
+export function nivelDeLonge(z: number): number {
+  'worklet';
+  return Math.min(NIVEL_NASA, Math.max(1, z - 2));
+}
+
+/** Nível do mosaico da noite: Black Marble até o 7; de perto, as luzes `l9`. */
+export function nivelDaNoite(z: number): number {
+  'worklet';
+  return z <= NIVEL_NASA ? Math.max(1, z - 1) : 9;
+}
+
+/** O bloco deste nível vem do Sentinel-2 (camadas da paisagem), não do Blue/Black Marble? */
+export const doSentinel = (z: number) => z > NIVEL_NASA;
+
+function camadaDaPaisagem(camada: Camada, z: number): CamadaDaPaisagem {
+  if (camada === 'noite') return 'l9';
+  return z >= 10 ? 'w10' : 'w8';
+}
 
 /** Nível de detalhe para uma resolução de tela (km por pixel do aparelho). */
 export function nivelPara(kmPorPixel: number): number {
@@ -70,7 +105,41 @@ function conferirPasta() {
   }
 }
 
+async function daPaisagem(camada: Camada, z: number, r: number, c: number): Promise<SkData | null> {
+  const b = { camada: camadaDaPaisagem(camada, z), linha: r, coluna: c };
+  const arquivo = new File(Paths.cache, caminhoNoAparelho(b));
+  try {
+    if (arquivo.exists) return arquivo.size > 0 ? Skia.Data.fromBytes(await arquivo.bytes()) : null;
+  } catch {
+    // arquivo ilegível: baixa de novo
+  }
+  const resposta = await fetch(`${env.tilesBaseUrl}/${caminhoDoBloco(b)}`, { headers: ORIGEM_GLOBO });
+  if (resposta.status !== 200 && resposta.status !== 404) return null;
+  try {
+    new Directory(Paths.cache, `${PASTA_NO_APARELHO}/${b.camada}/${b.linha}`).create({ intermediates: true, idempotent: true });
+  } catch {
+    // sem pasta: usa só da memória
+  }
+  if (resposta.status === 404) {
+    // Sem bloco: mar aberto (dia) ou sem luz (noite). Guarda vazio para não pedir de novo.
+    try {
+      arquivo.create({ overwrite: true });
+    } catch {
+      // só não fica guardado
+    }
+    return null;
+  }
+  const bytes = new Uint8Array(await resposta.arrayBuffer());
+  try {
+    await arquivo.write(bytes);
+  } catch {
+    // sem espaço: usa só da memória
+  }
+  return Skia.Data.fromBytes(bytes);
+}
+
 async function doAparelhoOuDaRede(camada: Camada, z: number, r: number, c: number): Promise<SkData | null> {
+  if (doSentinel(z)) return daPaisagem(camada, z, r, c);
   conferirPasta();
   const arquivo = new File(Paths.cache, `${PASTA}/${camada}_${z}_${r}_${c}`);
   try {
@@ -114,16 +183,27 @@ function baixar(camada: Camada, z: number, r: number, c: number): Promise<SkData
 
 /** Retângulo do mosaico em graus: [lon oeste, lat norte, lado]. */
 export type Limites = [number, number, number];
-export type Mosaico = { imagem: SkImage | null; b: Limites };
+/** `sentinel`: o mosaico veio dos blocos do Sentinel-2 (o shader ajusta a cor e lê as luzes de outro jeito). */
+export type Mosaico = { imagem: SkImage | null; b: Limites; sentinel: boolean };
 export const FORA: Limites = [1e3, 1e3, 1];
 
 const N = 4;
 
+/**
+ * Lado do mosaico em blocos. A noite de perto usa as luzes `l9` (nível 9, 0,56° por bloco): com 4×4
+ * cobria só 2,25° e, com o zoom nos níveis 8 e 9, a borda da tela caía no Black Marble borrado
+ * (build-40, Milão). Com 8×8 cobre 4,5°, como o mosaico de dia do nível 8.
+ */
+export const ladoDoMosaico = (camada: Camada, z: number) => (camada === 'noite' && doSentinel(z) ? 8 : N);
+
 /** Linha e coluna do canto do mosaico 4×4 centrado num ponto. */
-export function cantoDoMosaico(z: number, lat: number, lon: number): [number, number] {
+export function cantoDoMosaico(z: number, lat: number, lon: number, lado?: number): [number, number] {
   'worklet';
+  // Sem valor padrão que leia variável de fora: no worklet, o padrão é avaliado antes de a variável
+  // capturada existir e o app fecha ao abrir o globo (build-41).
+  const l = lado ?? 4;
   const deg = 288 / 2 ** z;
-  return [Math.floor((90 - lat) / deg) - (N >> 1) + 1, Math.floor((lon + 180) / deg) - (N >> 1) + 1];
+  return [Math.floor((90 - lat) / deg) - (l >> 1) + 1, Math.floor((lon + 180) / deg) - (l >> 1) + 1];
 }
 
 /**
@@ -131,12 +211,13 @@ export function cantoDoMosaico(z: number, lat: number, lon: number): [number, nu
  * Só remonta quando muda o nível ou o bloco central.
  */
 export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) => void) {
-  const celula = px / N;
   let chave = '';
   let pedido = 0;
   return {
     atualizar(z: number, lat: number, lon: number) {
-      const [r0, c0] = cantoDoMosaico(z, lat, lon);
+      const lado = ladoDoMosaico(camada, z);
+      const celula = px / lado;
+      const [r0, c0] = cantoDoMosaico(z, lat, lon, lado);
       const k = `${z}/${r0}/${c0}`;
       if (k === chave) return;
       chave = k;
@@ -144,9 +225,9 @@ export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) =
       const deg = grausDoBloco(z);
       const linhas = Math.ceil(180 / deg);
       const colunas = Math.ceil(360 / deg);
-      const blocos = [...Array(N * N)].map((_, i) => {
-        const r = r0 + Math.floor(i / N);
-        const c = c0 + (i % N);
+      const blocos = [...Array(lado * lado)].map((_, i) => {
+        const r = r0 + Math.floor(i / lado);
+        const c = c0 + (i % lado);
         if (r < 0 || r >= linhas || c < 0 || c >= colunas) return Promise.resolve(null);
         return baixar(camada, z, r, c);
       });
@@ -160,12 +241,12 @@ export function criarMosaico(camada: Camada, px: number, aoMudar: (m: Mosaico) =
         dados.forEach((d, i) => {
           const im = d ? Skia.Image.MakeImageFromEncoded(d) : null;
           if (!im) return;
-          const dst = Skia.XYWHRect((i % N) * celula, Math.floor(i / N) * celula, celula, celula);
+          const dst = Skia.XYWHRect((i % lado) * celula, Math.floor(i / lado) * celula, celula, celula);
           canvas.drawImageRect(im, Skia.XYWHRect(0, 0, im.width(), im.height()), dst, paint);
         });
         surface.flush();
         const snap = surface.makeImageSnapshot();
-        aoMudar({ imagem: snap.makeNonTextureImage() ?? snap, b: [c0 * deg - 180, 90 - r0 * deg, N * deg] });
+        aoMudar({ imagem: snap.makeNonTextureImage() ?? snap, b: [c0 * deg - 180, 90 - r0 * deg, lado * deg], sentinel: doSentinel(z) });
       });
     },
   };

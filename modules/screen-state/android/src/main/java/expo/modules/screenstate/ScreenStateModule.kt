@@ -89,6 +89,7 @@ class ScreenStateModule : Module() {
 
     Function("hideFlightNotification") {
       val ctx = context
+      FlightSoundService.parar(removerNotificacao = true)
       main.post { FlightSoundService.instance?.finish(removeNotification = true) }
       val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
       nm.cancel(FlightNotification.NOTIFICATION_ID)
@@ -107,6 +108,7 @@ class ScreenStateModule : Module() {
         putExtra(FlightSoundService.EXTRA_TITLE, title)
         putExtra(FlightSoundService.EXTRA_TEXT, text)
         putExtra(FlightSoundService.EXTRA_FADE_IN_MS, fadeInMs.toLong())
+        putExtra(FlightSoundService.EXTRA_SEQ, FlightSoundService.pedidos.incrementAndGet())
       }
       if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(intent) else ctx.startService(intent)
     }
@@ -125,6 +127,7 @@ class ScreenStateModule : Module() {
 
     /** Para o som; a notificação do voo fica (com a contagem) se o voo continua. */
     Function("stopFlightSound") {
+      FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }
     }
   }

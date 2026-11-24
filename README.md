@@ -47,7 +47,7 @@ Escopo completo e regras: [PRD.md](PRD.md).
 | Avisos | expo-notifications com alarme exato; módulo Kotlin para a notificação fixa |
 | Assinaturas | RevenueCat (Google Play Billing) |
 | Dados de voo | Cache próprio por região (coletor + adsb.lol), servido pelo Cloudflare R2 |
-| Paisagem | Blocos NASA GIBS (Landsat, GMIS, Blue/Black Marble) no Cloudflare R2 |
+| Paisagem | Blocos Sentinel-2 (ESA WorldCover 2021) e NASA GIBS (Blue/Black Marble) no Cloudflare R2 |
 
 Itens ainda marcados como proposta (Sentry, Maestro, EAS, entre outros) e as pendências estão em [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -137,4 +137,4 @@ Referências externas: Figma "Termi: Focus Flights" (https://www.figma.com/desig
 
 ## Créditos de dados
 
-Dados de voo: [adsb.lol](https://adsb.lol) (ODbL). Imagens da Terra: NASA GIBS (Blue Marble, Black Marble, Landsat WELD, VIIRS) e GMIS (Brown de Colstoun et al., doi:10.7927/H4P55KKF). Lugares: GeoNames. O uso de dados da NASA não implica apoio da NASA. As companhias aéreas aparecem só pela bandeira do país e não têm relação com o app.
+Dados de voo: [adsb.lol](https://adsb.lol) (ODbL). Imagens da Terra: NASA GIBS (Blue Marble, Black Marble, VIIRS, mapa de terra e água do OpenStreetMap, ODbL) e ESA WorldCover 2021 (© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium, CC BY 4.0). Lugares: GeoNames. O uso de dados da NASA não implica apoio da NASA. As companhias aéreas aparecem só pela bandeira do país e não têm relação com o app.

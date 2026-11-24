@@ -163,7 +163,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RF-43** O progresso (voos, mala, saldo, carimbos, milhas) deve ter backup desde a v1, para nunca se perder por reinstalação ou troca de aparelho. **[Pendente]** mecanismo (ver ARCHITECTURE.md).
 - **RF-44** Os Ajustes (M5) devem cobrir: voo (serviço de bordo e intervalo; apps permitidos), som, avisos (pouso, serviço de bordo, lembrete de voo), tela e bateria (manter tela ligada, economia de bateria, qualidade da janela, reduzir movimento), conta e compras, privacidade (voos perto de você, exportar e apagar dados).
 - **RF-45** O usuário deve poder exportar e apagar seus dados.
-- **RF-46** Sobre o Termi deve mostrar os créditos dos dados (adsb.lol, NASA GIBS, GMIS, GeoNames), o agradecimento do GIBS, a citação do GMIS, a nota de que o uso de dados da NASA não implica apoio da NASA, a nota sobre companhias aéreas e os documentos legais.
+- **RF-46** Sobre o Termi deve mostrar os créditos dos dados (adsb.lol, NASA GIBS, ESA WorldCover / Copernicus Sentinel-2, OpenStreetMap, GeoNames), o agradecimento do GIBS, a atribuição do ESA WorldCover, a nota de que o uso de dados da NASA não implica apoio da NASA, a nota sobre companhias aéreas e os documentos legais.
 - **RF-47** Ajuda e sugestões deve ter perguntas frequentes em sanfona e contato (sugestão, relatar problema com o último voo, avaliar na loja).
 - **RF-48** Se os avisos de pouso estiverem desligados, o Início deve mostrar um aviso para ativá-los.
 
@@ -252,7 +252,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Marca e dados
 
 - **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real.
-- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
+- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, ESA WorldCover/CC BY 4.0, OpenStreetMap/ODbL, GeoNames; desde 21/11/2026 o ESA WorldCover substitui o Landsat WELD e o GMIS) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
 
 ### Comparativo de planos
 
@@ -410,4 +410,4 @@ Testes de preço: dois preços na Play via RevenueCat.
 | Avatar de perfil | Foto ou personalização. |
 | Balão de pensamento do Início | Medalhas genéricas ou souvenirs reais que faltam ao usuário. |
 | Ajuste de cor da terra por estação | Pendente. |
-| Citação do GMIS | Data de acesso a preencher na publicação. |
+| Citação do GMIS | Não se aplica desde 21/11/2026 (GMIS substituído pelo ESA WorldCover). |
