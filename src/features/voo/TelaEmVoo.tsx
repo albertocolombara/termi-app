@@ -105,7 +105,14 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
   const { voo, radar } = useVooAtualizado(sessao.voo);
-  // O radar voltou: um sinal perdido de novo volta a avisar.
+  // O radar voltou: aviso curto "Sinal do radar de volta" (pedido do Alberto, 24/11/2026), e um
+  // sinal perdido de novo volta a avisar.
+  const [radarAntes, setRadarAntes] = useState(radar);
+  const [radarVoltou, setRadarVoltou] = useState<{ em: number; de: 'sem-sinal' | 'sem-internet' } | null>(null);
+  if (radar !== radarAntes) {
+    if (radar === 'ok' && radarAntes !== 'ok') setRadarVoltou({ em: agora, de: radarAntes });
+    setRadarAntes(radar);
+  }
   const radarFechado = avisosFechados.some((k) => k === 'sem-sinal' || k === 'sem-internet');
   if (radar === 'ok' && radarFechado) setAvisosFechados((f) => f.filter((k) => k !== 'sem-sinal' && k !== 'sem-internet'));
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
@@ -141,6 +148,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const larguraDaJanela = Math.max(width, Math.round((alturaDaPaisagem * 3) / 4));
   const mostrarBoasVindas = !boasVindasFechada && agora - embarcouEm < BOAS_VINDAS_MS;
   const avisoDaPausa = emPausa && !avisosFechados.includes(`pausa-${emPausa.indice}`);
+  const avisoRadarVoltou = radar === 'ok' && !!radarVoltou && agora - radarVoltou.em < RADAR_VOLTOU_MS && !avisosFechados.includes(`radar-voltou-${radarVoltou.em}`);
   const avisoDeVolta = !!pausaTerminada && !voltaram.includes(pausaTerminada.indice) && !avisosFechados.includes(`fim-${pausaTerminada.indice}`);
 
   const encerrarPausa = () => {
@@ -289,6 +297,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               texto={radar === 'sem-internet' ? t('emVoo.semInternetTexto', { hora: horaLocal(pousoPrevistoEm) }) : t('emVoo.semSinalTexto')}
               rotuloFechar={t('emVoo.fecharAviso')}
               onFechar={() => fecharAviso(radar)}
+            />
+          ) : avisoRadarVoltou && radarVoltou ? (
+            <AvisoNoApp
+              key={`radar-voltou-${radarVoltou.em}`}
+              icone="plane"
+              titulo={radarVoltou.de === 'sem-internet' ? t('emVoo.conexaoVoltouTitulo') : t('emVoo.radarVoltouTitulo')}
+              texto={t('emVoo.radarVoltouTexto')}
+              rotuloFechar={t('emVoo.fecharAviso')}
+              onFechar={() => fecharAviso(`radar-voltou-${radarVoltou.em}`)}
             />
           ) : mostrarBoasVindas ? (
             <AvisoDeBoasVindas voo={voo.callsign} origem={origem} destino={destino} onFechar={() => setBoasVindasFechada(true)} />
@@ -466,6 +483,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 const SEM_TRILHA: Amostra[] = [];
 const SOBREPOSICAO = 56;
 const BOAS_VINDAS_MS = 90_000;
+/** Quanto tempo o aviso "Sinal do radar de volta" fica na tela. */
+const RADAR_VOLTOU_MS = 8_000;
 /** Quanto tempo o aviso "De volta ao foco" fica depois do fim da pausa. */
 const DE_VOLTA_AO_FOCO_MS = 60_000;
 const PAUSA_MS = PAUSA_MAXIMA_MIN * 60_000;

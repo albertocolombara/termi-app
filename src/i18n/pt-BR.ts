@@ -243,6 +243,9 @@ export const ptBR = {
     semSinalTexto: 'Posição estimada pela última rota e velocidade conhecidas. Seu foco continua normal.',
     semInternetTitulo: 'Sem internet',
     semInternetTexto: 'O foco continua e o pouso segue às {hora}. A posição é estimada até a conexão voltar.',
+    radarVoltouTitulo: 'Sinal do radar de volta',
+    conexaoVoltouTitulo: 'Conexão de volta',
+    radarVoltouTexto: 'A posição do avião voltou a ser a real.',
     fecharAviso: 'Toque para fechar o aviso',
   },
   ajustes: {
