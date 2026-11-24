@@ -100,7 +100,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   }, [liberarSom, sessao.id]);
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
-  const voo = useVooAtualizado(sessao.voo);
+  const { voo, radar } = useVooAtualizado(sessao.voo);
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
   useBlocosDoVoo(voo, ativo);
   const pos = projetar(voo, agora);
@@ -259,6 +259,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               texto={t('servico.deVoltaTexto', { hora: horaLocal(pousoPrevistoEm) })}
               rotuloFechar={t('servico.fecharDeVolta')}
               onFechar={() => setAvisoFechado(`fim-${pausaTerminada.indice}`)}
+            />
+          ) : radar !== 'ok' && avisoFechado !== radar ? (
+            // E4 e X4 (Figma v3): o foco continua; a posição passa a ser estimada.
+            <AvisoNoApp
+              key={radar}
+              icone={radar === 'sem-internet' ? 'semInternet' : 'semSinal'}
+              titulo={radar === 'sem-internet' ? t('emVoo.semInternetTitulo') : t('emVoo.semSinalTitulo')}
+              texto={radar === 'sem-internet' ? t('emVoo.semInternetTexto', { hora: horaLocal(pousoPrevistoEm) }) : t('emVoo.semSinalTexto')}
+              rotuloFechar={t('emVoo.fecharAviso')}
+              onFechar={() => setAvisoFechado(radar)}
             />
           ) : mostrarBoasVindas ? (
             <AvisoDeBoasVindas voo={voo.callsign} origem={origem} destino={destino} onFechar={() => setBoasVindasFechada(true)} />
@@ -445,17 +455,20 @@ const DESCIDA_DA_JANELA = 56;
  * com a tela aberta, só a região do avião). Assim a posição projetada se corrige pelo dado real.
  * Só aceita o mesmo voo: mesmo avião, mesmo destino e pouso previsto parecido.
  */
-function useVooAtualizado(gravado: Voo): Voo {
-  const vivo = useVooAoVivo(gravado).data;
+function useVooAtualizado(gravado: Voo): { voo: Voo; radar: 'ok' | 'sem-sinal' | 'sem-internet' } {
+  const q = useVooAoVivo(gravado);
+  const vivo = q.data;
+  // X4: a leitura falhou (sem conexão). E4: a leitura chegou, mas o avião não está nela.
+  const radar = q.isError ? 'sem-internet' : q.isSuccess && vivo === null ? 'sem-sinal' : 'ok';
   if (
     vivo &&
     vivo.coletadoEm > gravado.coletadoEm &&
     distanciaKm(vivo.destino, gravado.destino) < 5 &&
     Math.abs(vivo.pousoPrevistoEm - gravado.pousoPrevistoEm) < 3 * 3_600_000
   ) {
-    return vivo;
+    return { voo: vivo, radar };
   }
-  return gravado;
+  return { voo: gravado, radar };
 }
 
 function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotulo: string; ativo: boolean; onPress: () => void }) {

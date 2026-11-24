@@ -112,6 +112,8 @@ export const color = {
     criacao: 'rgba(255,146,190,0.10)',
     outro: 'rgba(179,177,186,0.10)',
   },
+  /** Carimbo não ganho na tela de pouso (Figma E7): branco a 30%. */
+  carimboApagado: 'rgba(255,255,255,0.30)',
   /** Tintas dos carimbos do passaporte (Figma M2): ouro, laranja, rosa, verde e azul. */
   carimbo: {
     papel: '#EFEDD6',
