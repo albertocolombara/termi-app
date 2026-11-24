@@ -20,6 +20,8 @@ export {
 } from './controls';
 export {
   ActionRow,
+  Avatar,
+  Plus,
   FirstClassSeal,
   IconButton,
   InfoBanner,

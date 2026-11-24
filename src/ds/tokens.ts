@@ -33,6 +33,10 @@ export const palette = {
   'white/a80': 'rgba(255,255,255,0.80)',
   'black/a25': 'rgba(0,0,0,0.25)',
   'black/a55': 'rgba(0,0,0,0.55)',
+  'yellow/a05': 'rgba(255,198,41,0.05)',
+  'yellow/a20': 'rgba(255,198,41,0.20)',
+  'orange-intl/a05': 'rgba(244,74,34,0.05)',
+  'orange-intl/a08': 'rgba(219,70,35,0.08)',
 } as const;
 
 const p = palette;
@@ -114,6 +118,28 @@ export const color = {
     miolo: '#0F0F12',
     contornoDoBotao: '#141317',
     legenda: '#8C8F97',
+  },
+  /**
+   * Plus (antes "Termi Premium" / "Primeira classe"; Figma v3, 24/11/2026): identidade simples, sem o
+   * mascote. Fundo e borda amarelos bem leves, texto em Geist Pixel Grid amarelo.
+   */
+  plus: {
+    fundo: p['yellow/a05'],
+    borda: p['yellow/a20'],
+  },
+  /** Aviso em bloco (Figma: "Aviso · avisos desligados", X8). */
+  aviso: {
+    fundo: p['orange-intl/a05'],
+    borda: p['orange-intl/a08'],
+  },
+  /** Globo de rotas do Início e das Estatísticas (Figma: "Globo/Detalhes da rota"; cores locais da ilustração). */
+  globo: {
+    terra: '#9FB4D6',
+    marCentro: '#1E2742',
+    marBorda: '#0E1220',
+    halo: 'rgba(90,140,255,0.16)',
+    cartao: '#201D25',
+    sombraDoCartao: 'rgba(0,0,0,0.53)',
   },
   border: {
     subtle: p['white/a10'],

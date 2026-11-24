@@ -2,11 +2,12 @@
 import React from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { interpolateColor, useAnimatedStyle } from 'react-native-reanimated';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { Icon, Suitcase, type IconName } from './Icon';
 import { Radio } from './controls';
 import { useStateProgress } from './motion';
 import { Text } from './Text';
-import { color as C, gold, radius, space } from './tokens';
+import { color as C, fontFamily, gold, radius, space } from './tokens';
 
 // ───────── Superfícies douradas (selos de 1ª classe) ─────────
 // Gradiente nativo do React Native (CSS `linear-gradient`), da esquerda para a direita como no Figma.
@@ -56,6 +57,49 @@ export function FirstClassSeal({
   );
 }
 
+// ───────── Plus (Figma v3: componente "Plus") ─────────
+/**
+ * Marca do Plus (antes Termi Premium / Primeira classe): pílula amarela bem leve com "Plus" em
+ * Geist Pixel Grid. Sem o mascote (decidido pelo Alberto no Figma v3, 24/11/2026).
+ * `pequeno` é a versão das listas (sons, vistas), no lugar do antigo selo dourado.
+ */
+export function Plus({ tamanho = 'padrao', rotulo = 'Plus' }: { tamanho?: 'padrao' | 'pequeno'; rotulo?: string }) {
+  const pequeno = tamanho === 'pequeno';
+  return (
+    <View style={[styles.plus, pequeno && styles.plusPequeno]}>
+      <Text variant="Label/Medium 14" style={[styles.plusTexto, pequeno && styles.plusTextoPequeno]}>
+        {rotulo}
+      </Text>
+    </View>
+  );
+}
+
+// ───────── Avatar ─────────
+/**
+ * Perfil do usuário (Figma: Avatar). `botao` fica no topo do Início e abre o menu lateral (indicador
+ * amarelo com as três linhas); `grande` aparece no topo do menu.
+ */
+export function Avatar({ tamanho = 'botao' }: { tamanho?: 'botao' | 'grande' }) {
+  if (tamanho === 'grande') {
+    return (
+      <Svg width={64} height={64} viewBox="0 0 64 64">
+        <Circle cx={32} cy={32} r={31.25} fill={C.accent.subtle} stroke={C.border.accent} strokeWidth={1.5} />
+        <Path d="M32 33.92a9.6 9.6 0 1 0 0-19.2 9.6 9.6 0 0 0 0 19.2Z" fill={C.accent.default} />
+        <Path d="M15.36 48.64c0-8.32 7.68-12.8 16.64-12.8s16.64 4.48 16.64 12.8H15.36Z" fill={C.accent.default} />
+      </Svg>
+    );
+  }
+  return (
+    <Svg width={48} height={48} viewBox="0 0 48 48">
+      <Circle cx={24} cy={24} r={19.5} fill={C.surface.default} stroke={C.border.default} />
+      <Path d="M24 25.2a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" fill={C.text.secondary} />
+      <Path d="M13.6 34.4c0-5.2 4.8-8 10.4-8s10.4 2.8 10.4 8H13.6Z" fill={C.text.secondary} />
+      <Rect x={27} y={27} width={20} height={20} rx={10} fill={C.accent.default} stroke={C.bg.app} strokeWidth={2} />
+      <Path d="M33.5 34.5h7M33.5 37h7M33.5 39.5h7" stroke={C.accent.on} strokeWidth={1.6} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 // ───────── Icon button ─────────
 export type IconButtonProps = {
   icon: IconName;
@@ -87,7 +131,7 @@ export type ListOptionProps = {
   title: string;
   description?: string;
   selected?: boolean;
-  /** Mostra o selo 1ª classe no lugar do rádio. */
+  /** Mostra a marca do Plus no lugar do rádio. */
   locked?: boolean;
   onPress?: () => void;
 };
@@ -95,7 +139,7 @@ export type ListOptionProps = {
 /**
  * Opção selecionável com ícone, título, descrição e rádio (ex.: sons da cabine). Fundo em 200 ms (MD3).
  * Bloqueada (`locked`) na econômica: o toque continua chegando ao `onPress`, que deve abrir o paywall
- * (regra: tocar em algo da primeira classe abre o paywall, a qualquer momento).
+ * (regra: tocar em algo do Plus abre o paywall, a qualquer momento).
  */
 export function ListOption({ icon, title, description, selected, locked, onPress }: ListOptionProps) {
   const p = useStateProgress(!!selected);
@@ -106,7 +150,7 @@ export function ListOption({ icon, title, description, selected, locked, onPress
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ selected: !!selected }}
-      accessibilityHint={locked ? 'Primeira classe' : undefined}
+      accessibilityHint={locked ? 'Plus' : undefined}
       onPress={onPress}
       style={({ pressed }) => [pressed && { opacity: 0.85 }]}
     >
@@ -124,7 +168,7 @@ export function ListOption({ icon, title, description, selected, locked, onPress
           </Text>
         ) : null}
       </View>
-      {locked ? <PremiumBadge /> : <Radio selected={selected} />}
+      {locked ? <Plus tamanho="pequeno" /> : <Radio selected={selected} />}
       </Animated.View>
     </Pressable>
   );
@@ -227,6 +271,18 @@ const styles = StyleSheet.create({
   sealTexto: { paddingVertical: 6, paddingLeft: space[12] },
   sealText: { color: C.text.primary, textTransform: 'uppercase', letterSpacing: 12 * 0.08, lineHeight: 16 },
   sealTextMenor: { fontSize: 8, letterSpacing: 8 * 0.08 },
+  plus: {
+    alignSelf: 'flex-start',
+    paddingVertical: space[6],
+    paddingHorizontal: space[12],
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: C.plus.borda,
+    backgroundColor: C.plus.fundo,
+  },
+  plusPequeno: { paddingVertical: space[2], paddingHorizontal: space[8] },
+  plusTexto: { fontFamily: fontFamily.pixel, fontWeight: '400', fontSize: 14, lineHeight: 20, letterSpacing: 0, color: C.text.accent },
+  plusTextoPequeno: { fontSize: 12, lineHeight: 16 },
   iconButton: {
     width: 44,
     height: 44,

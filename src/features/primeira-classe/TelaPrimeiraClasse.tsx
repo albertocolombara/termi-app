@@ -24,7 +24,7 @@ import {
   PRECO_CENTAVOS,
   type Plano,
 } from '@/domain/compras/planos';
-import { Button, color, FirstClassSeal, Icon, IconButton, IndicadorDePaginas, PaywallPlano, radius, screenGutter, space, Text, type IconName } from '@/ds';
+import { Button, color, Icon, IconButton, IndicadorDePaginas, PaywallPlano, Plus, radius, screenGutter, space, Text, type IconName } from '@/ds';
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useTrocarClasseDeTeste } from '@/services/compras';
 
@@ -72,7 +72,7 @@ export function TelaPrimeiraClasse() {
   return (
     <View style={[styles.tela, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[12] }]}>
       <View style={[styles.topo, { width: largura }]}>
-        <FirstClassSeal label={t('primeiraClasse.selo')} />
+        <Plus />
         <IconButton icon="fechar" accessibilityLabel={t('primeiraClasse.fechar')} onPress={fechar} style={styles.fechar} />
       </View>
 

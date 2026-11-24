@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { CHAVE_HISTORICO } from '@/data/historico/useHistorico';
 import { encerrarSessao, type SessaoGravada } from '@/data/sessoes/repositorio';
 import { CHAVE_SESSAO_EM_ANDAMENTO } from '@/data/sessoes/useSessaoEmAndamento';
 import { fimPousandoAntes, fimPousando } from '@/domain/sessao/encerramento';
@@ -33,6 +34,8 @@ export function useEncerrar(sessao: SessaoGravada) {
           // módulo nativo ausente (ex.: testes): nada a esconder
         }
         await queryClient.invalidateQueries({ queryKey: CHAVE_SESSAO_EM_ANDAMENTO });
+        // Início, diário e estatísticas passam a mostrar o voo novo.
+        await queryClient.invalidateQueries({ queryKey: CHAVE_HISTORICO });
         router.replace({ pathname: '/voo/pouso', params: { id: sessao.id } });
       } finally {
         emAndamento.current = false;

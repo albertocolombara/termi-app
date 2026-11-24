@@ -1,0 +1,254 @@
+/**
+ * Menu lateral (Figma v3: "Menu lateral / Drawer", Classe = Econômica e Plus). Abre pelo avatar do Início.
+ * PRD: RF-08. Perfil com o status de viajante (RN-15), seu progresso, conta e app.
+ *
+ * Na econômica aparece o item "Termi Plus" (abre o paywall, RN-20); no Plus ele sai e a seção vira
+ * "Conta e app".
+ */
+import React, { useEffect, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { router, type Href } from 'expo-router';
+import Constants from 'expo-constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+
+import { mostrarFerramentasDev } from '@/config/env';
+import { Avatar, BottomSheet, Button, color, fontFamily, Icon, Plus, radius, space, Text, type IconName } from '@/ds';
+import { motion } from '@/ds/motion';
+import { statusDeViajante } from '@/domain/status/niveis';
+import { t } from '@/i18n';
+import type { Classe } from '@/domain/sessao/duracao';
+
+const LARGURA = 320;
+
+type Props = {
+  visivel: boolean;
+  onFechar: () => void;
+  classe: Classe;
+  milhas: number;
+  souvenirs: number;
+  carimbos: number;
+};
+
+export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, carimbos }: Props) {
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const largura = Math.min(LARGURA, width - 56);
+  const [montado, setMontado] = useState(visivel);
+  if (visivel && !montado) setMontado(true);
+  const [contaEmBreve, setContaEmBreve] = useState(false);
+
+  const x = useSharedValue(-largura);
+  const scrim = useSharedValue(0);
+  useEffect(() => {
+    if (!montado) return;
+    const rm = ReduceMotion.System;
+    if (visivel) {
+      x.set(withTiming(0, { duration: motion.duration.medium4, easing: motion.easing.emphasizedDecelerate, reduceMotion: rm }));
+      scrim.set(withTiming(1, { duration: motion.duration.short4, reduceMotion: rm }));
+    } else {
+      scrim.set(withTiming(0, { duration: motion.duration.medium2, reduceMotion: rm }));
+      x.set(
+        withTiming(-largura, { duration: motion.duration.medium2, easing: motion.easing.emphasizedAccelerate, reduceMotion: rm }, (fim) => {
+          if (fim) scheduleOnRN(setMontado, false);
+        }),
+      );
+    }
+  }, [visivel, montado, largura, x, scrim]);
+
+  const estiloDoMenu = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
+  const estiloDoScrim = useAnimatedStyle(() => ({ opacity: scrim.get() }));
+
+  const status = statusDeViajante(milhas);
+  const plus = classe === 'primeira';
+  const ir = (rota: Href) => {
+    onFechar();
+    router.push(rota);
+  };
+
+  return (
+    <Modal visible={montado} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onFechar}>
+      <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
+        <Pressable accessibilityLabel={t('menu.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: color.bg.scrim }]} onPress={onFechar} />
+      </Animated.View>
+      <Animated.View style={[styles.menu, { width: largura }, estiloDoMenu]} accessibilityViewIsModal>
+        <ScrollView
+          contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[32] }]}
+          bounces={false}
+        >
+          <View style={{ gap: space[32] }}>
+            {/* Perfil e status de viajante */}
+            <View style={{ gap: space[12] }}>
+              <View style={styles.perfil}>
+                <Avatar tamanho="grande" />
+                <View style={{ flex: 1, gap: space[6] }}>
+                  <Text variant="Heading/Sheet 22">{status.atual.nome}</Text>
+                  {plus ? (
+                    <Plus />
+                  ) : (
+                    <View style={styles.classe}>
+                      <Text variant="Body/Small 13" tone="muted">
+                        {t('menu.economica')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View style={{ gap: space[8] }}>
+                <Text variant="Body/Small 13" tone="tertiary">
+                  {t('menu.milhasAcumuladas', { milhas: milhas.toLocaleString('pt-BR') })}
+                </Text>
+                <View style={styles.trilho} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(status.progresso * 100) }}>
+                  <View style={[styles.barra, { width: `${Math.round(status.progresso * 100)}%` }]} />
+                </View>
+                <Text variant="Body/Small 13" tone="secondary">
+                  {status.proximo
+                    ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
+                    : t('menu.nivelMaximo')}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ gap: space[8] }}>
+              <Secao titulo={t('menu.seuProgresso')}>
+                <Item
+                  icone="suitcaseLine"
+                  titulo={t('menu.suaMala')}
+                  detalhe={souvenirs ? (souvenirs === 1 ? t('menu.umSouvenir') : t('menu.souvenirs', { n: souvenirs })) : undefined}
+                  onPress={() => ir('/mala')}
+                />
+                <Item
+                  icone="passport"
+                  titulo={t('menu.passaporte')}
+                  detalhe={carimbos ? (carimbos === 1 ? t('menu.umCarimbo') : t('menu.carimbos', { n: carimbos })) : undefined}
+                  onPress={() => ir('/passaporte')}
+                />
+                <Item icone="logbook" titulo={t('menu.diarioDeBordo')} onPress={() => ir('/diario')} />
+                <Item icone="stats" titulo={t('menu.estatisticas')} onPress={() => ir('/estatisticas')} />
+              </Secao>
+
+              {plus ? (
+                <Secao titulo={t('menu.contaEApp')}>
+                  <Item icone="userAdd" titulo={t('menu.criarConta')} descricao={t('menu.salveSeuProgresso')} onPress={() => setContaEmBreve(true)} />
+                  <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
+                  <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
+                  <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
+                </Secao>
+              ) : (
+                <>
+                  <Secao titulo={t('menu.contaECompras')}>
+                    <Item
+                      icone="userAdd"
+                      titulo={t('menu.criarContaESincronizar')}
+                      descricao={t('menu.salveSeuProgresso')}
+                      onPress={() => setContaEmBreve(true)}
+                    />
+                    <Item icone="plus" titulo={t('menu.termiPlus')} descricao={t('menu.termiPlusDescricao')} plus onPress={() => ir('/primeira-classe')} />
+                  </Secao>
+                  <Secao titulo={t('menu.app')}>
+                    <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
+                    <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
+                    <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
+                  </Secao>
+                </>
+              )}
+
+              {mostrarFerramentasDev ? (
+                <Secao titulo={t('inicio.ferramentas')}>
+                  <Item icone="settings" titulo={t('inicio.ferramentas')} onPress={() => ir('/dev')} />
+                </Secao>
+              ) : null}
+            </View>
+          </View>
+
+          <Text variant="Caption/Regular 12" tone="muted" style={{ marginTop: space[24] }}>
+            {t('menu.versao', { versao: Constants.expoConfig?.version ?? '' })}
+          </Text>
+        </ScrollView>
+      </Animated.View>
+
+      <BottomSheet
+        visible={contaEmBreve}
+        onClose={() => setContaEmBreve(false)}
+        title={t('menu.contaEmBreveTitulo')}
+        subtitle={t('menu.contaEmBreveTexto')}
+        footer={<Button size="medium" icon={null} label={t('menu.entendi')} onPress={() => setContaEmBreve(false)} />}
+      />
+    </Modal>
+  );
+}
+
+function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <View style={{ gap: space[4] }}>
+      <Text variant="Caption/Medium 12" tone="muted" accessibilityRole="header">
+        {titulo}
+      </Text>
+      <View>{children}</View>
+    </View>
+  );
+}
+
+/** Figma: "Menu lateral / Item" (Tipo = Padrão, Vertical e Plus). */
+function Item({
+  icone,
+  titulo,
+  detalhe,
+  descricao,
+  plus,
+  onPress,
+}: {
+  icone: IconName;
+  titulo: string;
+  detalhe?: string;
+  descricao?: string;
+  plus?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={[titulo, detalhe, descricao].filter(Boolean).join(', ')}
+      onPress={onPress}
+      style={({ pressed }) => [styles.item, descricao ? styles.itemVertical : null, pressed && { backgroundColor: color.surface.default }]}
+    >
+      <Icon name={icone} />
+      <View style={{ flex: 1, gap: space[2] }}>
+        <Text variant="Body/Large 16" style={plus ? styles.tituloPlus : undefined}>
+          {titulo}
+        </Text>
+        {descricao ? (
+          <Text variant="Caption/Regular 12" tone="tertiary">
+            {descricao}
+          </Text>
+        ) : null}
+      </View>
+      {detalhe ? (
+        <Text variant="Caption/Regular 12" tone="tertiary">
+          {detalhe}
+        </Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  menu: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: color.bg.system },
+  conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: space[16] },
+  perfil: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
+  classe: {
+    alignSelf: 'flex-start',
+    paddingVertical: space[2],
+    paddingHorizontal: space[12],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: color.border.subtle,
+    backgroundColor: color.surface.subtle,
+  },
+  trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },
+  barra: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
+  item: { flexDirection: 'row', alignItems: 'center', gap: space[14], padding: space[12], borderRadius: radius.lg, minHeight: 48 },
+  itemVertical: { paddingVertical: space[8] },
+  tituloPlus: { fontFamily: fontFamily.pixel, fontWeight: '400', letterSpacing: 0, color: color.text.accent },
+});

@@ -18,6 +18,8 @@ export const motion = {
     medium2: 300,
     /** Entrada de bottom sheet. */
     medium4: 400,
+    /** Movimentos maiores na tela (ex.: o globo de rotas girando até a rota tocada). */
+    long2: 500,
   },
   easing: {
     /** Padrão do MD3 para trocas de estado na própria tela: cubic-bezier(0.2, 0, 0, 1). */
