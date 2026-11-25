@@ -17,10 +17,14 @@ export function fimPousandoAntes(s: Base, agora: number): FimDoVoo {
 /**
  * Pouso completo no horário (RN-09). Se o app ficou fechado, o fim é o horário de pouso, não a hora
  * em que o app abriu: os minutos não crescem por o usuário ter demorado a voltar.
- * Com "Continuar até o pouso" (RN-09a), o fim é `ate` (quando o usuário tocou em "Pousar agora" ou o avião pousou).
+ * Com "Continuar até o pouso" (RN-09a), os minutos a mais contam de quando o usuário escolheu
+ * continuar (`desde`) até `ate` (quando tocou em "Pousar agora" ou o avião pousou). A espera entre o
+ * horário e a escolha não conta: o usuário pode ter visto a pergunta muito depois.
  */
-export function fimPousando(s: Base, ate?: number): FimDoVoo {
-  const encerrouEm = ate !== undefined ? Math.max(ate, s.pousoPrevistoEm) : s.pousoPrevistoEm;
+export function fimPousando(s: Base, ate?: number, desde?: number): FimDoVoo {
+  const inicioExtra = Math.max(desde ?? s.pousoPrevistoEm, s.pousoPrevistoEm);
+  const extra = ate !== undefined ? Math.max(0, ate - inicioExtra) : 0;
+  const encerrouEm = s.pousoPrevistoEm + extra;
   return { tipo: 'pouso', embarcouEm: s.embarcouEm, pousoPrevistoEm: s.pousoPrevistoEm, encerrouEm, milhas: milhasVoadas(s.voo, s.embarcouEm, encerrouEm) };
 }
 

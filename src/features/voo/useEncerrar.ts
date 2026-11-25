@@ -20,11 +20,12 @@ export function useEncerrar(sessao: SessaoGravada) {
   const emAndamento = useRef(false);
 
   return useCallback(
-    async (tipo: 'pouso' | 'pousar-antes', agora = Date.now()) => {
+    /** `continuacao`: fim de "Continuar até o pouso" (RN-09a), com os minutos a mais. */
+    async (tipo: 'pouso' | 'pousar-antes', agora = Date.now(), continuacao?: { desde: number }) => {
       if (emAndamento.current) return;
       emAndamento.current = true;
       try {
-        const fim = tipo === 'pouso' ? fimPousando(sessao) : fimPousandoAntes(sessao, agora);
+        const fim = tipo === 'pouso' ? (continuacao ? fimPousando(sessao, agora, continuacao.desde) : fimPousando(sessao)) : fimPousandoAntes(sessao, agora);
         await encerrarSessao(db, { sessaoId: sessao.id, tipo, encerrouEm: fim.encerrouEm, rendimentos: rendimentos(fim), voo: sessao.voo });
         // Pousar antes cancela o aviso de pouso; no pouso ele já tocou ou é inútil.
         await cancelarAvisos();

@@ -5,7 +5,8 @@
  *
  * Pousar antes (E3) abre a confirmação; quando o tempo do usuário acaba, a sessão vira pouso (UC-08).
  * Serviço de bordo: E2 (pausa em andamento, com "Voltar ao foco") e E1 (aviso "De volta ao foco").
- * Ainda não estão aqui: Em espera (E5) e Em solo (E8).
+ * Em espera (E5) e Continuando até o pouso (E5b) entram no horário se o avião real ainda voa (RN-09a).
+ * Ainda não está aqui: Em solo (E8), adiado para a Fase 5 (decisão do Alberto em 25/11/2026).
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -14,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useMotivoDaSessao, useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useContinuandoDesde, useContinuarAtePouso } from '@/data/sessoes/continuarAtePouso';
 import { useIndicesQueVoltaram, useVoltouAoFoco } from '@/data/sessoes/voltouAoFoco';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
 import { indiceDaQualidade, quadrosDaJanela, useAjustes } from '@/data/preferencias/ajustes';
@@ -26,6 +28,8 @@ import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
 import { somEmUso } from '@/domain/sons/catalogo';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
+import { estadoDaSessao } from '@/domain/sessao/estado';
+import { aviaoReal } from '@/domain/voos/aviaoReal';
 import { minutosAte, pausaEmAndamento, pausaRecemTerminada, proximaPausa, relogioRegressivo } from '@/domain/sessao/progresso';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
@@ -41,6 +45,7 @@ import { useClasse } from '@/services/compras';
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { AvisoNoApp } from './AvisoNoApp';
+import { FolhaEmEspera } from './FolhaEmEspera';
 import { FolhaInfoDoVoo, type Radar } from './FolhaInfoDoVoo';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
@@ -160,9 +165,27 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
   // O horário escolhido chegou: pouso completo garantido (RN-09). Também vale ao reabrir o app depois do pouso.
   // Em espera e "Continuar até o pouso" (RN-09a) entram quando o app souber se o avião real ainda está no ar.
+  // E5 Em espera (RN-09a): no horário, se o avião real ainda está no ar (leitura recente do radar),
+  // pergunta se o usuário quer continuar até o pouso. Na dúvida, pousa no horário (RN-09).
+  const continuandoDesde = useContinuandoDesde(sessao.id);
+  const continuarAtePouso = useContinuarAtePouso((s) => s.continuar);
+  const fimDoTempo = tempoAcabou
+    ? estadoDaSessao({ embarcouEm, pousoPrevistoEm, pausas: [], continuarAtePousoDesde: continuandoDesde }, agora, aviaoReal(voo, radar, agora)).tipo
+    : null;
+  const emEspera = fimDoTempo === 'em-espera';
+  const continuando = fimDoTempo === 'continuando-ate-o-pouso';
   useEffect(() => {
-    if (tempoAcabou) encerrar('pouso');
-  }, [tempoAcabou, encerrar]);
+    if (fimDoTempo !== 'pousou') return;
+    if (continuandoDesde !== undefined) encerrar('pouso', Date.now(), { desde: continuandoDesde });
+    else encerrar('pouso');
+  }, [fimDoTempo, continuandoDesde, encerrar]);
+  const pousarAgora = () => {
+    if (continuandoDesde !== undefined) encerrar('pouso', Date.now(), { desde: continuandoDesde });
+    else encerrar('pouso');
+  };
+  // Durante "Continuar até o pouso", o painel mostra a previsão do avião real.
+  const pousoMostrado = continuando ? voo.pousoPrevistoEm : pousoPrevistoEm;
+  const prefixo = continuando ? '~' : '';
 
   return (
     <View style={styles.tela}>
@@ -244,15 +267,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               />
             </View>
           </View>
-          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoPrevistoEm, agora)), hora: horaLocal(pousoPrevistoEm) })}>
+          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoMostrado, agora)), hora: horaLocal(pousoMostrado) })}>
             <Text variant="Body/Medium 14" tone="secondary">
               {t('emVoo.pousaEm')}
             </Text>
             <Text variant="Heading/Screen 32" style={{ fontWeight: '500', letterSpacing: -1 }}>
-              {duracao(minutosAte(pousoPrevistoEm, agora))}
+              {prefixo}
+              {duracao(minutosAte(pousoMostrado, agora))}
             </Text>
             <Text variant="Body/Medium 14" tone="secondary">
-              {horaLocal(pousoPrevistoEm)}
+              {horaLocal(pousoMostrado)}
             </Text>
             {vista === 'janela' ? (
               <IconButton
@@ -270,7 +294,20 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       <View style={{ flex: 1 }} pointerEvents="box-none">
         {/* Um aviso por vez: serviço de bordo, depois "De volta ao foco", depois boas-vindas. */}
         <View style={{ paddingHorizontal: screenGutter, paddingTop: space[16] }}>
-          {avisoDaPausa ? (
+          {continuando && continuandoDesde !== undefined && !avisosFechados.includes('continuando') ? (
+            // E5b (Figma v3): continuando até o pouso, com os minutos a mais.
+            <AvisoNoApp
+              key="continuando"
+              icone="plane"
+              titulo={t('emEspera.avisoTitulo')}
+              texto={t('emEspera.avisoTexto', {
+                tempo: duracao(Math.round((pousoPrevistoEm - embarcouEm) / 60_000)),
+                extra: duracao(Math.max(0, Math.floor((agora - continuandoDesde) / 60_000))),
+              })}
+              rotuloFechar={t('emVoo.fecharAviso')}
+              onFechar={() => fecharAviso('continuando')}
+            />
+          ) : avisoDaPausa ? (
             <AvisoNoApp
               key={`pausa-${emPausa.indice}`}
               icone="servicoDeBordo"
@@ -350,9 +387,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Button
             variant="secondary"
             size="mini"
-            label={t('emVoo.pousarAntes')}
-            onPress={() => setConfirmando(true)}
-            disabled={tempoAcabou}
+            label={continuando ? t('emVoo.pousarAgora') : t('emVoo.pousarAntes')}
+            onPress={continuando ? pousarAgora : () => setConfirmando(true)}
+            disabled={tempoAcabou && !continuando}
             style={{ alignSelf: 'center' }}
           />
           {emPausa ? (
@@ -467,6 +504,14 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       />
 
       <FolhaInfoDoVoo visivel={vendoInfo} voo={voo} pos={pos} radar={radar} agora={agora} onFechar={() => setVendoInfo(false)} />
+
+      <FolhaEmEspera
+        visivel={emEspera}
+        sessao={sessao}
+        minutosAtePousoReal={minutosAte(voo.pousoPrevistoEm, agora)}
+        onContinuar={() => continuarAtePouso(sessao.id, Date.now())}
+        onPousar={pousarAgora}
+      />
 
       <FolhaPousarAntes
         visivel={confirmando}
