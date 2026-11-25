@@ -1,26 +1,21 @@
 /**
- * E6 · Pousou e E7 · Pousou antes. PRD: RN-08, RN-10, RF-27, RF-28; UC-06, UC-08.
+ * E6 · Pousou e E7 · Pousou antes (Figma v3: telas reorganizadas). PRD: RN-08, RN-10, RF-27, RF-28; UC-06, UC-08.
  * Lê o que foi gravado no encerramento (nada é recalculado aqui).
- * A loja do destino entra na Fase 4: por enquanto o botão principal do pouso é "Novo voo".
+ *
+ * E6: carimbo com a animação de "bater", o que o voo rendeu, o motivo da viagem e "Voltar ao início".
+ * E7: carimbo apagado ("sem carimbo"), o que o voo rendeu, o aviso de carimbo e loja e o diário.
+ * A loja do destino (bloco "Loja de Londres" do Figma) entra com a loja, na Fase 4.
  */
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
-import { Button, color, Icon, InfoBanner, radius, screenGutter, space, Text, type IconName } from '@/ds';
+import { Button, CategoriaTag, color, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
 import { Carimbo } from './Carimbo';
-import { codigoDoLugar, nomeDoLugar } from './formato';
-
-const ICONE_DA_CATEGORIA: Record<string, IconName> = {
-  estudo: 'categoriaEstudo',
-  trabalho: 'categoriaTrabalho',
-  leitura: 'categoriaLeitura',
-  criacao: 'categoriaCriacao',
-  outro: 'categoriaOutro',
-};
+import { codigoDoLugar, duracao, nomeDoLugar } from './formato';
 
 const dataDoCarimbo = (ms: number) =>
   new Date(ms).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '').replace(/ de /g, ' ').toUpperCase();
@@ -42,10 +37,11 @@ export function TelaPouso({ id }: { id: string | undefined }) {
   const pousou = s.resultado === 'pousou';
   const cidade = nomeDoLugar(s.voo.destino);
   const codigo = codigoDoLugar(s.voo.destino);
-  const total = Math.round((s.pousoPrevistoEm - s.embarcouEm) / 60_000);
   const { motivo } = s;
   const temMotivo = !!(motivo.categoria || motivo.foco || motivo.tarefas.length);
   const feitas = motivo.tarefas.filter((x) => x.feita).length;
+  const tudoFeito = motivo.tarefas.length > 0 && feitas === motivo.tarefas.length;
+  const verNoDiario = () => router.push({ pathname: '/diario/[id]', params: { id: s.id } });
 
   return (
     <ScrollView
@@ -57,63 +53,93 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           <Text variant="Caption/Medium 12" tone="tertiary">
             {t('pouso.cabecalho', { voo: s.voo.callsign, origem: nomeDoLugar(s.voo.origem), destino: cidade })}
           </Text>
-          <Text variant="Heading/Screen 32" style={styles.titulo} accessibilityRole="header">
+          {/* Geist (Heading/Screen 32), não a Pixel: pedido do Alberto no build-47. */}
+          <Text variant="Heading/Screen 32" tone="accent" accessibilityRole="header">
             {pousou ? t('pouso.titulo', { cidade }) : t('pouso.tituloAntes')}
           </Text>
-          <Text variant="Body/Large 16" tone="secondary">
-            {pousou ? t('pouso.subtitulo', { min: s.minutosFoco }) : t('pouso.subtituloAntes', { voados: s.minutosFoco, total })}
-          </Text>
         </View>
 
-        <View
-          accessible
-          accessibilityLabel={pousou ? t('pouso.carimboAcessivel', { cidade, codigo, data: dataDoCarimbo(s.encerrouEm) }) : t('pouso.semCarimbo')}
-        >
-          <Carimbo cidade={cidade} codigo={codigo} data={dataDoCarimbo(s.encerrouEm)} apagado={!pousou} legenda={pousou ? undefined : t('pouso.semCarimbo')} />
-        </View>
-
-        <View style={styles.grade}>
-          <Cartao valor={t('pouso.minutos', { min: s.minutosFoco })} rotulo={t('pouso.focados')} />
-          <Cartao valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={pousou ? t('pouso.milhasRotulo') : t('pouso.milhasTrecho')} />
-          <Cartao valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={pousou ? t('pouso.paraSouvenirs') : t('pouso.proximoPouso')} />
-          {pousou ? <Cartao valor={codigo} rotulo={t('pouso.carimboNoPassaporte')} /> : <Cartao valor="—" rotulo={t('pouso.semLoja')} apagado />}
-        </View>
-
-        {temMotivo ? (
-          <View style={styles.motivo}>
-            {motivo.tarefas.length > 0 && feitas === motivo.tarefas.length ? <Icon name="incluido" size={22} /> : null}
-            <View style={{ flex: 1, gap: space[6] }}>
-              {motivo.foco ? <Text variant="Label/Medium 14">{motivo.foco}</Text> : null}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[8], flexWrap: 'wrap' }}>
-                {motivo.categoria ? (
-                  <View style={styles.tag}>
-                    <Icon name={ICONE_DA_CATEGORIA[motivo.categoria]} size={12} />
-                    <Text variant="Caption/Medium 12">{t(`motivo.categorias.${motivo.categoria}`)}</Text>
-                  </View>
-                ) : null}
-                <Text variant="Caption/Regular 12" tone="tertiary">
-                  {motivo.tarefas.length ? t('pouso.tarefas', { feitas, total: motivo.tarefas.length }) : t('pouso.salvoNoDiario')}
-                </Text>
-              </View>
-            </View>
+        <View style={{ gap: space[6] }}>
+          <View
+            style={styles.areaDoCarimbo}
+            accessible
+            accessibilityLabel={pousou ? t('pouso.carimboAcessivel', { cidade, codigo, data: dataDoCarimbo(s.encerrouEm) }) : t('pouso.semCarimbo')}
+          >
+            <Carimbo cidade={cidade} codigo={codigo} data={dataDoCarimbo(s.encerrouEm)} apagado={!pousou} legenda={pousou ? undefined : t('pouso.semCarimbo')} />
           </View>
-        ) : null}
+          {pousou ? (
+            <View style={{ alignItems: 'center', gap: space[4] }}>
+              <Text variant="Body/Large 16">{t('pouso.carimboDe', { cidade })}</Text>
+              <Text variant="Caption/Regular 12" tone="tertiary">
+                {t('pouso.adicionadoAoPassaporte')}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* O que o voo rendeu (E7: com a linha de carimbo e loja logo abaixo, sem caixa) */}
+        <View style={{ gap: space[12] }}>
+          <View style={styles.grade}>
+            <Bloco valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
+            <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
+            <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} />
+          </View>
+          {pousou ? null : (
+            <View style={styles.aviso}>
+              <Icon name="info" size={16} color={color.text.muted} />
+              <Text variant="Caption/Regular 12" tone="tertiary" style={{ flex: 1 }}>
+                {t('pouso.carimboELoja', { cidade })}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={{ gap: space[12] }}>
+          {pousou && temMotivo ? (
+            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, pressed && { opacity: 0.85 }]}>
+              {tudoFeito ? <Icon name="incluido" size={20} /> : <Icon name="logbook" />}
+              <View style={{ flex: 1, gap: space[4] }}>
+                <Text variant="Label/Medium 14" numberOfLines={1}>
+                  {motivo.foco || t('pouso.salvoNoDiario')}
+                </Text>
+                <View style={styles.meta}>
+                  {motivo.categoria ? <CategoriaTag categoria={motivo.categoria} rotulo={t(`motivo.categorias.${motivo.categoria}`)} /> : null}
+                  {motivo.tarefas.length ? (
+                    <Text variant="Caption/Regular 12" tone="tertiary">
+                      {t('pouso.tarefasFeitas', { feitas, total: motivo.tarefas.length })}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+              <Icon name="chevronRight" />
+            </Pressable>
+          ) : (
+            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, styles.linhaApagada, pressed && { opacity: 0.85 }]}>
+              <Icon name="logbook" />
+              <Text variant="Label/Medium 14" style={{ flex: 1 }}>
+                {t('pouso.vooSalvoNoDiario')}
+              </Text>
+              <Icon name="chevronRight" />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <View style={{ gap: space[4] }}>
-        <Button variant={pousou ? 'primary' : 'secondary'} label={t('pouso.novoVoo')} onPress={() => router.replace('/voo')} />
-        <Button variant="link" size="medium" label={t('pouso.voltarAoInicio')} onPress={() => router.dismissTo('/')} style={{ alignSelf: 'center' }} />
+        {/* "Pousou antes" sem destaque amarelo (CLAUDE.md §9): voltar ao início é a ação secundária. */}
+        <Button variant={pousou ? 'primary' : 'secondary'} label={t('pouso.voltarAoInicio')} onPress={() => router.dismissTo('/')} />
+        {pousou ? null : (
+          <Button variant="link" size="medium" label={t('pouso.novoVoo')} onPress={() => router.replace('/voo')} style={{ alignSelf: 'center' }} />
+        )}
       </View>
     </ScrollView>
   );
 }
 
-function Cartao({ valor, rotulo, apagado }: { valor: string; rotulo: string; apagado?: boolean }) {
+function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
   return (
-    <View style={[styles.cartao, apagado && styles.cartaoApagado]}>
-      <Text variant="Heading/Data 24" tone={apagado ? 'tertiary' : 'primary'}>
-        {valor}
-      </Text>
+    <View style={styles.bloco}>
+      <Text variant="Nav/Title 20">{valor}</Text>
       <Text variant="Caption/Regular 12" tone="tertiary">
         {rotulo}
       </Text>
@@ -124,10 +150,12 @@ function Cartao({ valor, rotulo, apagado }: { valor: string; rotulo: string; apa
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app, paddingHorizontal: screenGutter },
   conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: screenGutter, gap: space[32] },
-  titulo: { color: color.text.accent, fontWeight: '400' },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
-  cartao: { flexBasis: '48%', flexGrow: 1, gap: space[4], padding: space[14], borderRadius: radius.md, backgroundColor: color.surface.default },
-  cartaoApagado: { backgroundColor: 'transparent', borderWidth: 1, borderColor: color.border.subtle },
-  motivo: { flexDirection: 'row', alignItems: 'center', gap: space[12], padding: space[14], borderRadius: radius.md, backgroundColor: color.surface.default },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: space[4], paddingHorizontal: space[6], paddingVertical: space[2], borderRadius: radius.sm, backgroundColor: color.surface.strong },
+  areaDoCarimbo: { paddingVertical: space[8], alignItems: 'center' },
+  grade: { flexDirection: 'row', gap: space[8] },
+  bloco: { flex: 1, gap: space[2], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle, backgroundColor: color.surface.default },
+  // E7 (Figma 443:11349): a linha do diário fica no fundo da tela, só com a borda.
+  linhaApagada: { backgroundColor: color.bg.app },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
 });

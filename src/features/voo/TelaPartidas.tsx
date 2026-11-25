@@ -15,7 +15,7 @@ import { CabecalhoDoPainel, Chip, color, InfoBanner, LinhaDoPainel, screenGutter
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
-import { codigoDoLugar, duracao, duracaoPorExtenso, nomeDoLugar } from './formato';
+import { codigoDoLugar, duracao, duracaoCompacta, duracaoPorExtenso, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
 
 const ROTULO: Record<FiltroDeRegiao, ChaveDeTexto> = {
@@ -53,7 +53,7 @@ export function TelaPartidas() {
   else if (elegiveis.length === 0)
     vazio = (
       <View style={{ gap: space[12] }}>
-        <InfoBanner message={t('partidas.nenhum', { min: tempoMin })} />
+        <InfoBanner message={t('partidas.nenhum', { tempo: duracao(tempoMin) })} />
         {sugestoes.length > 0 ? (
           <View style={{ gap: space[8] }}>
             <Text variant="Label/Medium 14" tone="tertiary">
@@ -83,13 +83,13 @@ export function TelaPartidas() {
         ListHeaderComponent={
           <View style={{ gap: space[20] }}>
             <View style={{ paddingHorizontal: screenGutter }}>
-              <TopBar title={t('partidas.voltarTempo')} onBack={() => router.back()} time={`${tempoMin}min`} step={2} />
+              <TopBar title={t('partidas.voltarTempo')} onBack={() => router.back()} time={duracaoCompacta(tempoMin)} step={2} />
             </View>
             <View style={{ gap: space[12] }}>
               <SectionHeader title={t('partidas.titulo')} />
               <View style={{ gap: space[20] }}>
                 <Text variant="Body/Large 16" tone="tertiary" style={{ paddingHorizontal: screenGutter }}>
-                  {t('partidas.subtitulo', { de: Math.max(15, tempoMin - TOLERANCIA_ELEGIVEL_MIN), ate: tempoMin + TOLERANCIA_ELEGIVEL_MIN, min: tempoMin })}
+                  {t('partidas.subtitulo', { de: duracao(Math.max(15, tempoMin - TOLERANCIA_ELEGIVEL_MIN)), ate: duracao(tempoMin + TOLERANCIA_ELEGIVEL_MIN), tempo: duracao(tempoMin) })}
                 </Text>
                 {!vazio ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[8], paddingHorizontal: screenGutter }}>

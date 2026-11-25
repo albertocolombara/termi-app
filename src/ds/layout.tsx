@@ -78,6 +78,8 @@ export type BottomSheetProps = {
   visible: boolean;
   onClose: () => void;
   title: string;
+  /** Ícone à esquerda do título (Figma v3: folha do serviço de bordo). */
+  icone?: React.ReactNode;
   subtitle?: string;
   children?: React.ReactNode;
   /** Ação fixa no rodapé (normalmente um <Button size="medium" />). */
@@ -91,7 +93,7 @@ export type BottomSheetProps = {
  * continua montado até a sheet terminar de descer, então a saída aparece inteira. O fundo da sheet
  * continua abaixo da borda da tela, para nunca aparecer um vão embaixo dela.
  */
-export function BottomSheet({ visible, onClose, title, subtitle, children, footer }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, icone, subtitle, children, footer }: BottomSheetProps) {
   // A barra de navegação do Android (gestos ou 3 botões) fica por cima da sheet: o rodapé sobe a altura dela.
   const insets = useSafeAreaInsets();
   const { height: alturaDaTela } = useWindowDimensions();
@@ -136,9 +138,12 @@ export function BottomSheet({ visible, onClose, title, subtitle, children, foote
           <View style={styles.sheetAbaixo} />
           <View style={styles.handle} />
           <View style={{ gap: space[4] }}>
-            <Text variant="Heading/Sheet 22" accessibilityRole="header">
-              {title}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
+              {icone}
+              <Text variant="Heading/Sheet 22" accessibilityRole="header" style={{ flexShrink: 1 }}>
+                {title}
+              </Text>
+            </View>
             {subtitle ? (
               <Text variant="Body/Medium 14" tone="tertiary">
                 {subtitle}

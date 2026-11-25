@@ -109,6 +109,25 @@ export type Encerramento = {
 };
 
 /**
+ * Embarque cancelado depois de a sessão já estar gravada (voltar ou cancelar enquanto a janela era
+ * preparada): marca como `cancelado`, sem crédito nenhum, e ela some do diário, das estatísticas e do
+ * globo (que só leem `pousou`/`pousou_antes`). Só toca numa sessão ainda em voo, então nunca desfaz um
+ * pouso. Não é `DELETE`: o registro fica, só não conta (CLAUDE.md §6.6).
+ */
+export async function cancelarEmbarque(db: BancoDeSessoes, id: string, quando: number): Promise<boolean> {
+  let cancelou = false;
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    const r = await txn.runAsync(
+      "UPDATE sessoes SET resultado = 'cancelado', encerrou_em = ?, minutos_foco = 0, milhas = 0 WHERE id = ? AND resultado = 'em_voo'",
+      quando,
+      id,
+    );
+    cancelou = r.changes > 0;
+  });
+  return cancelou;
+}
+
+/**
  * Encerra a sessão e credita o que ela rendeu, numa única transação (CLAUDE.md §6.5):
  * resultado na sessão, lançamento de saldo e, no pouso, o carimbo.
  * Só encerra uma sessão que ainda está em voo: chamar duas vezes não credita duas vezes.
@@ -173,7 +192,10 @@ export async function sessaoEncerrada(db: BancoDeSessoes, id: string): Promise<S
     id,
   );
   if (!l) return null;
-  const tarefas = await db.getAllAsync<{ texto: string; feita: number }>('SELECT texto, feita FROM tarefas WHERE sessao_id = ? ORDER BY ordem', id);
+  const tarefas = await db.getAllAsync<{ texto: string; feita: number }>(
+    "SELECT texto, feita FROM tarefas WHERE sessao_id = ? AND texto <> '' ORDER BY ordem",
+    id,
+  );
   return {
     ...daLinha(l),
     resultado: l.resultado as 'pousou' | 'pousou_antes',
@@ -183,4 +205,57 @@ export async function sessaoEncerrada(db: BancoDeSessoes, id: string): Promise<S
     dolares: l.dolares ?? 0,
     motivo: { categoria: (l.categoria as Categoria | null) ?? null, foco: l.foco ?? '', tarefas: tarefas.map((t) => ({ texto: t.texto, feita: t.feita === 1 })) },
   };
+}
+
+/** Motivo da viagem de uma sessão (para editar em voo, Figma v3 04B). Tarefas vazias foram retiradas. */
+export async function motivoDaSessao(db: BancoDeSessoes, id: string): Promise<MotivoDaViagem> {
+  const m = await db.getFirstAsync<{ categoria: string | null; foco: string | null }>('SELECT categoria, foco FROM motivos_da_viagem WHERE sessao_id = ?', id);
+  const tarefas = await db.getAllAsync<{ texto: string; feita: number }>(
+    "SELECT texto, feita FROM tarefas WHERE sessao_id = ? AND texto <> '' ORDER BY ordem",
+    id,
+  );
+  return {
+    categoria: (m?.categoria as Categoria | null) ?? null,
+    foco: m?.foco ?? '',
+    tarefas: tarefas.map((x) => ({ texto: x.texto, feita: x.feita === 1 })),
+  };
+}
+
+/**
+ * Salva o motivo da viagem editado em voo, numa transação. Sem DELETE (CLAUDE.md §6.6): a categoria e
+ * o foco são atualizados; cada tarefa ocupa a sua posição (`ordem`) e, se a lista encolheu, as posições
+ * que sobraram ficam com o texto vazio (e somem da leitura).
+ */
+export async function salvarMotivoDaSessao(db: BancoDeSessoes, id: string, m: MotivoDaViagem): Promise<void> {
+  const motivo = normalizarMotivo(m);
+  const existentes = await db.getAllAsync<{ ordem: number }>('SELECT ordem FROM tarefas WHERE sessao_id = ?', id);
+  const ordens = new Set(existentes.map((x) => x.ordem));
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    await txn.runAsync(
+      `INSERT INTO motivos_da_viagem (sessao_id, categoria, foco) VALUES (?, ?, ?)
+       ON CONFLICT (sessao_id) DO UPDATE SET categoria = excluded.categoria, foco = excluded.foco`,
+      id,
+      motivo.categoria,
+      motivo.foco || null,
+    );
+    for (const [ordem, tarefa] of motivo.tarefas.entries()) {
+      if (ordens.has(ordem)) {
+        await txn.runAsync('UPDATE tarefas SET texto = ?, feita = ? WHERE sessao_id = ? AND ordem = ?', tarefa.texto, tarefa.feita ? 1 : 0, id, ordem);
+      } else {
+        await txn.runAsync(
+          'INSERT INTO tarefas (id, sessao_id, texto, feita, ordem) VALUES (?, ?, ?, ?, ?)',
+          `${id}-t${ordem}`,
+          id,
+          tarefa.texto,
+          tarefa.feita ? 1 : 0,
+          ordem,
+        );
+      }
+    }
+    for (const ordem of ordens) {
+      if (ordem >= motivo.tarefas.length) {
+        await txn.runAsync("UPDATE tarefas SET texto = '', feita = 0 WHERE sessao_id = ? AND ordem = ?", id, ordem);
+      }
+    }
+  });
 }

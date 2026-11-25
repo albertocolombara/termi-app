@@ -1,6 +1,6 @@
 /**
  * "Em voo / Rota" (Figma): barra de rota do painel inferior. O avião anda conforme o progresso
- * (fração entre o embarque e o pouso). Trecho voado em laranja; restante em branco 65%, tracejados.
+ * (fração entre o embarque e o pouso). Trecho voado e avião em amarelo (Figma v3); restante em branco 65%, tracejados.
  */
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -22,10 +22,10 @@ export function EmVooRota({ progresso }: { progresso: number }) {
   return (
     <View style={{ flex: 1, height: ALTURA }} onLayout={(e) => setLargura(e.nativeEvent.layout.width)} importantForAccessibility="no-hide-descendants">
       <Svg width={largura} height={ALTURA}>
-        <Line x1={0} y1={10.5} x2={x} y2={10.5} stroke={C.brand.termi} strokeDasharray="2 2" />
+        <Line x1={0} y1={10.5} x2={x} y2={10.5} stroke={C.accent.default} strokeDasharray="2 2" />
         <Line x1={x} y1={10.5} x2={largura} y2={10.5} stroke={C.text.tertiary} strokeDasharray="2 2" />
         <G transform={`translate(${xAviao} 0)`}>
-          <Path d={AVIAO} fill={C.brand.termi} />
+          <Path d={AVIAO} fill={C.accent.default} />
         </G>
       </Svg>
     </View>

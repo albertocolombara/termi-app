@@ -1,6 +1,6 @@
 export * from './tokens';
 export { Text, type TextProps } from './Text';
-export { Icon, Suitcase, iconNames, type IconName, type IconProps } from './Icon';
+export { Icon, PainelDePartidas, Suitcase, iconNames, type IconName, type IconProps } from './Icon';
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
 export {
   CategoriaFiltro,
@@ -20,6 +20,10 @@ export {
 } from './controls';
 export {
   ActionRow,
+  Avatar,
+  CategoriaTag,
+  type CategoriaDaTag,
+  Plus,
   FirstClassSeal,
   IconButton,
   InfoBanner,

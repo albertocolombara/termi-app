@@ -29,6 +29,22 @@ export function duracao(min: number): string {
   return m === 0 ? `${h}h` : `${h}h ${String(m).padStart(2, '0')}`;
 }
 
+/** Tempo compacto do topo do fluxo e do painel: "50min", "1h 30", "2h" (depois de 60 min, em horas). */
+export function duracaoCompacta(min: number): string {
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m === 0 ? `${h}h` : `${h}h ${String(m).padStart(2, '0')}`;
+}
+
+/** Total acumulado, como no resumo do Início: "50min", "10h 50min", "3h". */
+export function duracaoTotal(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (!h) return `${m}min`;
+  return m === 0 ? `${h}h` : `${h}h ${m}min`;
+}
+
 /** Duração por extenso, para leitores de tela: "2 horas e 43 minutos". */
 export function duracaoPorExtenso(min: number): string {
   if (min < 60) return `${min} ${min === 1 ? 'minuto' : 'minutos'}`;

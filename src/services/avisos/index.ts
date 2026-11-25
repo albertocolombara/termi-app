@@ -8,13 +8,32 @@
  */
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
+import { AndroidAudioContentType, AndroidAudioUsage, AndroidImportance } from 'expo-notifications';
 
 import { t } from '@/i18n';
 import { ScreenState } from '../../../modules/screen-state/src';
 
-const CANAL_POUSO = 'pouso';
-const CANAL_SERVICO = 'servico';
+/**
+ * Pouso e serviço de bordo tocam no volume de alarme (uso ALARM do Android), para tocar mesmo com o
+ * celular no silencioso, como diz o Ajuste "Aviso de pouso" (build-56: o sinal de cintos não tocou,
+ * provavelmente porque o celular estava no silencioso). O modo "Não perturbe" continua valendo.
+ * Canais não mudam de som depois de criados, por isso os ids novos; os antigos são apagados.
+ */
+const COMO_ALARME = { usage: AndroidAudioUsage.ALARM, contentType: AndroidAudioContentType.SONIFICATION };
+const CANAIS_ANTIGOS = ['pouso', 'pouso-alarme', 'servico', 'servico-cinto'];
+/** Pouso: sinal, voz da comissária e som da cabine (assets/sons/aviso_pouso.ogg, ~6 s). */
+const CANAL_POUSO = 'pouso-comissaria';
+/** Com o som de fundo tocando, o próprio app toca o aviso (FlightSoundService) e a notificação vem sem som. */
+const CANAL_POUSO_SEM_SOM = 'pouso-sem-som';
+const SOM_DO_POUSO = 'aviso_pouso.ogg';
+/**
+ * Serviço de bordo: o sinal de apertar cintos no começo e no fim da pausa (pedido do Alberto em 25/11/2026).
+ * Canais do Android não mudam de som depois de criados, por isso o id novo; o canal antigo ('servico',
+ * com o som padrão) é apagado. O Android abaixa o som de fundo do voo enquanto o sinal toca.
+ */
+const CANAL_SERVICO = 'servico-alarme';
+const CANAL_SERVICO_SEM_SOM = 'servico-sem-som';
+const SOM_DO_SERVICO = 'aviso_cinto.ogg';
 
 let configurado = false;
 
@@ -34,13 +53,27 @@ export async function configurarAvisos() {
   await Notifications.setNotificationChannelAsync(CANAL_POUSO, {
     name: t('avisos.canalPouso'),
     importance: AndroidImportance.HIGH,
-    sound: 'default',
+    sound: SOM_DO_POUSO,
+    audioAttributes: COMO_ALARME,
     vibrationPattern: [0, 250, 150, 250],
   });
+  for (const antigo of CANAIS_ANTIGOS) await Notifications.deleteNotificationChannelAsync(antigo).catch(() => {});
   await Notifications.setNotificationChannelAsync(CANAL_SERVICO, {
     name: t('avisos.canalServico'),
     importance: AndroidImportance.HIGH,
-    sound: 'default',
+    sound: SOM_DO_SERVICO,
+    audioAttributes: COMO_ALARME,
+  });
+  await Notifications.setNotificationChannelAsync(CANAL_POUSO_SEM_SOM, {
+    name: t('avisos.canalPousoSemSom'),
+    importance: AndroidImportance.HIGH,
+    sound: null,
+    vibrationPattern: [0, 250, 150, 250],
+  });
+  await Notifications.setNotificationChannelAsync(CANAL_SERVICO_SEM_SOM, {
+    name: t('avisos.canalServicoSemSom'),
+    importance: AndroidImportance.HIGH,
+    sound: null,
   });
 }
 
@@ -77,31 +110,51 @@ export type AvisosDoVoo = {
   pausaMin: number;
   /** Ajustes > Aviso de pouso. Desligado, o pouso não toca (os avisos do serviço de bordo seguem). */
   avisoDePouso?: boolean;
+  /** Ajustes > Sinal de apertar cintos. Desligado, o serviço de bordo avisa sem som. */
+  somDoServico?: boolean;
+  /**
+   * O som de fundo está tocando: o app toca o sinal e o aviso de pouso por cima dele, com o som de
+   * fundo baixando antes (FlightSoundService), e as notificações vêm sem som. Sem som de fundo, o
+   * som vem da notificação (volume de alarme).
+   */
+  somDeFundo?: boolean;
+  /** Pausas encerradas antes da hora ("De volta ao foco"): sem aviso de fim. */
+  pausasEncerradas?: number[];
 };
 
 /** Agenda o pouso e as pausas. Cancela avisos anteriores. Retorna quantos avisos foram agendados. */
 export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
   await cancelarAvisos();
   let n = 0;
+  const agora = Date.now();
+  const servicoComSom = v.somDoServico !== false && !v.somDeFundo;
+  const canal = servicoComSom ? CANAL_SERVICO : CANAL_SERVICO_SEM_SOM;
+  const som = servicoComSom ? SOM_DO_SERVICO : undefined;
   for (const [i, p] of v.pausas.entries()) {
-    await Notifications.scheduleNotificationAsync({
-      content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }) },
-      trigger: emHorario(p.inicio, CANAL_SERVICO),
-    });
-    await Notifications.scheduleNotificationAsync({
-      identifier: idDoFimDaPausa(i),
-      content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo') },
-      trigger: emHorario(p.fim, CANAL_SERVICO),
-    });
-    n += 2;
+    if (p.inicio > agora) {
+      await Notifications.scheduleNotificationAsync({
+        content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }), sound: som },
+        trigger: emHorario(p.inicio, canal),
+      });
+      n++;
+    }
+    if (p.fim > agora && !v.pausasEncerradas?.includes(i)) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: idDoFimDaPausa(i),
+        content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo'), sound: som },
+        trigger: emHorario(p.fim, canal),
+      });
+      n++;
+    }
   }
-  if (v.avisoDePouso === false) return n;
+  if (v.avisoDePouso === false || v.pousoEm <= agora) return n;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: t('avisos.pousoTitulo', { cidade: v.cidadeDestino }),
       body: t('avisos.pousoCorpo', { min: v.minutosDeVoo }),
+      sound: v.somDeFundo ? undefined : SOM_DO_POUSO,
     },
-    trigger: emHorario(v.pousoEm, CANAL_POUSO),
+    trigger: emHorario(v.pousoEm, v.somDeFundo ? CANAL_POUSO_SEM_SOM : CANAL_POUSO),
   });
   return n + 1;
 }

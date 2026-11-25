@@ -33,6 +33,10 @@ export const palette = {
   'white/a80': 'rgba(255,255,255,0.80)',
   'black/a25': 'rgba(0,0,0,0.25)',
   'black/a55': 'rgba(0,0,0,0.55)',
+  'yellow/a05': 'rgba(255,198,41,0.05)',
+  'yellow/a20': 'rgba(255,198,41,0.20)',
+  'orange-intl/a05': 'rgba(244,74,34,0.05)',
+  'orange-intl/a08': 'rgba(219,70,35,0.08)',
 } as const;
 
 const p = palette;
@@ -66,6 +70,8 @@ export const color = {
   status: {
     warning: p['orange-intl/500'],
     success: p['green/500'],
+    /** Fundo da etiqueta "Pousou" (Figma M3b): verde a 16%. */
+    successSubtle: 'rgba(68,206,50,0.16)',
   },
   text: {
     primary: p['white/100'],
@@ -98,6 +104,22 @@ export const color = {
     criacao: '#FF92BE',
     outro: '#B3B1BA',
   },
+  /** Fundo das tags de categoria (Figma: "Categoria / Tag"): a cor da categoria a 10%. */
+  categoriaFundo: {
+    estudo: 'rgba(127,176,255,0.10)',
+    trabalho: 'rgba(94,214,200,0.10)',
+    leitura: 'rgba(196,161,255,0.10)',
+    criacao: 'rgba(255,146,190,0.10)',
+    outro: 'rgba(179,177,186,0.10)',
+  },
+  /** Carimbo não ganho na tela de pouso (Figma E7): branco a 30%. */
+  carimboApagado: 'rgba(255,255,255,0.30)',
+  /** Tintas dos carimbos do passaporte (Figma M2): ouro, laranja, rosa, verde e azul. */
+  carimbo: {
+    papel: '#EFEDD6',
+    bordaDoPapel: '#C4C4C4',
+    tintas: ['#C99B1D', '#FF9F1C', '#FF7A9C', '#44CE32', '#7FB2FF'],
+  },
   /** Esteira de bagagem da tela de embarque (Figma "05 · Embarcando"; cores locais da ilustração). */
   esteira: {
     lona: '#24222B',
@@ -114,6 +136,30 @@ export const color = {
     miolo: '#0F0F12',
     contornoDoBotao: '#141317',
     legenda: '#8C8F97',
+  },
+  /**
+   * Plus (antes "Termi Premium" / "Primeira classe"; Figma v3, 24/11/2026): identidade simples, sem o
+   * mascote. Fundo e borda amarelos bem leves, texto em Geist Pixel Grid amarelo.
+   */
+  plus: {
+    fundo: p['yellow/a05'],
+    borda: p['yellow/a20'],
+  },
+  /** Aviso em bloco (Figma: "Aviso · avisos desligados", X8). */
+  aviso: {
+    fundo: p['orange-intl/a05'],
+    borda: p['orange-intl/a08'],
+    /** Quadrado do ícone nos avisos em voo e no serviço de bordo (Figma v3): laranja a 10%. */
+    icone: 'rgba(244,74,34,0.10)',
+  },
+  /** Globo de rotas do Início e das Estatísticas (Figma: "Globo/Detalhes da rota"; cores locais da ilustração). */
+  globo: {
+    terra: '#9FB4D6',
+    marCentro: '#1E2742',
+    marBorda: '#0E1220',
+    halo: 'rgba(90,140,255,0.16)',
+    cartao: '#201D25',
+    sombraDoCartao: 'rgba(0,0,0,0.53)',
   },
   border: {
     subtle: p['white/a10'],

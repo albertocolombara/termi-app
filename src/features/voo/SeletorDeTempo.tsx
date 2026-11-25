@@ -6,6 +6,7 @@ import { duracaoMaxima, validarDuracao, type Classe } from '@/domain/sessao/dura
 import { PASSO_DIAL_MIN } from '@/domain/voos/dial';
 import { BottomSheet, Button, Chip, color, space, Text, TextField } from '@/ds';
 import { t } from '@/i18n';
+import { duracao } from './formato';
 
 const ATALHOS = [25, 50, 90, 120];
 const rotuloAtalho = (m: number) => (m % 60 === 0 ? `${m / 60} h` : `${m} min`);
@@ -41,7 +42,7 @@ export function SeletorDeTempo({
             size="medium"
             icon={null}
             disabled={!valido}
-            label={valido ? t('dial.confirmar', { min }) : t('dial.confirmarInvalido')}
+            label={valido ? t('dial.confirmar', { tempo: duracao(min) }) : t('dial.confirmarInvalido')}
             onPress={() => valido && onConfirmar(min)}
           />
           <Button variant="link" size="medium" label={t('comum.cancelar')} onPress={onFechar} style={{ alignSelf: 'center' }} />

@@ -98,6 +98,7 @@ class ScreenStateModule : Module() {
     // Som de fundo sem controle de mídia (FlightSoundService). Só chamar com o app aberto:
     // o Android não deixa iniciar serviço em primeiro plano a partir do segundo plano.
     // `uris`: um arquivo em loop, ou várias faixas (`playlist`) tocadas embaralhadas em sequência.
+    // Os sinais (cintos e aviso de pouso) vêm antes, por setFlightSoundCues: o Expo aceita até 8 argumentos.
     Function("startFlightSound") { uris: List<String>, playlist: Boolean, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
       val ctx = context
       val intent = Intent(ctx, FlightSoundService::class.java).apply {
@@ -115,6 +116,12 @@ class ScreenStateModule : Module() {
 
     Function("setFlightSoundVolume") { volume: Double ->
       main.post { FlightSoundService.instance?.setVolume(volume.toFloat()) }
+    }
+
+    Function("setFlightSoundCues") { cues: List<Double>, cueVolume: Double, landingCue: Boolean ->
+      val c = FlightCues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue)
+      FlightSoundService.cues = c
+      main.post { FlightSoundService.instance?.setCues(c.times, c.volume, c.landing) }
     }
 
     Function("resumeFlightSound") {

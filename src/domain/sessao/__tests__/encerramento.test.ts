@@ -28,6 +28,15 @@ describe('encerramento da sessão', () => {
     expect(rendimentos(fimPousando(s, AGORA + 60 * MIN)).minutos).toBe(60);
   });
 
+  it('os minutos a mais contam de quando escolheu continuar, não do horário (RN-09a)', () => {
+    // Horário às 52 min; viu a pergunta e escolheu continuar aos 70 min; pousou aos 75 min.
+    const r = rendimentos(fimPousando(s, AGORA + 75 * MIN, AGORA + 70 * MIN));
+    expect(r.minutos).toBe(57);
+    expect(r.dolares).toBe(57);
+    // Nunca menos que o pouso completo.
+    expect(rendimentos(fimPousando(s, AGORA + 60 * MIN, AGORA + 70 * MIN)).minutos).toBe(52);
+  });
+
   it('as milhas do pouso cobrem mais chão que as de pousar antes', () => {
     expect(fimPousando(s).milhas).toBeGreaterThan(fimPousandoAntes(s, AGORA + 20 * MIN).milhas);
   });

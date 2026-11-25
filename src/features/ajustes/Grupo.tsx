@@ -4,13 +4,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { color, Icon, radius, space, Text, Toggle } from '@/ds';
 
-export function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+export function Secao({ titulo, children }: { titulo?: string; children: ReactNode }) {
   const linhas = Children.toArray(children).filter(Boolean);
   return (
     <View style={{ gap: space[8] }}>
-      <Text variant="Caption/Medium 12" tone="tertiary" style={{ letterSpacing: 0.6, textTransform: 'uppercase' }} accessibilityRole="header">
-        {titulo}
-      </Text>
+      {titulo ? (
+        <Text variant="Caption/Strong 12" tone="tertiary" style={{ textTransform: 'uppercase' }} accessibilityRole="header">
+          {titulo}
+        </Text>
+      ) : null}
       <View style={styles.grupo}>
         {linhas.map((l, i) => (
           <Fragment key={i}>
@@ -76,6 +78,6 @@ export function LinhaComValor({ titulo, descricao, valor, onPress }: { titulo: s
 
 const styles = StyleSheet.create({
   grupo: { backgroundColor: color.surface.default, borderRadius: radius.xl, paddingHorizontal: space[16], paddingVertical: space[4] },
-  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
+  divisor: { height: 1, backgroundColor: color.surface.strong },
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 56, paddingVertical: space[12] },
 });

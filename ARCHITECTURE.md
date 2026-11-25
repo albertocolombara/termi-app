@@ -72,7 +72,7 @@ flowchart LR
 | Animação de UI | **react-native-reanimated** 4 + worklets | [Decidido] | Animações e, a seguir, o ritmo da janela na thread de interface |
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
 | Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
-| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo |
+| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo. Sons: sinal de apertar cintos (`assets/sons/aviso_cinto.ogg`) e aviso da comissária no pouso (`aviso_pouso.ogg`: sinal, voz gerada no ElevenLabs e som da cabine). **Com o som de fundo tocando**, quem toca os dois é o próprio app (FlightSoundService): o som de fundo baixa para 20% com fade 1 s antes, o sinal toca no volume de mídia (Ajustes > Volume do sinal) e o som volta; no pouso, depois do aviso, o som de fundo sai. As notificações desses momentos vêm sem som (`servico-sem-som`, `pouso-sem-som`). **Sem som de fundo** (Silêncio), o som vem da notificação, no volume de alarme (`servico-alarme`, `pouso-comissaria`). Os avisos são reagendados quando isso muda no meio do voo (SomDoVoo). Decidido pelo Alberto em 25/11/2026, depois de o som pelo canal de notificação não tocar na build-58 |
 | Sons de fundo | Serviço nativo próprio (`FlightSoundService`, ExoPlayer) no Android; **expo-audio** no iOS. Loops AAC em `assets/sons`; lofi em streaming do R2 | [Decidido] (20/11/2026) | Voo de cruzeiro e ruído branco (grátis); motores, cabine, chuva e lofi (primeira classe). Seção 10 |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
 | Live Activity (iOS) | expo-widgets ou módulo Swift | [Proposta] | Fase iOS |
@@ -387,8 +387,8 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
 - **10 fps por padrão, 2 fps em economia, 30 fps opcional** (Ajustes > "Janela a 30 quadros por segundo", desligado por padrão). Desde a build-28 o relógio da janela roda na thread de interface (`useFrameCallback` + `useDerivedValue`): cada quadro é montado sem passar pelo JavaScript, o que tira o teto de ~21 fps do timer em JS. A posição e o deslocamento das nuvens são interpolados entre as leituras de 1 s da tela (antes a paisagem andava em degraus de 1 s). **[Pendente]** medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica.
 - **Segundo plano sem trabalho:** janela desmontada e relógios parados (1% de bateria em 25 min de tela bloqueada).
 - **Dados móveis (20/11/2026, depois de 2,01 GB num dia de testes na build 33).** O que o app baixa e como:
-  - Paisagem da janela: ~9 MB por hora de rota (~3 MB na qualidade Econômica), a próxima 1 h à frente; fica no cache do aparelho.
-  - Posição do avião durante o voo: só o arquivo da região do avião (20 a 145 KB) a cada 5 min; antes eram as 12 regiões (~0,7 MB), só para atualizar um avião.
+  - Paisagem da janela: ~6 MB por hora de rota com o Sentinel-2 (36,7 MB num voo de 5h45, medido pelo Alberto em 24/11/2026), a próxima 1 h à frente; fica no cache do aparelho. Desde 24/11/2026 só baixa com a janela à vista (no globo ou com a tela desligada, nada); ao voltar para a janela, baixa da posição atual em diante.
+  - Posição do avião durante o voo: só o arquivo da região do avião a cada 5 min (comprimido em gzip desde 21/11/2026: ~5 a 25 KB); antes eram as 12 regiões (~0,7 MB), só para atualizar um avião. Se o avião não está mais na região (saiu dela ou passou por trecho sem radar), procura em todas as regiões no máximo a cada 20 min, e o voo segue projetado a partir da última leitura boa (24/11/2026; antes ficava preso à região do embarque e nunca mais se corrigia).
   - Trilha do globo: cada faixa de 20 min do histórico é baixada uma vez por abertura do app; antes todas eram baixadas de novo a cada 20 min.
   - Globo: blocos do Blue e do Black Marble recomprimidos em WebP no R2 (`globo/{dia|noite}/{z}/{linha}/{coluna}.webp`, níveis 1 a 7, 34.142 blocos, 149 MB, workflow "Blocos do globo" do coletor, 20/11/2026), guardados no cache do aparelho (até ~800 arquivos). O mosaico noturno só é baixado quando a região vista está de noite. Antes vinham do GIBS a cada abertura do globo (o Black Marble só existe em PNG, ~300 KB por bloco): 17 a 29 MB medidos pelo Alberto num voo de 25 min (build-38).
   - Nuvens: ~0,3 a 1 MB por voo. Lofi (primeira classe): ~40 MB por hora de música.
@@ -512,14 +512,20 @@ Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; b
 
 | Arquivos | Conteúdo |
 |---|---|
-| `tras_asa_*` | Asa, com fundo transparente, em três luzes (dia, entardecer, noite) |
-| `tras_moldura_escura_*` | Moldura grafite (teste B: parede da cabine grafite, janela grande, degradê da cor do app no topo e na base), nas mesmas três luzes |
-| `mini_2`, `mini_3` | Só miniaturas das vistas "Com asa" e "Asa e motor" |
-| `asa_*` (na pasta do Blender) | Outro enquadramento, com a moldura clara descartada; não usar |
+| `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-53** |
+| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes, e a versão `_fechada` (cabine escura, com a persiana fechada). **Em uso desde a build-53** (fechada desde a build-54) |
+| `Janela nova (v3)/tras_persiana_v3_*` | Persiana nas três luzes e a máscara do vão. **Em uso desde a build-54** |
+| `Janela nova (v3)/App (otimizado)` | Versões em WebP das camadas acima (fonte dos arquivos de `assets/janela`) |
+| `Vistas · divulgação/Miniaturas` | Miniaturas da folha "Vista da janela" (`thumb_janela`, `thumb_janela_asa`, `thumb_sem_moldura`) |
+| `Asa antiga/`, `tras_moldura_*`, `mini_*` | Versões anteriores; não usar |
 
-As camadas separadas compõem três vistas sem render extra: **Asa completa** (asa + moldura), **Só a janela** (só a moldura) e **Sem moldura** (só a asa). Faltam renders de "Com asa" e "Asa e motor" nos três horários.
+As camadas separadas compõem as três vistas do lançamento sem render extra: **Janela** (só a moldura, grátis), **Asa** (asa + moldura, Plus) e **Sem moldura** (só a asa, Plus). "Com asa" e "Asa e motor" saíram do lançamento (decisão do Alberto em 24/11/2026).
 
-No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite`. A troca entre as três luzes é suave, pela altura real do sol. Ao entardecer, a asa recebe um filtro quente (sépia 0,5, saturação 1,25, brilho 0,97), igual ao do protótipo web.
+No app, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite` (em `assets/janela`). A troca entre as três luzes é suave, pela altura real do sol. A render v3 do entardecer já vem quente, então o filtro quente do protótipo web saiu. As miniaturas saem das do Alberto, reduzidas para 240 × 320.
+
+**Câmera.** O shader da janela usa a mesma câmera da render v3 ("Câmera · janela v3" em `janela_25_janela_realista.blend`): olha reto para a esquerda, nivelada, lente de 25 mm (tangente do meio ângulo vertical 0,72). Antes usava a câmera da 23A, 12° para baixo e virada para trás, e a asa v3 parecia apontar para baixo (build-53).
+
+**Persiana (build-54).** Começa um pouco abaixada; um toque no vidro fecha, outro volta à posição inicial (0,6 s; sem animação com "reduzir movimento"). Camadas de trás para frente: paisagem, asa, moldura misturada com a moldura fechada conforme a persiana desce, persiana deslocada na vertical e recortada pela máscara (`domain/janela/persiana.ts`). A persiana existe nas vistas com moldura (Janela e Asa). Ela não é salva: cada voo começa com a persiana na posição inicial. Para economizar memória, o app só carrega as luzes que estão aparecendo, e a moldura fechada só depois do primeiro toque.
 
 **Luzes da asa.** Só a luz branca de posição, fixa, na ponta (entardecer e noite) e o beacon vermelho da fuselagem em pulso lento e fraco (um a cada 3,6 s). Sem strobe e sem luz vermelha de navegação. Os pulsos param com "reduzir movimento".
 
@@ -554,7 +560,7 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 
 Por voo: ~250 blocos (~9 MB) por hora, baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
 
-**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo). Durante o voo, com a tela aberta, o app mantém baixada só a **próxima 1 h** à frente do avião e confere a cada 10 min (`data/blocos/useBlocosDoVoo.ts`); antes baixava a rota inteira até o destino de uma vez. Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
+**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo). Durante o voo, com a tela aberta **e a janela à vista** (24/11/2026), o app mantém baixada só a **próxima 1 h** à frente do avião e confere a cada 10 min (`data/blocos/useBlocosDoVoo.ts`); antes baixava a rota inteira até o destino de uma vez. Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
 
 **Níveis de qualidade.**
 
@@ -568,7 +574,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 **Rota e sol.** Posição por arco de grande círculo, rumo e altura do sol calculados pela data, hora e posição (`geo.ts`). O protótipo voa Barcelona → Londres na velocidade real, porque os blocos empacotados cobrem esse trajeto.
 
-**Pendências da janela.** Renderizar "Com asa" e "Asa e motor"; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
+**Pendências da janela.** Medir a memória com a persiana no aparelho; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
 
 ### 19.2 Souvenirs (medalhas)
 

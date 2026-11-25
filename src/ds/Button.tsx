@@ -49,7 +49,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       ]}
       {...rest}
     >
-      <Text variant={isMini ? 'Caption/Regular 12' : 'Body/Large Medium 16'} style={{ color: fg }} underline={isLink} numberOfLines={1}>
+      <Text variant={rotulo(variant, size)} style={{ color: fg }} numberOfLines={1}>
         {label}
       </Text>
       {size === 'large' && !isLink && !isOutline && icon ? (
@@ -61,10 +61,21 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
   );
 }
 
+/**
+ * Estilo do rótulo (Figma v3, componente Button): o primário grande usa "Button/Large 24" e o médio
+ * "Button/Medium 20"; os demais, "Body/Large Medium 16". O link não tem mais sublinhado (v3).
+ */
+function rotulo(variant: ButtonVariant, size: ButtonSize) {
+  if (size === 'mini') return 'Caption/Regular 12' as const;
+  if (variant === 'link' || size === 'small') return 'Body/Large Medium 16' as const;
+  if (size === 'medium') return 'Button/Medium 20' as const;
+  return variant === 'primary' ? ('Button/Large 24' as const) : ('Body/Large Medium 16' as const);
+}
+
 const styles = StyleSheet.create({
   base: { flexDirection: 'row', alignItems: 'center' },
   large: { justifyContent: 'space-between', gap: space[14], padding: space[16], minHeight: 56 },
-  medium: { justifyContent: 'center', paddingVertical: 18, minHeight: 56 },
+  medium: { justifyContent: 'center', paddingVertical: space[14], minHeight: 54 },
   outline: {
     alignSelf: 'flex-start',
     gap: space[6],

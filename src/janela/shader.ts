@@ -140,10 +140,12 @@ half4 main(float2 fc) {
   float2 q = float2(fc.x / res.x * 2.0 - 1.0, 1.0 - fc.y / res.y * 2.0);
   q.x *= res.x / res.y;
   float3 F = float3(sin(hd), cos(hd), 0.0); float3 L = float3(-cos(hd), sin(hd), 0.0); float3 Z = float3(0, 0, 1);
-  float3 f = normalize(0.3265 * F + 0.922 * L - 0.2079 * Z);
-  float3 r = normalize(0.9425 * F - 0.3338 * L);
-  float3 u = normalize(0.0694 * F + 0.196 * L + 0.9781 * Z);
-  float3 d = normalize(f + q.x * 0.9 * r + q.y * 0.9 * u);
+  // Câmera da janela v3 do Blender ("Câmera · janela v3"): olha reto para a esquerda, nivelada, sem
+  // rolagem, lente de 25 mm com sensor de 36 mm na altura (tg do meio ângulo vertical = 0,72).
+  // Antes era a câmera da 23A (12° para baixo e virada para trás), e a asa v3 parecia apontar
+  // para baixo em relação ao horizonte (build-53). k leva em conta o "cover" da imagem 1080 × 1440.
+  float k = 0.72 * res.y / (1440.0 * max(res.x / 1080.0, res.y / 1440.0));
+  float3 d = normalize(L + q.x * k * F + q.y * k * Z);
   float day = smoothstep(-0.12, 0.12, sunD.z);
   float warm = exp(-abs(sunD.z - 0.03) * 14.0) * smoothstep(-0.14, -0.02, sunD.z);
   float3 col = skyCol(d, day, warm);

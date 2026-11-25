@@ -2,6 +2,9 @@
  * Dial de tempo de foco (Figma: "Dial de tempo / com voos", 358 × 358).
  * Girar o dedo no anel escolhe o tempo de 5 em 5 min; tocar no centro abre o seletor numérico.
  * Na econômica, a faixa acima de 3 h aparece em dourado (primeira classe) e não abre paywall (RN-20).
+ *
+ * `tamanho` encolhe o dial inteiro para caber na tela sem rolagem (Alberto, build-47). O desenho segue
+ * nas medidas do Figma (358) e só a escala muda; o toque é convertido de volta para essas medidas.
  */
 import { useMemo } from 'react';
 import { View, type AccessibilityActionEvent } from 'react-native';
@@ -11,7 +14,7 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Classe } from '@/domain/sessao/duracao';
 import { DURACAO_MAXIMA_ECONOMICA_MIN, DURACAO_MAXIMA_PRIMEIRA_MIN, DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { anguloDoTempo, PASSO_DIAL_MIN, rotuloDoTempo, tempoDoAngulo, type BarraDoDial } from '@/domain/voos/dial';
-import { color, FirstClassSeal, gold, space, Text } from '@/ds';
+import { color, gold, Plus, space, Text } from '@/ds';
 import { TermiAnimado } from '@/features/termi/TermiAnimado';
 import { t } from '@/i18n';
 
@@ -47,9 +50,14 @@ export type DialDeTempoProps = {
   classe: Classe;
   onChange: (minutos: number) => void;
   onToqueNoCentro: () => void;
+  /** Lado do dial em dp (padrão: 358, o do Figma). */
+  tamanho?: number;
 };
 
-export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro }: DialDeTempoProps) {
+export const TAMANHO_DO_DIAL = TAM;
+
+export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro, tamanho = TAM }: DialDeTempoProps) {
+  const k = tamanho / TAM;
   const maxVoos = Math.max(1, ...barras.map((b) => b.voos));
   const premium = classe === 'economica' && minutos > DURACAO_MAXIMA_ECONOMICA_MIN;
   const angulo = anguloDoTempo(minutos);
@@ -75,7 +83,9 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
     [barras, maxVoos, classe],
   );
 
-  const escolher = (x: number, y: number) => {
+  const escolher = (xNaTela: number, yNaTela: number) => {
+    const x = xNaTela / k;
+    const y = yNaTela / k;
     const g = (Math.atan2(x - C, C - y) * 180) / Math.PI;
     const novo = tempoDoAngulo(g, minutos);
     if (novo !== minutos) onChange(novo);
@@ -90,7 +100,7 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
   const toque = useTapGesture({
     runOnJS: true,
     onActivate: (e) => {
-      if (Math.hypot(e.x - C, e.y - C) < R_MIOLO) onToqueNoCentro();
+      if (Math.hypot(e.x / k - C, e.y / k - C) < R_MIOLO) onToqueNoCentro();
       else escolher(e.x, e.y);
     },
   });
@@ -104,7 +114,7 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
   return (
     <GestureDetector gesture={gestos}>
       <View
-        style={{ width: TAM, height: TAM }}
+        style={{ width: tamanho, height: tamanho }}
         accessible
         accessibilityRole="adjustable"
         accessibilityLabel={t('dial.rotuloAcessivel')}
@@ -112,7 +122,7 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }, { name: 'activate' }]}
         onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'activate' ? onToqueNoCentro() : passo(e))}
       >
-        <Svg width={TAM} height={TAM}>
+        <Svg width={tamanho} height={tamanho} viewBox={`0 0 ${TAM} ${TAM}`}>
           {tracos.map((tr) => (
             <Line
               key={tr.key}
@@ -131,29 +141,34 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
           <Path d={arco(R_TRILHO, angulo)} stroke={color.accent.default} strokeWidth={ESPESSURA} strokeLinecap="round" fill="none" />
           <Circle cx={botao.x} cy={botao.y} r={R_BOTAO} fill={color.accent.default} stroke={color.dial.contornoDoBotao} strokeWidth={5.26} />
         </Svg>
+        {/* Miolo nas medidas do Figma, escalado junto com o desenho. */}
         <View
           pointerEvents="none"
-          style={{ position: 'absolute', left: C - 100, top: C - 100, width: 200, height: 200, alignItems: 'center', justifyContent: 'center', gap: space[12] }}
+          style={{ position: 'absolute', left: (tamanho - TAM) / 2, top: (tamanho - TAM) / 2, width: TAM, height: TAM, transform: [{ scale: k }] }}
         >
-          {/* O Termi fica curioso: os olhos acompanham o botão do dial enquanto o dedo gira. */}
-          <View style={{ width: 64, height: 64 }}>
-            <TermiAnimado
-              tamanho={TERMI_RIVE}
-              olhar={{ x: Math.sin(rad(angulo)) * OLHAR_X, y: -Math.cos(rad(angulo)) * OLHAR_Y }}
-              rotulo={t('dial.termi')}
-              style={{ position: 'absolute', left: 32 - TERMI_RIVE * 0.47, top: 32 - TERMI_RIVE * 0.59 }}
-            />
-          </View>
-          <Text variant="Display/Pixel 32" style={{ fontSize: 48, lineHeight: 48, letterSpacing: -2.88 }}>
-            {rotuloDoTempo(minutos)}
-          </Text>
-          {premium ? (
-            <FirstClassSeal variant="menor" />
-          ) : (
-            <Text variant="Body/Medium 14" style={{ color: color.text.muted, textAlign: 'center', paddingHorizontal: space[16] }}>
-              {t('dial.dica')}
+          <View
+            style={{ position: 'absolute', left: C - 100, top: C - 100, width: 200, height: 200, alignItems: 'center', justifyContent: 'center', gap: space[12] }}
+          >
+            {/* O Termi fica curioso: os olhos acompanham o botão do dial enquanto o dedo gira. */}
+            <View style={{ width: 64, height: 64 }}>
+              <TermiAnimado
+                tamanho={TERMI_RIVE}
+                olhar={{ x: Math.sin(rad(angulo)) * OLHAR_X, y: -Math.cos(rad(angulo)) * OLHAR_Y }}
+                rotulo={t('dial.termi')}
+                style={{ position: 'absolute', left: 32 - TERMI_RIVE * 0.47, top: 32 - TERMI_RIVE * 0.59 }}
+              />
+            </View>
+            <Text variant="Display/Pixel 32" style={{ fontSize: 48, lineHeight: 48, letterSpacing: -2.88 }}>
+              {rotuloDoTempo(minutos)}
             </Text>
-          )}
+            {premium ? (
+              <Plus tamanho="pequeno" />
+            ) : (
+              <Text variant="Body/Medium 14" style={{ color: color.text.muted, textAlign: 'center', paddingHorizontal: space[16] }}>
+                {t('dial.dica')}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     </GestureDetector>
@@ -163,15 +178,16 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
 /** Legenda abaixo do dial. */
 export function LegendaDoDial() {
   const item = (cor: string, texto: string) => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[6] }}>
-      <View style={{ width: 10, height: 3, borderRadius: 2, backgroundColor: cor }} />
-      <Text variant="Caption/Regular 12" style={{ color: color.dial.legenda, letterSpacing: 0 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[4] }}>
+      <View style={{ width: 8, height: 3, borderRadius: 2, backgroundColor: cor }} />
+      {/* Um pouco menor que Caption 12, para sobrar espaço para o dial (Alberto, build-47). */}
+      <Text variant="Caption/Regular 12" style={{ color: color.dial.legenda, letterSpacing: 0, fontSize: 11, lineHeight: 14 }}>
         {texto}
       </Text>
     </View>
   );
   return (
-    <View style={{ flexDirection: 'row', gap: space[16] }}>
+    <View style={{ flexDirection: 'row', gap: space[12] }}>
       {item(color.dial.barra, t('dial.legendaVoos'))}
       {item(color.accent.default, t('dial.legendaSeuTempo'))}
     </View>

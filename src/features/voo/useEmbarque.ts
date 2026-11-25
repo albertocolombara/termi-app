@@ -5,7 +5,9 @@
  * 2. Baixar a paisagem da rota: blocos do R2 da posição atual até o destino (A4: pode falhar).
  * 3. Preparar a janela: grava a sessão (uma transação), agenda os avisos e mostra a notificação fixa.
  *
- * Nada é gravado antes da etapa 3: cancelar o embarque não deixa registro (UC-02 A5).
+ * Nada é gravado antes da etapa 3: cancelar o embarque não deixa registro (UC-02 A5). Se a pessoa
+ * sai da tela depois da gravação e antes de o voo abrir (voltar durante "preparando" ou na animação do
+ * embarque), a sessão vira `cancelado` e os avisos saem: não conta no diário (Alberto, build-46).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -15,7 +17,8 @@ import { env } from '@/config/env';
 import { baixarBlocos } from '@/data/blocos/baixarBlocos';
 import { baixarNuvensDaRota } from '@/data/nuvens/nuvens';
 import { useAjustes } from '@/data/preferencias/ajustes';
-import { criarSessao } from '@/data/sessoes/repositorio';
+import { cancelarEmbarque, criarSessao } from '@/data/sessoes/repositorio';
+import { CHAVE_HISTORICO } from '@/data/historico/useHistorico';
 import { CHAVE_SESSAO_EM_ANDAMENTO } from '@/data/sessoes/useSessaoEmAndamento';
 import { buscarVoosDisponiveis } from '@/data/voos/useVoos';
 import { DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
@@ -27,7 +30,7 @@ import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
-import { agendarAvisosDoVoo, mostrarNotificacaoFixa } from '@/services/avisos';
+import { agendarAvisosDoVoo, cancelarAvisos, esconderNotificacaoFixa, mostrarNotificacaoFixa } from '@/services/avisos';
 
 import { codigoDoLugar, nomeDoLugar } from './formato';
 import { useNovoVoo } from './novoVoo';
@@ -49,6 +52,25 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const [etapa, setEtapa] = useState<EtapaDoEmbarque>({ tipo: 'localizando' });
   const controle = useRef<AbortController | null>(null);
   const vooRef = useRef<{ voo: Voo; faltaKm: number; vooDeOntem: boolean } | null>(null);
+  /** Sessão gravada neste embarque e se o voo chegou a abrir (`confirmarEmbarque`). */
+  const sessaoGravada = useRef<string | null>(null);
+  const vooAbriu = useRef(false);
+
+  const descartar = useCallback(
+    async (sessaoId: string) => {
+      await cancelarEmbarque(db, sessaoId, Date.now());
+      // Sempre, mesmo se outra chamada já cancelou: o agendamento pode ter terminado depois dela.
+      await cancelarAvisos().catch(() => {});
+      esconderNotificacaoFixa();
+      await queryClient.invalidateQueries({ queryKey: CHAVE_SESSAO_EM_ANDAMENTO });
+      await queryClient.invalidateQueries({ queryKey: CHAVE_HISTORICO });
+    },
+    [db, queryClient],
+  );
+  const descartarRef = useRef(descartar);
+  useEffect(() => {
+    descartarRef.current = descartar;
+  }, [descartar]);
 
   const preparar = useCallback(
     async (voo: Voo, faltaKm: number, vooDeOntem: boolean, comGlobo: boolean, sinal: AbortSignal) => {
@@ -63,21 +85,31 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
         motivo: caminhoRapido ? MOTIVO_VAZIO : motivo,
         vooDeOntem,
       });
-      if (sinal.aborted) return; // a sessão já está gravada; a tela em voo a encontra ao abrir o app
+      sessaoGravada.current = sessaoId;
+      if (sinal.aborted) {
+        // Cancelou enquanto gravava: não vira voo.
+        await descartar(sessaoId);
+        return;
+      }
       const duracaoMin = Math.round((pousoPrevistoEm - embarcouEm) / 60_000);
       const pausas = horariosDasPausas(embarcouEm, agendaDePausas(duracaoMin, ajustes.servicoDeBordo));
       try {
-        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN, avisoDePouso: ajustes.avisoDePouso });
+        if (sinal.aborted) throw new Error('cancelado');
+        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN, avisoDePouso: ajustes.avisoDePouso, somDoServico: ajustes.somDoServico });
         mostrarNotificacaoFixa(`${codigoDoLugar(voo.origem)} → ${codigoDoLugar(voo.destino)}`, pousoPrevistoEm);
       } catch {
         // Sem permissão de avisos o voo segue; os Ajustes avisam que os avisos podem não tocar (UC-05 E1).
+      }
+      if (sinal.aborted) {
+        await descartar(sessaoId);
+        return;
       }
       await queryClient.invalidateQueries({ queryKey: CHAVE_SESSAO_EM_ANDAMENTO });
       setMotivo(MOTIVO_VAZIO);
       setVoo(null);
       setEtapa({ tipo: 'embarcou', sessaoId });
     },
-    [ajustes, caminhoRapido, db, motivo, queryClient, setMotivo, setVoo],
+    [ajustes, caminhoRapido, db, descartar, motivo, queryClient, setMotivo, setVoo],
   );
 
   const baixar = useCallback(
@@ -134,7 +166,12 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
     // Começa uma vez ao abrir a tela; ao sair, cancela o que estiver em andamento.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     comecar();
-    return () => controle.current?.abort();
+    return () => {
+      controle.current?.abort();
+      // Saiu da tela com a sessão gravada mas sem abrir o voo: o embarque não aconteceu.
+      const id = sessaoGravada.current;
+      if (id && !vooAbriu.current) void descartarRef.current(id);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -155,6 +192,10 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   }, [preparar]);
 
   const cancelar = useCallback(() => controle.current?.abort(), []);
+  /** Chamado pela tela no instante em que abre o voo: a partir daqui sair não cancela nada. */
+  const confirmarEmbarque = useCallback(() => {
+    vooAbriu.current = true;
+  }, []);
 
-  return { etapa, tentarDeNovo, embarcarComGlobo, cancelar, recomecar: comecar };
+  return { etapa, tentarDeNovo, embarcarComGlobo, cancelar, confirmarEmbarque, recomecar: comecar };
 }
