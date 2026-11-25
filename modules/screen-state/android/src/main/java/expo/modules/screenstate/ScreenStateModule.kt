@@ -119,7 +119,7 @@ class ScreenStateModule : Module() {
     }
 
     Function("setFlightSoundCues") { cues: List<Double>, cueVolume: Double, landingCue: Boolean ->
-      val c = FlightSoundService.Cues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue)
+      val c = FlightCues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue)
       FlightSoundService.cues = c
       main.post { FlightSoundService.instance?.setCues(c.times, c.volume, c.landing) }
     }

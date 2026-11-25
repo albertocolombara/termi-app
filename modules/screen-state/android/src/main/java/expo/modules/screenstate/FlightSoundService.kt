@@ -319,10 +319,8 @@ class FlightSoundService : Service() {
     const val EXTRA_FADE_IN_MS = "fadeInMs"
     const val EXTRA_SEQ = "seq"
     /** Sinais do voo atual, definidos pelo app (setFlightSoundCues) antes e durante o som. */
-    class Cues(val times: LongArray, val volume: Float, val landing: Boolean)
-
     @Volatile
-    var cues = Cues(LongArray(0), 1f, false)
+    var cues = FlightCues(LongArray(0), 1f, false)
 
     private const val RAW_CINTO = "aviso_cinto"
     private const val RAW_POUSO = "aviso_pouso"
@@ -363,3 +361,6 @@ class FlightSoundService : Service() {
     var instance: FlightSoundService? = null
   }
 }
+
+/** Sinais do voo: horários do sinal de cintos (ms), volume deles e se toca o aviso de pouso. */
+class FlightCues(val times: LongArray, val volume: Float, val landing: Boolean)
