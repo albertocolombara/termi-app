@@ -171,6 +171,22 @@ export const color = {
   },
 } as const;
 
+/**
+ * Loja de souvenirs (Figma v3: L1, L2, L2b). Luz quente da vitrine (amarelo a 16%), reflexo do vidro,
+ * sombra da medalha na prateleira e os metais da medalha provisória, usada até os renders de cada país
+ * entrarem no catálogo (`imagem2d`).
+ */
+export const loja = {
+  luzDaVitrine: 'rgba(255,204,64,0.16)',
+  reflexo: 'rgba(255,255,255,0.05)',
+  sombra: 'rgba(0,0,0,0.45)',
+  metal: {
+    niquel: { claro: '#EDEDF0', escuro: '#8E8E96', texto: '#3A3A40' },
+    cobre: { claro: '#F2C2A0', escuro: '#9A5A35', texto: '#4A2412' },
+    latao: { claro: '#F6E3A6', escuro: '#A5822E', texto: '#4A3A10' },
+  },
+} as const;
+
 /** Dourado da 1ª classe (selos premium). Gradiente linear 0° → direita. */
 export const gold = {
   stops: [
@@ -222,6 +238,7 @@ export const radius = {
   lg: 10,
   xl: 12,
   '2xl': 16,
+  '3xl': 24, // vitrine da loja (Figma v3: L1)
   screen: 28,
   full: 999,
 } as const;

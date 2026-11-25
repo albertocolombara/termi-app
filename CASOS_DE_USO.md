@@ -327,7 +327,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 - **A3 — Econômica com 2 souvenirs (mala de amostra cheia):** o Sistema mostra o aviso e, se o Viajante quiser, o paywall (UC-13).
 - **A4 — Sobe de nível:** segue UC-10.
 - **A5 — Não comprar agora:** o Viajante volta ao Início.
-- **A6 — Plus, depois do pouso:** o Viajante abre "Lojas" (pela mala) e compra o souvenir de qualquer país onde já teve um pouso completo. Na econômica, "Lojas" aparece bloqueada e o toque abre o paywall (RN-14, RN-20).
+- **A6 — Plus, depois do pouso:** o Viajante abre "Lojas dos seus pousos" (pela mala, com a marca Plus), toca em "Comprar" no cartão do país e confirma na vitrine (L1). Vale para qualquer país onde já teve um pouso completo. Na econômica, a tela aparece bloqueada (L2b): os cartões mostram o preço "no Plus" e o toque, ou "Conhecer o Plus", abre o paywall (RN-14, RN-20).
 
 **Exceções e erros**
 

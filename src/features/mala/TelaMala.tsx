@@ -1,17 +1,19 @@
 /**
  * M1 · Sua mala (Figma v3: X6 · Mala vazia e M1d · coleção). PRD: RF-30, RN-14, RN-16, RN-17; UC-09.
  *
- * A loja do destino ainda não existe (Fase 4), então hoje a mala só pode estar vazia: mostra os
- * espaços da coleção pelo catálogo (o total nunca é fixo no código) e o convite para voar.
- * Quando houver souvenirs, o espaço do país aparece preenchido; a medalha 3D (M1b) entra com a loja.
+ * Mostra os espaços da coleção pelo catálogo (o total nunca é fixo no código), os souvenirs
+ * comprados e a entrada para "Lojas dos seus pousos" com a marca Plus (decidido pelo Alberto em
+ * 25/11/2026; RN-14, UC-08 A6). Na econômica a entrada aparece e leva à tela bloqueada (L2b).
+ * A medalha 3D (M1b) entra com a vitrine.
  */
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCatalogo } from '@/data/colecao/catalogo';
 import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico';
-import { Button, color, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { Button, color, Icon, Plus, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { Medalha } from '@/features/loja/Medalha';
 import { t } from '@/i18n';
 
 export function TelaMala() {
@@ -43,7 +45,7 @@ export function TelaMala() {
               const tem = naMala.has(s.id);
               return (
                 <View key={s.id} style={styles.espaco} accessible accessibilityLabel={s.nome}>
-                  <View style={[styles.encaixe, tem ? styles.encaixeCheio : styles.encaixeVazio]} />
+                  {tem ? <Medalha souvenir={s} tamanho={64} /> : <View style={[styles.encaixe, styles.encaixeVazio]} />}
                   <Text variant="Caption/Regular 12" tone={tem ? 'primary' : 'muted'} numberOfLines={1}>
                     {s.nome}
                   </Text>
@@ -57,6 +59,25 @@ export function TelaMala() {
               </Text>
             </View>
           </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('mala.lojas')}, Plus`}
+            onPress={() => router.push('/loja')}
+            style={({ pressed }) => [styles.lojas, pressed && { opacity: 0.85 }]}
+          >
+            <Icon name="suitcaseLine" />
+            <View style={{ flex: 1, gap: space[2] }}>
+              <View style={styles.tituloDasLojas}>
+                <Text variant="Body/Large Medium 16">{t('mala.lojas')}</Text>
+                <Plus tamanho="pequeno" />
+              </View>
+              <Text variant="Body/Small 13" tone="tertiary" numberOfLines={1}>
+                {t('mala.lojasDescricao')}
+              </Text>
+            </View>
+            <Icon name="chevronRight" />
+          </Pressable>
 
           {vazia ? (
             <View style={styles.aviso}>
@@ -86,6 +107,7 @@ const styles = StyleSheet.create({
   espaco: { width: '25%', alignItems: 'center', gap: space[6] },
   encaixe: { width: 64, height: 64, borderRadius: 32 },
   encaixeVazio: { borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.border.strong },
-  encaixeCheio: { backgroundColor: color.surface.strong, borderWidth: 1.5, borderColor: color.border.default },
+  lojas: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 64, paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
+  tituloDasLojas: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
   aviso: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
 });
