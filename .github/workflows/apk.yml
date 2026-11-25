@@ -51,11 +51,8 @@ jobs:
           sudo fallocate -l 6G /mnt/swap2 && sudo chmod 600 /mnt/swap2 && sudo mkswap /mnt/swap2 && sudo swapon /mnt/swap2
           free -h; df -h /
 
-      - name: Instalar dependências (inclui os blocos de teste da janela)
+      - name: Instalar dependências
         run: npm ci
-
-      - name: Conferir blocos de teste da janela
-        run: npm run blocos:dev
 
       - name: Gerar projeto Android
         run: npx expo prebuild --platform android --no-install

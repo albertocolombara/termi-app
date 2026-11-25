@@ -132,7 +132,7 @@ flowchart LR
 ### Dados
 - [x] Cliente do cache de voos: ler `voos/indice.json` e as regiões do R2 (contrato da ARCHITECTURE §9), com TanStack Query — `data/voos`, PR #18 (falta conferir no aparelho pela tela "Voos do cache")
 - [x] Voo de ontem: ler `historico/{regiao}/{HHMM}.json` quando os dados ao vivo estão fora do ar (RN-12) — `data/voos`, PR #18
-- [ ] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; a janela segue a rota do voo da sessão no PR #24; só a próxima 1 h da rota, conferida a cada 10 min, no PR #45 (consumo de dados medido pelo Alberto na build-38); falta tirar os pacotes do protótipo do APK (a tela de teste da janela ainda os usa)
+- [x] Janela lendo os blocos do R2 (`blocos/{camada}/{linha}/{coluna}.webp`) no lugar dos pacotes do protótipo, baixados no embarque — download e leitura no PR #23; a janela segue a rota do voo da sessão no PR #24; só a próxima 1 h da rota, conferida a cada 10 min, no PR #45 (consumo de dados medido pelo Alberto na build-38); pacotes do protótipo fora do APK (21 MB) e tela de teste da janela baixando do R2 no PR "Tira os pacotes do protótipo" (25/11/2026)
 
 ### Telas e serviços
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
@@ -160,9 +160,8 @@ flowchart LR
 Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge dos PRs #50 e #51, estados do voo com Em espera, ciclo do serviço de bordo e lofi com a tela bloqueada, e o aviso de pouso da comissária no lugar dos avisos por fase.
 
 1. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
-2. Tirar os pacotes de paisagem do protótipo do APK.
-3. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
-4. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
+2. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
+3. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
 
 ---
 

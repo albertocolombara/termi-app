@@ -462,7 +462,6 @@ export const ptBR = {
     quadros: 'Quadros por segundo',
     nuvensSatelite: 'Nuvens de satélite',
     diagnostico: 'Medidor',
-    sobrevoando: 'Sobrevoando {lugar}',
   },
   primeiraClasse: {
     fechar: 'Fechar',

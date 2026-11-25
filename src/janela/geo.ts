@@ -1,5 +1,5 @@
 // Rota, posição, rumo e sol — mesmas contas do protótipo web da janela.
-// O protótipo voa Barcelona → Londres porque os blocos Landsat empacotados cobrem esse trajeto.
+// A tela de teste da janela voa Barcelona → Londres, com os blocos baixados do R2 como num voo real.
 
 export const ROUTE = {
   from: { code: 'BCN', city: 'Barcelona', lat: 41.2971, lon: 2.0785 },
@@ -49,17 +49,6 @@ export function sun(ms: number, lat: number, lon: number) {
   const el = Math.asin(Math.sin(la) * Math.sin(dec) + Math.cos(la) * Math.cos(dec) * Math.cos(H));
   const az = Math.atan2(-Math.sin(H), Math.tan(dec) * Math.cos(la) - Math.sin(la) * Math.cos(H));
   return { el, v: [Math.sin(az) * Math.cos(el), Math.cos(az) * Math.cos(el), Math.sin(el)] };
-}
-
-export function place(la: number, lo: number) {
-  if (la > 51.1) return 'a região de Londres';
-  if (la > 50.3 && lo < 1.4) return 'o sul da Inglaterra';
-  if (la > 49.6 && lo < 1.4) return 'o Canal da Mancha';
-  if (la > 47.6) return 'o noroeste da França';
-  if (la > 45.2) return 'o oeste da França';
-  if (la > 43.4) return 'o sudoeste da França';
-  if (la > 42.4) return 'os Pireneus';
-  return 'a Catalunha';
 }
 
 /**
