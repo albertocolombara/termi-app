@@ -90,12 +90,8 @@ class FlightSoundService : Service() {
     val volume = intent?.getFloatExtra(EXTRA_VOLUME, 1f) ?: 1f
     val fadeInMs = intent?.getLongExtra(EXTRA_FADE_IN_MS, 0L) ?: 0L
     play(uris, playlist, volume, fadeInMs, endAt)
-    setCues(
-      intent?.getLongArrayExtra(EXTRA_CUES) ?: LongArray(0),
-      intent?.getFloatExtra(EXTRA_CUE_VOLUME, 1f) ?: 1f,
-      intent?.getBooleanExtra(EXTRA_LANDING_CUE, false) ?: false,
-      endAt,
-    )
+    val c = cues
+    setCues(c.times, c.volume, c.landing, endAt)
     return START_NOT_STICKY
   }
 
@@ -168,6 +164,8 @@ class FlightSoundService : Service() {
    * (ex.: o usuário voltou ao foco antes do fim da pausa e o sinal do fim sai da lista).
    */
   fun setCues(cues: LongArray, volume: Float, landingAnnouncement: Boolean, endAt: Long = endAtAtual) {
+    // Sem som tocando (serviço ainda começando ou já parado): nada a agendar.
+    if (endAt <= 0L || player == null) return
     cueRunnables.forEach { handler.removeCallbacks(it) }
     cueRunnables.clear()
     cueVolume = volume
@@ -320,9 +318,12 @@ class FlightSoundService : Service() {
     const val EXTRA_TEXT = "text"
     const val EXTRA_FADE_IN_MS = "fadeInMs"
     const val EXTRA_SEQ = "seq"
-    const val EXTRA_CUES = "cues"
-    const val EXTRA_CUE_VOLUME = "cueVolume"
-    const val EXTRA_LANDING_CUE = "landingCue"
+    /** Sinais do voo atual, definidos pelo app (setFlightSoundCues) antes e durante o som. */
+    class Cues(val times: LongArray, val volume: Float, val landing: Boolean)
+
+    @Volatile
+    var cues = Cues(LongArray(0), 1f, false)
+
     private const val RAW_CINTO = "aviso_cinto"
     private const val RAW_POUSO = "aviso_pouso"
     /** O som de fundo baixa para 20% durante o sinal, com fade de 1 s antes e depois. */

@@ -98,8 +98,8 @@ class ScreenStateModule : Module() {
     // Som de fundo sem controle de mídia (FlightSoundService). Só chamar com o app aberto:
     // o Android não deixa iniciar serviço em primeiro plano a partir do segundo plano.
     // `uris`: um arquivo em loop, ou várias faixas (`playlist`) tocadas embaralhadas em sequência.
-    // `cues`: horários (ms) do sinal de cintos; `landingCue`: aviso da comissária no pouso.
-    Function("startFlightSound") { uris: List<String>, playlist: Boolean, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double, cues: List<Double>, cueVolume: Double, landingCue: Boolean ->
+    // Os sinais (cintos e aviso de pouso) vêm antes, por setFlightSoundCues: o Expo aceita até 8 argumentos.
+    Function("startFlightSound") { uris: List<String>, playlist: Boolean, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
       val ctx = context
       val intent = Intent(ctx, FlightSoundService::class.java).apply {
         putStringArrayListExtra(FlightSoundService.EXTRA_URIS, ArrayList(uris))
@@ -110,9 +110,6 @@ class ScreenStateModule : Module() {
         putExtra(FlightSoundService.EXTRA_TEXT, text)
         putExtra(FlightSoundService.EXTRA_FADE_IN_MS, fadeInMs.toLong())
         putExtra(FlightSoundService.EXTRA_SEQ, FlightSoundService.pedidos.incrementAndGet())
-        putExtra(FlightSoundService.EXTRA_CUES, cues.map { it.toLong() }.toLongArray())
-        putExtra(FlightSoundService.EXTRA_CUE_VOLUME, cueVolume.toFloat())
-        putExtra(FlightSoundService.EXTRA_LANDING_CUE, landingCue)
       }
       if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(intent) else ctx.startService(intent)
     }
@@ -122,7 +119,9 @@ class ScreenStateModule : Module() {
     }
 
     Function("setFlightSoundCues") { cues: List<Double>, cueVolume: Double, landingCue: Boolean ->
-      main.post { FlightSoundService.instance?.setCues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue) }
+      val c = FlightSoundService.Cues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue)
+      FlightSoundService.cues = c
+      main.post { FlightSoundService.instance?.setCues(c.times, c.volume, c.landing) }
     }
 
     Function("resumeFlightSound") {

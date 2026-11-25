@@ -112,7 +112,8 @@ function useSomNativo(fonte: Fonte | null, volume: number, tocando: boolean, inf
       if (cancelado || uris.length === 0) return;
       const { titulo, texto } = textosDaNotificacaoFixa(rota, pousoEm);
       const [sinais, vol, pouso] = JSON.parse(sinaisAtuais.current) as [number[], number, boolean];
-      ScreenState.startFlightSound(uris, fonte === 'playlist-lofi', volumeAtual.current, pousoEm, titulo, texto, FADE_IN_MS, sinais, vol, pouso);
+      ScreenState.setFlightSoundCues(sinais, vol, pouso);
+      ScreenState.startFlightSound(uris, fonte === 'playlist-lofi', volumeAtual.current, pousoEm, titulo, texto, FADE_IN_MS);
     })().catch(() => {
       // sem o arquivo (ou sem rede para a playlist) o voo segue sem som
     });

@@ -8,18 +8,8 @@ type ScreenStateNative = {
   lastScreenOnAt(): number;
   showFlightNotification(title: string, text: string, endAt: number): void;
   hideFlightNotification(): void;
-  startFlightSound(
-    uris: string[],
-    playlist: boolean,
-    volume: number,
-    endAt: number,
-    title: string,
-    text: string,
-    fadeInMs: number,
-    cues: number[],
-    cueVolume: number,
-    landingCue: boolean,
-  ): void;
+  startFlightSound(uris: string[], playlist: boolean, volume: number, endAt: number, title: string, text: string, fadeInMs: number): void;
+  /** Sinais de cintos (ms), volume deles e aviso de pouso. Chamar antes de startFlightSound e quando mudarem. */
   setFlightSoundCues(cues: number[], cueVolume: number, landingCue: boolean): void;
   setFlightSoundVolume(volume: number): void;
   resumeFlightSound(): void;
@@ -39,7 +29,7 @@ export const ScreenState: ScreenStateNative & { available: boolean } = {
   lastScreenOnAt: () => native?.lastScreenOnAt() ?? 0,
   showFlightNotification: (t, x, e) => native?.showFlightNotification(t, x, e),
   hideFlightNotification: () => native?.hideFlightNotification(),
-  startFlightSound: (u, l, v, e, t, x, f, c, cv, lc) => native?.startFlightSound(u, l, v, e, t, x, f, c, cv, lc),
+  startFlightSound: (u, l, v, e, t, x, f) => native?.startFlightSound(u, l, v, e, t, x, f),
   setFlightSoundCues: (c, cv, lc) => native?.setFlightSoundCues(c, cv, lc),
   setFlightSoundVolume: (v) => native?.setFlightSoundVolume(v),
   resumeFlightSound: () => native?.resumeFlightSound(),
