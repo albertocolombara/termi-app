@@ -41,7 +41,7 @@ flowchart LR
 | Validação dos dados de voo | Doc "validacao-dados-voos.md" e coletor `voo-ao-vivo-teste` (24 h, 1.247 pousos) | Disponibilidade resolvida; previsão imprecisa acima de ~1h30, resolvida pela regra do tempo do usuário (RN-09) |
 | Infraestrutura e políticas | Doc "infra-e-politicas.md" | Plano de R2, coletor, custos e riscos da Play |
 | Animações do Termi | Arquivo Rive (nuvem), 5 animações e state machine testada | Falta exportar `.riv` e nomear o arquivo |
-| Janela no Blender | Renders v3 (janela e asa realistas, 3 luzes) e miniaturas | "Com asa" e "Asa e motor" fora do lançamento (24/11/2026); persiana renderizada, sem uso ainda |
+| Janela no Blender | Renders v3 (janela e asa realistas, 3 luzes) e miniaturas | "Com asa" e "Asa e motor" fora do lançamento (24/11/2026); persiana com animação na build-54 |
 | Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
 **Lacunas que bloqueiam decisões estruturais:** aprovação da Play para alarmes exatos e bloqueio de apps. (A previsão de pouso dos voos longos deixou de bloquear em 19/11/2026: RN-09.)

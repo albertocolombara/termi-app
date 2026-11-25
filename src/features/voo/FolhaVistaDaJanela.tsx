@@ -40,6 +40,7 @@ export function FolhaVistaDaJanela({
   onFechar: () => void;
 }) {
   const [aviso, setAviso] = useState<ChaveDeTexto | null>(null);
+  const [largura, setLargura] = useState(0);
   const tocar = (v: Vista) => {
     if (!CAMADAS_DA_VISTA[v].pronta) return setAviso('vista.emBreveAviso');
     if (!vistaLiberada(v, classe)) {
@@ -58,7 +59,11 @@ export function FolhaVistaDaJanela({
       }}
       title={t('vista.titulo')}
     >
-      <View style={styles.grade} accessibilityRole="radiogroup">
+      <View
+        style={styles.grade}
+        accessibilityRole="radiogroup"
+        onLayout={(e) => setLargura((e.nativeEvent.layout.width - space[12] * (VISTAS.length - 1)) / VISTAS.length)}
+      >
         {VISTAS.map((v) => {
           const selecionada = v === emUso;
           const pronta = CAMADAS_DA_VISTA[v].pronta;
@@ -73,9 +78,11 @@ export function FolhaVistaDaJanela({
               onPress={() => tocar(v)}
               style={({ pressed }) => [styles.opcao, pressed && { opacity: 0.8 }]}
             >
-              <View style={[styles.miniatura, selecionada && styles.selecionada]}>
-                {mini ? (
-                  <Image source={mini} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              <View style={[styles.miniatura, { width: largura, height: (largura * 4) / 3 }, selecionada && styles.selecionada]}>
+                {mini && largura > 0 ? (
+                  // Tamanho em números: com largura em % o Android desenhava a imagem no tamanho
+                  // original, cortada no canto (build-53).
+                  <Image source={mini} style={{ width: largura - 4, height: ((largura - 4) * 4) / 3 }} resizeMode="cover" />
                 ) : (
                   <View style={styles.semMiniatura}>
                     <Text variant="Caption/Medium 12" tone="tertiary">
@@ -109,7 +116,7 @@ const styles = StyleSheet.create({
   // pequenas e encostadas à esquerda).
   grade: { flexDirection: 'row', gap: space[12], paddingTop: space[4] },
   opcao: { flex: 1, gap: space[8], alignItems: 'center' },
-  miniatura: { width: '100%', aspectRatio: 3 / 4, borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
+  miniatura: { borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
   selecionada: { borderColor: color.accent.default },
   semMiniatura: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   rotulo: { flexDirection: 'row', alignItems: 'center', gap: space[4] },

@@ -438,6 +438,8 @@ export const ptBR = {
     sobre: 'Rota {de} → {para} · {pct}% voado',
   },
   janela: {
+    fecharPersiana: 'Fechar a persiana',
+    abrirPersiana: 'Abrir a persiana',
     qualidade: 'Qualidade',
     quadros: 'Quadros por segundo',
     nuvensSatelite: 'Nuvens de satélite',

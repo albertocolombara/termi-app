@@ -513,13 +513,19 @@ Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; b
 | Arquivos | Conteúdo |
 |---|---|
 | `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-53** |
-| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes. **Em uso desde a build-53**. As versões `_fechada` e `tras_persiana_v3_*` (persiana e máscara) ainda não entram no app |
+| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes, e a versão `_fechada` (cabine escura, com a persiana fechada). **Em uso desde a build-53** (fechada desde a build-54) |
+| `Janela nova (v3)/tras_persiana_v3_*` | Persiana nas três luzes e a máscara do vão. **Em uso desde a build-54** |
+| `Janela nova (v3)/App (otimizado)` | Versões em WebP das camadas acima (fonte dos arquivos de `assets/janela`) |
 | `Vistas · divulgação/Miniaturas` | Miniaturas da folha "Vista da janela" (`thumb_janela`, `thumb_janela_asa`, `thumb_sem_moldura`) |
 | `Asa antiga/`, `tras_moldura_*`, `mini_*` | Versões anteriores; não usar |
 
 As camadas separadas compõem as três vistas do lançamento sem render extra: **Janela** (só a moldura, grátis), **Asa** (asa + moldura, Plus) e **Sem moldura** (só a asa, Plus). "Com asa" e "Asa e motor" saíram do lançamento (decisão do Alberto em 24/11/2026).
 
 No app, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite` (em `assets/janela`). A troca entre as três luzes é suave, pela altura real do sol. A render v3 do entardecer já vem quente, então o filtro quente do protótipo web saiu. As miniaturas saem das do Alberto, reduzidas para 240 × 320.
+
+**Câmera.** O shader da janela usa a mesma câmera da render v3 ("Câmera · janela v3" em `janela_25_janela_realista.blend`): olha reto para a esquerda, nivelada, lente de 25 mm (tangente do meio ângulo vertical 0,72). Antes usava a câmera da 23A, 12° para baixo e virada para trás, e a asa v3 parecia apontar para baixo (build-53).
+
+**Persiana (build-54).** Começa um pouco abaixada; um toque no vidro fecha, outro volta à posição inicial (0,6 s; sem animação com "reduzir movimento"). Camadas de trás para frente: paisagem, asa, moldura misturada com a moldura fechada conforme a persiana desce, persiana deslocada na vertical e recortada pela máscara (`domain/janela/persiana.ts`). A persiana existe nas vistas com moldura (Janela e Asa). Ela não é salva: cada voo começa com a persiana na posição inicial. Para economizar memória, o app só carrega as luzes que estão aparecendo, e a moldura fechada só depois do primeiro toque.
 
 **Luzes da asa.** Só a luz branca de posição, fixa, na ponta (entardecer e noite) e o beacon vermelho da fuselagem em pulso lento e fraco (um a cada 3,6 s). Sem strobe e sem luz vermelha de navegação. Os pulsos param com "reduzir movimento".
 
@@ -568,7 +574,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 **Rota e sol.** Posição por arco de grande círculo, rumo e altura do sol calculados pela data, hora e posição (`geo.ts`). O protótipo voa Barcelona → Londres na velocidade real, porque os blocos empacotados cobrem esse trajeto.
 
-**Pendências da janela.** Persiana (renders v3 prontos, sem decisão de uso); o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
+**Pendências da janela.** Medir a memória com a persiana no aparelho; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
 
 ### 19.2 Souvenirs (medalhas)
 
