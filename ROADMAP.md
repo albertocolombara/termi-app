@@ -1,13 +1,13 @@
 # Roadmap — Termi: Focus Flights
 
 > Planejamento da evolução do produto em fases. Escopo e regras: [PRD.md](PRD.md). Decisões técnicas: [ARCHITECTURE.md](ARCHITECTURE.md).
-> Última atualização: 21/11/2026.
+> Última atualização: 25/11/2026.
 
 Prioridades: **P0** bloqueia o lançamento · **P1** necessário para a v1 · **P2** desejável · **P3** pós-lançamento.
 
 Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada).
 
-**Situação em 21/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento**, com o núcleo do voo usado pelo Alberto no M35 desde a build-26. Pendências da Fase 3 no fim da seção dela.
+**Situação em 25/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha, que fecham em 27/11 se não houver falha); **Fase 3 em andamento**, com o núcleo do voo usado pelo Alberto no M35 desde a build-26 (última: build-54). Telas v3 (PR #50) e correções dos builds 48 a 53 (PR #51) abertas, em teste no aparelho. Partes da Fase 4 já começaram nas telas v3. Pendências da Fase 3 no fim da seção dela.
 
 ```mermaid
 flowchart LR
@@ -150,22 +150,22 @@ flowchart LR
 - [ ] Serviço de bordo com avisos agendados como alarme exato — avisos agendados no embarque (PR #23; no horário num voo curto na build-6, ARCHITECTURE §15); E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") no PR #36; falta conferir no aparelho o ciclo completo com a tela bloqueada e o app fechado
 - [x] Notificação fixa com contagem — mostrada no embarque (PR #23); é a notificação do serviço do som desde o PR #39 (testado pelo Alberto na build 31)
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
-- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet durante o voo
+- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; avisos de sem sinal do radar, sem internet e "radar de volta", com o radar ciente da área do coletor, no PR #51 (builds 51 a 53); faltam na tela em voo: E5 Em espera / Continuando até o pouso e E8 Em solo
 - [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
 - [x] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS — PR #37 (build-28): `useFrameCallback` + `useDerivedValue`, sem o teto de ~21 fps do timer; 30 fps opcional nos Ajustes (PR #42)
 - [ ] Medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica
-- [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 (build-41 em teste pelo Alberto): falta o teste no aparelho (memória e quadros da janela, globo no zoom máximo de dia e à noite) e o merge
+- [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 mergeado; usado pelo Alberto nas builds 48 a 53 (consumo de dados medido); falta medir memória e quadros da janela e do globo no zoom máximo
 
-### Pendente na Fase 3 (21/11/2026)
+### Pendente na Fase 3 (25/11/2026)
 
-1. Testar no aparelho e fazer o merge do PR #47 (paisagem do Sentinel-2, luzes e globo até 61 m).
-2. Estados que faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet. Depende do render da janela no solo **[Pendente]**.
+1. Testar no aparelho e fazer o merge dos PRs #50 (telas v3) e #51 (informações do voo, radar por área, janela v3 com persiana, correções dos builds 48 a 53).
+2. Estados que faltam na tela em voo: E5 Em espera / Continuando até o pouso e E8 Em solo. O E8 depende do render da janela no solo **[Pendente]**.
 3. Avisos por fase (avisos do comandante).
-4. Lugar sobrevoado (GeoNames) no painel e na tela de pouso.
+4. Lugar sobrevoado (GeoNames) no painel e na tela de pouso (hoje só na tela de teste da janela).
 5. Conferir no aparelho, com a tela bloqueada e o app fechado: o ciclo do serviço de bordo (alarme exato) e o lofi por um voo inteiro.
-6. Medir 30 fps (bateria, temperatura, memória) no M35 e num Android mais fraco.
+6. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
 7. Tirar os pacotes de paisagem do protótipo do APK.
-8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9` depois do PR #47.
+8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
 
 ---
 
