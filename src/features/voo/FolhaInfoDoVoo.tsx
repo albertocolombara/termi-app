@@ -14,7 +14,8 @@ import { t } from '@/i18n';
 
 import { codigoDoLugar, horaLocal, km, kmh, metros, nomeDoLugar } from './formato';
 
-type Radar = 'ok' | 'sem-sinal' | 'sem-internet';
+/** Estado da leitura do radar. `fora-da-area`: longe das áreas que o coletor lê; posição estimada, sem aviso. */
+export type Radar = 'ok' | 'fora-da-area' | 'sem-sinal' | 'sem-internet';
 
 export function FolhaInfoDoVoo({
   visivel,
@@ -37,6 +38,8 @@ export function FolhaInfoDoVoo({
       ? t('infoDoVoo.radarPerdido', { hora: horaLocal(voo.coletadoEm) })
       : radar === 'sem-internet'
         ? t('infoDoVoo.radarSemInternet', { hora: horaLocal(voo.coletadoEm) })
+        : radar === 'fora-da-area'
+          ? t('infoDoVoo.radarForaDaArea', { hora: horaLocal(voo.coletadoEm) })
         : min < 1
           ? t('infoDoVoo.radarAgora')
           : t('infoDoVoo.radarOk', { min });

@@ -1,7 +1,7 @@
 /**
  * 04E · Vista da janela (bottom sheet). PRD: RF-19, RN-18, RN-20.
  * Só a janela é grátis. Na econômica, tocar numa vista da primeira classe abre o paywall (RN-20, RF-25).
- * Com asa e Asa e motor ainda não têm render: aparecem como "Em breve".
+ * Vistas do lançamento: Janela (grátis), Asa e Sem moldura (Plus). Miniaturas: renders v3 do Alberto.
  */
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
@@ -19,8 +19,6 @@ const MINIATURA: Partial<Record<Vista, number>> = {
 
 const NOME: Record<Vista, ChaveDeTexto> = {
   'so-janela': 'vista.soJanela',
-  'com-asa': 'vista.comAsa',
-  'asa-e-motor': 'vista.asaEMotor',
   'asa-completa': 'vista.asaCompleta',
   'sem-moldura': 'vista.semModura',
 };
@@ -107,9 +105,11 @@ export function FolhaVistaDaJanela({
 }
 
 const styles = StyleSheet.create({
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[16], paddingTop: space[4] },
-  opcao: { width: 96, gap: space[8], alignItems: 'center' },
-  miniatura: { width: 96, height: 128, borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
+  // Três vistas ocupando a largura toda, em partes iguais (pedido do Alberto, build-51: estavam
+  // pequenas e encostadas à esquerda).
+  grade: { flexDirection: 'row', gap: space[12], paddingTop: space[4] },
+  opcao: { flex: 1, gap: space[8], alignItems: 'center' },
+  miniatura: { width: '100%', aspectRatio: 3 / 4, borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
   selecionada: { borderColor: color.accent.default },
   semMiniatura: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   rotulo: { flexDirection: 'row', alignItems: 'center', gap: space[4] },

@@ -124,7 +124,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 - **RF-17** A tela em voo deve mostrar a posição do avião, rota, altitude e tempo restante, num globo com dois modos de câmera (seguir o avião e visão de cima).
 - **RF-18** A janela deve desenhar céu, terra e nuvens ao vivo pela posição e hora do voo, com asa e moldura renderizadas (dia, entardecer, noite) trocadas pela altura real do sol.
-- **RF-19** O bottom sheet "Vista da janela" deve oferecer: Só a janela (grátis); Com asa, Asa e motor, Asa completa e Sem moldura (primeira classe).
+- **RF-19** O bottom sheet "Vista da janela" deve oferecer: Janela (grátis); Asa e Sem moldura (Plus). Decisão do Alberto em 24/11/2026: "Com asa" e "Asa e motor" ficam fora do lançamento.
 - **RF-20** O app deve tocar sons de cabine e avisos conforme a fase real do voo. Os avisos do comandante são grátis e têm interruptor próprio, separado do som de fundo.
 - **RF-21** O app deve executar o serviço de bordo (pausa) conforme a configuração do usuário e as regras RN-05 a RN-07, com aviso sonoro e notificação no início e no fim, mesmo com o app fechado, e o botão "Voltar ao foco".
 - **RF-22** Durante o voo deve existir uma notificação fixa com contagem regressiva até o pouso (Android) e, no iOS, uma Live Activity.
@@ -263,7 +263,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | Carimbos no passaporte | Sim | Sim |
 | Souvenirs | Até 3 de amostra | Todos |
 | Sons de fundo | Voo de cruzeiro (ruído marrom gerado) e ruído branco | Também motores (gravação real), cabine, chuva e lofi (playlist) |
-| Vista da janela | Só a janela | Todas as vistas |
+| Vista da janela | Janela | Todas as vistas (Asa e Sem moldura) |
 | Bloqueio de apps | — | Sim (condicionado, RN-23) |
 | Estatísticas | Semana | Também mês e ano |
 | Widgets | — | Sim ([Pendente], RF-41) |

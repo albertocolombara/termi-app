@@ -41,7 +41,7 @@ flowchart LR
 | Validação dos dados de voo | Doc "validacao-dados-voos.md" e coletor `voo-ao-vivo-teste` (24 h, 1.247 pousos) | Disponibilidade resolvida; previsão imprecisa acima de ~1h30, resolvida pela regra do tempo do usuário (RN-09) |
 | Infraestrutura e políticas | Doc "infra-e-politicas.md" | Plano de R2, coletor, custos e riscos da Play |
 | Animações do Termi | Arquivo Rive (nuvem), 5 animações e state machine testada | Falta exportar `.riv` e nomear o arquivo |
-| Janela no Blender | Renders atrás da asa (3 luzes) | Faltam "Com asa" e "Asa e motor" |
+| Janela no Blender | Renders v3 (janela e asa realistas, 3 luzes) e miniaturas | "Com asa" e "Asa e motor" fora do lançamento (24/11/2026); persiana renderizada, sem uso ainda |
 | Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
 **Lacunas que bloqueiam decisões estruturais:** aprovação da Play para alarmes exatos e bloqueio de apps. (A previsão de pouso dos voos longos deixou de bloquear em 19/11/2026: RN-09.)
@@ -190,7 +190,7 @@ flowchart LR
 - [ ] RevenueCat: produtos, direitos, compra, restauração
 - [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR #36 (planos, condições, carrossel com os benefícios que já existem; etiqueta "Economize" corrigida no PR #44), sem compra: em builds de teste o botão liga a primeira classe de teste; o Alberto vai ajustar o visual no Figma; faltam RevenueCat, Restaurar compras, Termos e Privacidade
 - [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR #36; faltam os recursos que ainda não existem
-- [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; faltam as vistas "Com asa" e "Asa e motor" (render do Blender)
+- [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; vistas do lançamento (Janela, Asa e Sem moldura) com as renders v3 na build-52, ainda não conferidas no aparelho; "Com asa" e "Asa e motor" saíram (24/11/2026)
 - [ ] Backup do progresso e conta opcional
 - [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste) e janela a 30 fps no PR #42, aberto por uma engrenagem no Início até o menu lateral existir; créditos do M6 atualizados no Figma com ESA WorldCover e OpenStreetMap (21/11/2026), tela ainda não feita no app; faltam os itens que dependem de recursos ainda não feitos
 - [ ] Exportar e apagar dados
@@ -206,7 +206,7 @@ flowchart LR
 - **Prioridade:** P1.
 - **Critérios de conclusão:** nenhuma vista ou medalha da v1 usa placeholder.
 
-- [ ] Renderizar "Com asa" e "Asa e motor" nos três horários, com moldura grafite
+- [ ] Renderizar "Com asa" e "Asa e motor" nos três horários (fora do lançamento desde 24/11/2026; volta se o Alberto decidir)
 - [ ] Medalhas dos 7 países restantes dos 13 (falta a referência do Uruguai) e o verso padrão
 - [ ] Definir e produzir os próximos países da coleção
 - [ ] Desenhar os 7 adesivos do Termi, os carimbos de nível e a medalha rara do Nômade

@@ -2,7 +2,6 @@ import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, PixelRatio, StyleSheet, Text, View } from 'react-native';
 import {
   Canvas,
-  ColorMatrix,
   FilterMode,
   Image as SkiaImage,
   LinearGradient,
@@ -36,13 +35,9 @@ export const QUALITY = [
   { label: 'Máxima', dpr: 2, hq: 1, near: true },
 ];
 
-// Mesmo filtro "warm" do protótipo web (sepia .5, saturação 1,25, brilho .97) na asa do entardecer.
-const WARM = [
-  0.7759, 0.2955, 0.0853, 0, 0,
-  0.143, 0.8514, 0.0725, 0, 0,
-  0.0963, 0.153, 0.6563, 0, 0,
-  0, 0, 0, 1, 0,
-];
+// Luz de posição na ponta da asa (render v3 do Blender, 1080 × 1440): brilha à noite e no entardecer.
+// A render do entardecer já vem quente; o filtro "warm" do protótipo não é mais aplicado.
+const LUZ_DA_ASA = { x: 415 / 1080, y: 813 / 1440 };
 
 const sm = (a: number, b: number, x: number) => {
   x = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -349,9 +344,7 @@ const Overlay = memo(function Overlay({
     <Canvas style={StyleSheet.absoluteFill}>
       {asa && img(asaDia)}
       {asa && asaTarde && wt > 0.001 && (
-        <SkiaImage image={asaTarde} x={0} y={0} width={width} height={height} fit="cover" opacity={wt}>
-          <ColorMatrix matrix={WARM} />
-        </SkiaImage>
+        <SkiaImage image={asaTarde} x={0} y={0} width={width} height={height} fit="cover" opacity={wt} />
       )}
       {asa && img(asaNoite, wn)}
       {asa && asaBeacon && piscando && (
@@ -368,15 +361,15 @@ const Overlay = memo(function Overlay({
       )}
       {asa && glow > 0.001 && (
         <Rect
-          x={width * 0.254 - width * 0.025}
-          y={height * 0.442 - width * 0.025}
+          x={width * LUZ_DA_ASA.x - width * 0.025}
+          y={height * LUZ_DA_ASA.y - width * 0.025}
           width={width * 0.05}
           height={width * 0.05}
           opacity={glow}
           blendMode="screen"
         >
           <RadialGradient
-            c={vec(width * 0.254, height * 0.442)}
+            c={vec(width * LUZ_DA_ASA.x, height * LUZ_DA_ASA.y)}
             r={width * 0.025}
             colors={['#FFFFFF', '#FFFFFF', '#FFFAF059', '#FFFAF000']}
             positions={[0, 0.07, 0.22, 0.65]}

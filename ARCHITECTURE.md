@@ -512,14 +512,14 @@ Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; b
 
 | Arquivos | Conteúdo |
 |---|---|
-| `tras_asa_*` | Asa, com fundo transparente, em três luzes (dia, entardecer, noite) |
-| `tras_moldura_escura_*` | Moldura grafite (teste B: parede da cabine grafite, janela grande, degradê da cor do app no topo e na base), nas mesmas três luzes |
-| `mini_2`, `mini_3` | Só miniaturas das vistas "Com asa" e "Asa e motor" |
-| `asa_*` (na pasta do Blender) | Outro enquadramento, com a moldura clara descartada; não usar |
+| `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-52** |
+| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes. **Em uso desde a build-52**. As versões `_fechada` e `tras_persiana_v3_*` (persiana e máscara) ainda não entram no app |
+| `Vistas · divulgação/Miniaturas` | Miniaturas da folha "Vista da janela" (`thumb_janela`, `thumb_janela_asa`, `thumb_sem_moldura`) |
+| `Asa antiga/`, `tras_moldura_*`, `mini_*` | Versões anteriores; não usar |
 
-As camadas separadas compõem três vistas sem render extra: **Asa completa** (asa + moldura), **Só a janela** (só a moldura) e **Sem moldura** (só a asa). Faltam renders de "Com asa" e "Asa e motor" nos três horários.
+As camadas separadas compõem as três vistas do lançamento sem render extra: **Janela** (só a moldura, grátis), **Asa** (asa + moldura, Plus) e **Sem moldura** (só a asa, Plus). "Com asa" e "Asa e motor" saíram do lançamento (decisão do Alberto em 24/11/2026).
 
-No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite`. A troca entre as três luzes é suave, pela altura real do sol. Ao entardecer, a asa recebe um filtro quente (sépia 0,5, saturação 1,25, brilho 0,97), igual ao do protótipo web.
+No app, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite` (em `assets/janela`). A troca entre as três luzes é suave, pela altura real do sol. A render v3 do entardecer já vem quente, então o filtro quente do protótipo web saiu. As miniaturas saem das do Alberto, reduzidas para 240 × 320.
 
 **Luzes da asa.** Só a luz branca de posição, fixa, na ponta (entardecer e noite) e o beacon vermelho da fuselagem em pulso lento e fraco (um a cada 3,6 s). Sem strobe e sem luz vermelha de navegação. Os pulsos param com "reduzir movimento".
 
@@ -568,7 +568,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 **Rota e sol.** Posição por arco de grande círculo, rumo e altura do sol calculados pela data, hora e posição (`geo.ts`). O protótipo voa Barcelona → Londres na velocidade real, porque os blocos empacotados cobrem esse trajeto.
 
-**Pendências da janela.** Renderizar "Com asa" e "Asa e motor"; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
+**Pendências da janela.** Persiana (renders v3 prontos, sem decisão de uso); o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
 
 ### 19.2 Souvenirs (medalhas)
 

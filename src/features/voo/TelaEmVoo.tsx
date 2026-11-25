@@ -41,7 +41,7 @@ import { useClasse } from '@/services/compras';
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { AvisoNoApp } from './AvisoNoApp';
-import { FolhaInfoDoVoo } from './FolhaInfoDoVoo';
+import { FolhaInfoDoVoo, type Radar } from './FolhaInfoDoVoo';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
@@ -110,7 +110,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const [radarAntes, setRadarAntes] = useState(radar);
   const [radarVoltou, setRadarVoltou] = useState<{ em: number; de: 'sem-sinal' | 'sem-internet' } | null>(null);
   if (radar !== radarAntes) {
-    if (radar === 'ok' && radarAntes !== 'ok') setRadarVoltou({ em: agora, de: radarAntes });
+    if (radar === 'ok' && (radarAntes === 'sem-sinal' || radarAntes === 'sem-internet')) setRadarVoltou({ em: agora, de: radarAntes });
     setRadarAntes(radar);
   }
   const radarFechado = avisosFechados.some((k) => k === 'sem-sinal' || k === 'sem-internet');
@@ -288,7 +288,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               rotuloFechar={t('servico.fecharDeVolta')}
               onFechar={() => fecharAviso(`fim-${pausaTerminada.indice}`)}
             />
-          ) : radar !== 'ok' && !avisosFechados.includes(radar) ? (
+          ) : (radar === 'sem-sinal' || radar === 'sem-internet') && !avisosFechados.includes(radar) ? (
             // E4 e X4 (Figma v3): o foco continua; a posição passa a ser estimada.
             <AvisoNoApp
               key={radar}
@@ -384,7 +384,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         footer={
           emPausa ? (
             <View style={{ gap: space[12] }}>
-              <Button size="medium" icon={null} label={t('servico.voltarAoFoco')} onPress={encerrarPausa} />
+              {/* Secundário (Alberto, build-51): como principal, parecia o botão de fechar a folha e
+                  dava para encerrar a pausa sem querer. */}
+              <Button variant="secondary" size="medium" icon={null} label={t('servico.finalizarPausa')} onPress={encerrarPausa} />
               <Text variant="Caption/Regular 12" tone="tertiary">
                 {t('servico.terminaSozinha')}
               </Text>
@@ -498,12 +500,14 @@ const DESCIDA_DA_JANELA = 56;
  * a leitura do embarque) e a próxima busca usa a região onde o avião foi visto por último.
  * Só aceita o mesmo voo: mesmo avião, mesmo destino e pouso previsto parecido.
  */
-function useVooAtualizado(gravado: Voo): { voo: Voo; radar: 'ok' | 'sem-sinal' | 'sem-internet' } {
+function useVooAtualizado(gravado: Voo): { voo: Voo; radar: Radar } {
   const [ultimo, setUltimo] = useState(gravado);
-  const q = useVooAoVivo(ultimo);
-  const vivo = q.data;
-  // X4: a leitura falhou (sem conexão). E4: a leitura chegou, mas o avião não está nela.
-  const radar = q.isError ? 'sem-internet' : q.isSuccess && vivo === null ? 'sem-sinal' : 'ok';
+  const q = useVooAoVivo(ultimo, () => projetar(ultimo, Date.now()));
+  const leitura = q.data;
+  // X4: a leitura falhou (sem conexão). E4: o avião devia estar numa área coletada e não está.
+  // Fora das áreas do coletor: posição estimada, sem aviso (`fora-da-area`).
+  const radar: Radar = q.isError ? 'sem-internet' : leitura ? (leitura.situacao === 'ok' ? 'ok' : leitura.situacao) : 'ok';
+  const vivo = leitura?.voo;
   if (
     vivo &&
     vivo.coletadoEm > ultimo.coletadoEm &&
