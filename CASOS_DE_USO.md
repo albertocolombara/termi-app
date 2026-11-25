@@ -246,7 +246,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 1. O Sistema mostra a confirmação (E3): o que entra (minutos de foco, milhas do trecho voado, $1 por minuto voado) e o que não entra (carimbo e loja do destino).
 2. O Viajante confirma.
 3. O Sistema encerra a sessão, cancela os avisos pendentes e remove a notificação fixa.
-4. O Sistema credita minutos, milhas e dinheiro e mostra o estado E7 ("Pousou antes, sobre [lugar sobrevoado]").
+4. O Sistema credita minutos, milhas e dinheiro e mostra o estado E7 ("Pousou antes").
 
 **Fluxos alternativos**
 
@@ -254,7 +254,6 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Exceções e erros**
 
-- **E1 — Lugar sobrevoado desconhecido:** o Sistema registra só as coordenadas e mostra "sobre o oceano" ou a região mais próxima.
 
 **Pós-condições:** voo registrado no diário como "Pousou antes"; saldo, milhas e estatísticas atualizados.
 

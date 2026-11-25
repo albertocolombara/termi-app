@@ -125,7 +125,7 @@ flowchart LR
 - [x] Agenda de pausas (RN-05 a RN-07, com os exemplos do PRD) — `src/domain/sessao/pausas.ts` com testes, PR #1
 - [x] Elegibilidade e ordenação dos voos (RN-02), com tempos próximos — `voos/elegibilidade.ts`, PR #17
 - [x] Projeção de posição e milhas voadas — `voos/projecao.ts`, PR #17
-- [ ] Lugar sobrevoado (GeoNames)
+- [x] ~~Lugar sobrevoado (GeoNames)~~ — retirado por decisão do Alberto (25/11/2026): pouco relevante para o usuário
 - [x] Rendimentos de pouso e de pouso antecipado (RN-08, RN-10), incluindo os minutos de "Continuar até o pouso" (RN-09a) — `sessao/rendimentos.ts`, PR #17
 - [x] Livro-caixa do saldo — `saldo/livroCaixa.ts`, PR #17
 
@@ -150,7 +150,7 @@ flowchart LR
 - [x] Notificação fixa com contagem — mostrada no embarque (PR #23); é a notificação do serviço do som desde o PR #39 (testado pelo Alberto na build 31)
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
 - [x] Estados E1–E7, sem sinal, sem internet, em espera — conferidos pelo Alberto (25/11/2026, build-61). Em espera só aparece quando o destino está numa das áreas lidas pelo coletor; manter, trocar por uma informação na tela de pouso ou tirar fica para decidir (análise de 25/11/2026). prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; avisos de sem sinal do radar, sem internet e "radar de volta", com o radar ciente da área do coletor, no PR #51 (builds 51 a 53); E5 Em espera e E5b Continuando até o pouso no PR #51 (build-55, falta testar no aparelho; a tela E5 é proposta no Figma v3). O E8 Em solo saiu da Fase 3 (decisão do Alberto em 25/11/2026) e está na Fase 5
-- [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
+- [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4)
 - [x] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS — PR #37 (build-28): `useFrameCallback` + `useDerivedValue`, sem o teto de ~21 fps do timer; 30 fps opcional nos Ajustes (PR #42)
 - [ ] Medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica
 - [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 mergeado; usado pelo Alberto nas builds 48 a 53 (consumo de dados medido); falta medir memória e quadros da janela e do globo no zoom máximo
@@ -159,11 +159,10 @@ flowchart LR
 
 Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge dos PRs #50 e #51, estados do voo com Em espera, ciclo do serviço de bordo e lofi com a tela bloqueada, e o aviso de pouso da comissária no lugar dos avisos por fase.
 
-1. Lugar sobrevoado (GeoNames) no painel e na tela de pouso (hoje só na tela de teste da janela).
-2. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
-3. Tirar os pacotes de paisagem do protótipo do APK.
-4. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
-5. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
+1. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
+2. Tirar os pacotes de paisagem do protótipo do APK.
+3. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
+4. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
 
 ---
 
