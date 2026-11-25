@@ -1,8 +1,8 @@
 const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
-// Pacotes de blocos Landsat (vários WebP concatenados) vão como arquivos brutos.
-config.resolver.assetExts.push('bin');
+// Medalhas 3D (vitrine da mala, react-native-filament).
+config.resolver.assetExts.push('glb');
 // Animações do Termi exportadas do Rive.
 config.resolver.assetExts.push('riv');
 

@@ -26,6 +26,7 @@ export default function FerramentasDev() {
         />
         <ActionRow icon="settings" title={t('dev.designSystem')} description={t('dev.designSystemDescricao')} onPress={() => router.push('/dev/design-system')} />
         <ActionRow icon="windowView" title={t('dev.janela')} description={t('dev.janelaDescricao')} onPress={() => router.push('/dev/janela')} />
+        <ActionRow icon="suitcaseLine" title={t('dev.vitrine')} description={t('dev.vitrineDescricao')} onPress={() => router.push('/dev/vitrine')} />
         <ActionRow icon="globe" title={t('dev.globo')} description={t('dev.globoDescricao')} onPress={() => router.push('/dev/globo')} />
         <ActionRow icon="crewServiceTile" title={t('dev.avisos')} description={t('dev.avisosDescricao')} onPress={() => router.push('/dev/avisos')} />
         <ActionRow icon="plane" title={t('dev.voos')} description={t('dev.voosDescricao')} onPress={() => router.push('/dev/voos')} />
