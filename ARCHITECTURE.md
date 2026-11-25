@@ -182,7 +182,7 @@ termi-app/
 | **MotivoDaViagem** | SQLite (1:1 com sessão) | `categoria`, `foco`, `tarefas[]` (`texto`, `feita`) |
 | **ServicoDeBordo** | SQLite (N:1 com sessão) | `inicioPrevisto`, `iniciouEm`, `terminouEm`, `voltouAntes` |
 | **Carimbo** | SQLite | `id`, `sessaoId` (ou `nivel` para carimbos de nível), `aeroporto`, `cidade`, `pais`, `data`, `estilo` |
-| **Souvenir** (catálogo) | Catálogo remoto versionado na CDN, com cópia embutida para o primeiro uso [Proposta] | `id`, `pais`, `tipo` (`pais`, `cidade`, `rara`), `metal` (níquel, cobre, latão), `preco`, `nomeNativo`, `modelo3d`, `imagem2d`, `disponivelDesde` |
+| **Souvenir** (catálogo) | Catálogo remoto versionado no R2, com cópia embutida para o primeiro uso [Decidido em 25/11/2026] | `id`, `pais`, `tipo` (`pais`, `cidade`, `rara`), `metal` (níquel, cobre, latão), `preco`, `nomeNativo`, `modelo3d`, `imagem2d`, `disponivelDesde` |
 | **SouvenirNaMala** | SQLite | `souvenirId`, `compradoEm`, `sessaoId`, `preco`, `amostra` (bool) |
 | **LancamentoDeSaldo** (livro-caixa) | SQLite | `id`, `tipo` (`credito_voo`, `compra_souvenir`), `valor`, `sessaoId`, `souvenirId`, `criadoEm` |
 | **Nivel** | Derivado das milhas | `nivel`, `alcancadoEm`, `recompensas` |
@@ -194,7 +194,7 @@ Decisões do modelo:
 - **O saldo é a soma do livro-caixa**, não um número solto. Isso facilita auditoria, sincronização sem conflito e evita perder dinheiro por bug.
 - **A sessão guarda uma cópia do voo no embarque.** O voo real pode sumir do cache; o histórico não pode.
 - **Milhas e minutos totais são derivados das sessões.** O nível também.
-- **A coleção não tem tamanho fixo.** Hoje são 13 países, e novos entram em pouco tempo. Total, progresso e espaços pontilhados vêm do catálogo vigente; um país novo nunca substitui outro nem afeta souvenirs comprados. Com o catálogo remoto, países novos entram sem nova versão do app (o modelo 3D é baixado sob demanda) [Proposta].
+- **A coleção não tem tamanho fixo.** Hoje são 13 países, e novos entram em pouco tempo. Total, progresso e espaços pontilhados vêm do catálogo vigente; um país novo nunca substitui outro nem afeta souvenirs comprados. Com o catálogo remoto, países novos entram sem nova versão do app (o modelo 3D é baixado sob demanda) [Decidido em 25/11/2026].
 - **Registros são só acrescentados** (voos, carimbos, souvenirs, lançamentos). Nada que foi conquistado é apagado por regra de negócio; só por pedido explícito do usuário (UC-16).
 
 ### 5.2 Relacionamentos
@@ -358,7 +358,7 @@ Funções puras em `src/domain`:
 
 **Voo de ontem (RN-12) [Proposta, em teste desde 20/11/2026]:** a cada coleta, o arquivo da região também vai para `/historico/{regiao}/{HHMM}.json`, onde HHMM é a faixa de 20 min do dia em UTC (`0000` a `2340`). Cada faixa é sobrescrita 24 h depois; se a coleta parar, o arquivo continua sendo o de ontem. Com os dados ao vivo fora do ar, o app lê a faixa do horário atual, confere que o `coletadoEm` tem entre ~23 h e ~25 h e oferece os voos como se fosse ontem: a posição é projetada a partir do `coletadoEm` + 24 h e o pouso previsto também ganha 24 h. Custo: 864 arquivos fixos e ~860 gravações a mais por dia, dentro do plano grátis do R2.
 
-**Catálogo da coleção [Proposta]** (`/colecao/catalogo.json`): `versao`, `atualizadoEm` e a lista de souvenirs (campos da seção 5.1), com URLs dos modelos 3D e imagens 2D. O app guarda a última versão e funciona offline com ela.
+**Catálogo da coleção [Decidido em 25/11/2026 pelo Alberto]** (`/colecao/catalogo.json`, gzip, 1 h de cache): `versao` (1), `atualizadoEm` e `souvenirs` (`id`, `pais`, `tipo`, `metal`, `preco`, `nome`, `nomeNativo`, `imagem2d`, `modelo3d`, `disponivelDesde`; caminhos relativos à base do R2). Fonte: `colecao/catalogo.json` no repositório do coletor, publicado pelo workflow "Catálogo da coleção", que recusa o arquivo se um souvenir que já existia sumir. O app junta a cópia embutida (`src/data/colecao/catalogo-embutido.json`), a última guardada no aparelho e a remota (`domain/colecao/catalogo.ts`): cada souvenir fica com os dados da fonte mais nova e nenhum some; entrada inválida é ignorada; `disponivelDesde` no futuro esconde o souvenir até a data.
 
 ## 10. Segurança e proteção de dados
 
@@ -457,7 +457,7 @@ Observabilidade:
 | ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada. **v3 (21/11/2026, decidido pelo Alberto):** do nível 8 ao 10 o globo usa os blocos da paisagem da janela (Sentinel-2, `w8` e `w10`, até 61 m por pixel), com a cor levada ao tom do Blue Marble no shader; o mosaico de longe continua no Blue Marble (cobre o mar); de perto as luzes vêm da camada `l9`. Mesma pasta do aparelho da janela (`cache/paisagem`). Sem arquivos novos no R2. Descartados: Google Maps SDK (plano, sem globo), Maps 3D SDK (experimental, sem pacote para React Native, sem visual próprio), Mapbox (custo por usuário acima de 25 mil por mês) e MapLibre Native (sem globo). No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |
-| ADR-14 | Catálogo da coleção remoto e versionado | Proposta | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
+| ADR-14 | Catálogo da coleção remoto e versionado | Decidido (Alberto, 25/11/2026) | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
 
 ## 17. Riscos técnicos e pontos em aberto
 

@@ -187,7 +187,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | RNF-14 | **Idiomas** | Português (Brasil) no lançamento; inglês logo depois da validação. Textos externalizados desde o início. |
 | RNF-15 | **Desempenho em aparelhos fracos** | Níveis de qualidade automáticos (resolução, blocos de terra, sombra de nuvem). **[Pendente]** medir num Android mais fraco que o M35. |
 | RNF-16 | **Abertura rápida** | **[Pendente]** meta numérica de tempo de abertura. |
-| RNF-17 | **Coleção expansível** | Novos países entram no catálogo sem quebrar a mala, o progresso ou os souvenirs já comprados. **[Proposta]** sem exigir nova versão do app (catálogo remoto). |
+| RNF-17 | **Coleção expansível** | Novos países entram no catálogo sem quebrar a mala, o progresso ou os souvenirs já comprados. Sem exigir nova versão do app (catálogo remoto, decidido em 25/11/2026). |
 
 ---
 
