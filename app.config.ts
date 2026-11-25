@@ -62,7 +62,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     ['expo-splash-screen', { backgroundColor: BG_APP, image: './assets/splash-icon.png', imageWidth: 96 }],
     'expo-status-bar',
-    ['expo-notifications', { color: TERMI_LARANJA }],
+    // Sinal de apertar cintos do serviço de bordo (freesound 670297, kinoton, CC0), como som do canal de aviso.
+    ['expo-notifications', { color: TERMI_LARANJA, sounds: ['./assets/sons/aviso_cinto.ogg'] }],
     'expo-asset',
     'expo-sqlite',
     // Sons de fundo, também com a tela bloqueada: o plugin declara o serviço de mídia (FOREGROUND_SERVICE e

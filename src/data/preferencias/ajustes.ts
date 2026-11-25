@@ -12,13 +12,15 @@ export type QualidadeDaJanela = 'automatica' | 'alta' | 'economica';
 type Ajustes = {
   servicoDeBordo: IntervaloServicoDeBordo;
   avisoDePouso: boolean;
+  /** Sinal de apertar cintos no começo e no fim do serviço de bordo. */
+  somDoServico: boolean;
   economiaDeBateria: boolean;
   qualidadeDaJanela: QualidadeDaJanela;
   /** Janela a 30 quadros por segundo (padrão: 10). Economia de bateria vence e deixa em 2. */
   janelaFluida: boolean;
 };
 
-const PADRAO: Ajustes = { servicoDeBordo: INTERVALO_PADRAO, avisoDePouso: true, economiaDeBateria: false, qualidadeDaJanela: 'automatica', janelaFluida: false };
+const PADRAO: Ajustes = { servicoDeBordo: INTERVALO_PADRAO, avisoDePouso: true, somDoServico: true, economiaDeBateria: false, qualidadeDaJanela: 'automatica', janelaFluida: false };
 const CHAVE = 'ajustes';
 
 function lidos(): Ajustes {
@@ -34,9 +36,9 @@ export const useAjustes = create<Ajustes & { mudar: (parcial: Partial<Ajustes>) 
   ...lidos(),
   mudar: (parcial) => {
     set(parcial);
-    const { servicoDeBordo, avisoDePouso, economiaDeBateria, qualidadeDaJanela, janelaFluida } = get();
+    const { servicoDeBordo, avisoDePouso, somDoServico, economiaDeBateria, qualidadeDaJanela, janelaFluida } = get();
     try {
-      Storage.setItemSync(CHAVE, JSON.stringify({ servicoDeBordo, avisoDePouso, economiaDeBateria, qualidadeDaJanela, janelaFluida }));
+      Storage.setItemSync(CHAVE, JSON.stringify({ servicoDeBordo, avisoDePouso, somDoServico, economiaDeBateria, qualidadeDaJanela, janelaFluida }));
     } catch {
       // sem persistência: vale só enquanto o app está aberto
     }

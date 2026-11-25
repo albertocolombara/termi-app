@@ -183,9 +183,15 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   }));
 
   // ── Blocos da NASA: mosaicos perto, longe e noite, no nível do zoom ──
-  const [perto, setPerto] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
-  const [longe, setLonge] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
-  const [noiteM, setNoiteM] = useState<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  // Imagem e posição de cada mosaico num só valor compartilhado: o shader lê as duas no mesmo quadro.
+  // Antes a imagem vinha do estado do React e a posição dos uniforms; por um quadro a imagem nova
+  // era desenhada na posição velha (build-55: a Antártida "pulava" grande ao girar o globo).
+  const perto = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const longe = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const noiteM = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const setPerto = useCallback((m: Mosaico) => perto.set(m), [perto]);
+  const setLonge = useCallback((m: Mosaico) => longe.set(m), [longe]);
+  const setNoiteM = useCallback((m: Mosaico) => noiteM.set(m), [noiteM]);
   const mosaicos = useRef<ReturnType<typeof criarMosaico>[] | null>(null);
   if (mosaicos.current == null) {
     mosaicos.current = [
@@ -223,13 +229,16 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
     },
   );
 
-  const bPerto = perto.imagem ? perto.b : FORA;
-  const bLonge = longe.imagem ? longe.b : FORA;
-  const bNoite = noiteM.imagem ? noiteM.b : FORA;
-  const s2Perto = perto.sentinel ? 1 : 0;
-  const s2Noite = noiteM.sentinel ? 1 : 0;
   const uniforms = useDerivedValue(() => {
     const b = cameraBasis(camera.value);
+    const p = perto.value;
+    const l = longe.value;
+    const n = noiteM.value;
+    const bPerto = p.imagem ? p.b : FORA;
+    const bLonge = l.imagem ? l.b : FORA;
+    const bNoite = n.imagem ? n.b : FORA;
+    const s2Perto = p.sentinel ? 1 : 0;
+    const s2Noite = n.sentinel ? 1 : 0;
     return { res: [width, height], cp: b.pos, cf: b.f, cr: b.right, cu: b.up, k: K, sunD: sol.value, bPerto, bLonge, bNoite, s2Perto, s2Noite };
   });
 
@@ -320,6 +329,9 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
     return s ? s.makeImageSnapshot() : null;
   }, []);
   const pronto = !!dia && !!noite && !!vazio;
+  const imgPerto = useDerivedValue(() => perto.value.imagem ?? vazio);
+  const imgLonge = useDerivedValue(() => longe.value.imagem ?? vazio);
+  const imgNoite = useDerivedValue(() => noiteM.value.imagem ?? vazio);
   const ret = (w: number, h: number) => ({ x: 0, y: 0, width: w, height: h });
 
   return (
@@ -331,10 +343,10 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
               <Shader source={effect} uniforms={uniforms}>
                 <ImageShader image={dia} tx="repeat" ty="clamp" fit="fill" rect={ret(TEX.dia.w, TEX.dia.h)} />
                 <ImageShader image={noite} tx="repeat" ty="clamp" fit="fill" rect={ret(TEX.noite.w, TEX.noite.h)} />
-                <ImageShader image={perto.imagem ?? vazio} tx="decal" ty="decal" fit="fill" rect={ret(TEX.perto, TEX.perto)} />
-                <ImageShader image={longe.imagem ?? vazio} tx="decal" ty="decal" fit="fill" rect={ret(TEX.longe, TEX.longe)} />
+                <ImageShader image={imgPerto} tx="decal" ty="decal" fit="fill" rect={ret(TEX.perto, TEX.perto)} />
+                <ImageShader image={imgLonge} tx="decal" ty="decal" fit="fill" rect={ret(TEX.longe, TEX.longe)} />
                 <ImageShader
-                  image={noiteM.imagem ?? vazio}
+                  image={imgNoite}
                   tx="decal"
                   ty="decal"
                   fit="fill"

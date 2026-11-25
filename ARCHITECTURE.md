@@ -72,7 +72,7 @@ flowchart LR
 | Animação de UI | **react-native-reanimated** 4 + worklets | [Decidido] | Animações e, a seguir, o ritmo da janela na thread de interface |
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
 | Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
-| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo |
+| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo. O serviço de bordo toca o sinal de apertar cintos (`assets/sons/aviso_cinto.ogg`, canal `servico-cinto`; com o sinal desligado nos Ajustes, canal `servico-sem-som`). O volume é o das notificações do aparelho, e o Android abaixa o som de fundo enquanto o sinal toca |
 | Sons de fundo | Serviço nativo próprio (`FlightSoundService`, ExoPlayer) no Android; **expo-audio** no iOS. Loops AAC em `assets/sons`; lofi em streaming do R2 | [Decidido] (20/11/2026) | Voo de cruzeiro e ruído branco (grátis); motores, cabine, chuva e lofi (primeira classe). Seção 10 |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
 | Live Activity (iOS) | expo-widgets ou módulo Swift | [Proposta] | Fase iOS |

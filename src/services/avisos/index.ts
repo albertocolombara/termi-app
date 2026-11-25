@@ -14,7 +14,14 @@ import { t } from '@/i18n';
 import { ScreenState } from '../../../modules/screen-state/src';
 
 const CANAL_POUSO = 'pouso';
-const CANAL_SERVICO = 'servico';
+/**
+ * Serviço de bordo: o sinal de apertar cintos no começo e no fim da pausa (pedido do Alberto em 25/11/2026).
+ * Canais do Android não mudam de som depois de criados, por isso o id novo; o canal antigo ('servico',
+ * com o som padrão) é apagado. O Android abaixa o som de fundo do voo enquanto o sinal toca.
+ */
+const CANAL_SERVICO = 'servico-cinto';
+const CANAL_SERVICO_SEM_SOM = 'servico-sem-som';
+const SOM_DO_SERVICO = 'aviso_cinto.ogg';
 
 let configurado = false;
 
@@ -37,10 +44,16 @@ export async function configurarAvisos() {
     sound: 'default',
     vibrationPattern: [0, 250, 150, 250],
   });
+  await Notifications.deleteNotificationChannelAsync('servico').catch(() => {});
   await Notifications.setNotificationChannelAsync(CANAL_SERVICO, {
     name: t('avisos.canalServico'),
     importance: AndroidImportance.HIGH,
-    sound: 'default',
+    sound: SOM_DO_SERVICO,
+  });
+  await Notifications.setNotificationChannelAsync(CANAL_SERVICO_SEM_SOM, {
+    name: t('avisos.canalServicoSemSom'),
+    importance: AndroidImportance.HIGH,
+    sound: null,
   });
 }
 
@@ -77,21 +90,25 @@ export type AvisosDoVoo = {
   pausaMin: number;
   /** Ajustes > Aviso de pouso. Desligado, o pouso não toca (os avisos do serviço de bordo seguem). */
   avisoDePouso?: boolean;
+  /** Ajustes > Sinal de apertar cintos. Desligado, o serviço de bordo avisa sem som. */
+  somDoServico?: boolean;
 };
 
 /** Agenda o pouso e as pausas. Cancela avisos anteriores. Retorna quantos avisos foram agendados. */
 export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
   await cancelarAvisos();
   let n = 0;
+  const canal = v.somDoServico === false ? CANAL_SERVICO_SEM_SOM : CANAL_SERVICO;
+  const som = v.somDoServico === false ? undefined : SOM_DO_SERVICO;
   for (const [i, p] of v.pausas.entries()) {
     await Notifications.scheduleNotificationAsync({
-      content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }) },
-      trigger: emHorario(p.inicio, CANAL_SERVICO),
+      content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }), sound: som },
+      trigger: emHorario(p.inicio, canal),
     });
     await Notifications.scheduleNotificationAsync({
       identifier: idDoFimDaPausa(i),
-      content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo') },
-      trigger: emHorario(p.fim, CANAL_SERVICO),
+      content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo'), sound: som },
+      trigger: emHorario(p.fim, canal),
     });
     n += 2;
   }

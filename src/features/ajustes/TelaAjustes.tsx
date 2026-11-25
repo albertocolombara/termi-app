@@ -74,6 +74,12 @@ export function TelaAjustes() {
             valor={a.avisoDePouso}
             onMudar={(v) => a.mudar({ avisoDePouso: v })}
           />
+          <LinhaComInterruptor
+            titulo={t('ajustes.somDoServico')}
+            descricao={t('ajustes.somDoServicoDescricao')}
+            valor={a.somDoServico}
+            onMudar={(v) => a.mudar({ somDoServico: v })}
+          />
         </Secao>
 
         <Secao titulo={t('ajustes.telaEBateria')}>
