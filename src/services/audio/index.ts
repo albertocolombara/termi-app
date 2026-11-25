@@ -41,7 +41,18 @@ export const FADE_IN_MS = 1800;
 
 const NATIVO = Platform.OS === 'android' && ScreenState.available;
 
-export type InfoDoSom = { rota: string; pousoEm: number; titulo: string; subtitulo: string };
+export type InfoDoSom = {
+  rota: string;
+  pousoEm: number;
+  titulo: string;
+  subtitulo: string;
+  /** Sinais de cintos (ms): começo e fim de cada serviço de bordo ainda por vir. Tocados pelo serviço nativo. */
+  sinais?: number[];
+  /** Volume do sinal e do aviso de pouso (0 a 1). */
+  volumeDoSinal?: number;
+  /** Aviso da comissária no horário do pouso. */
+  anunciarPouso?: boolean;
+};
 
 /** Fonte do som: um arquivo do APK em loop, ou a playlist do servidor. */
 type Fonte = number | 'playlist-lofi';
@@ -78,11 +89,20 @@ function useSomNativo(fonte: Fonte | null, volume: number, tocando: boolean, inf
   const volumeAtual = useRef(volume);
   const [reinicio, setReinicio] = useState(0);
   const { rota, pousoEm } = info;
+  // Sinais numa chave de texto: o efeito só roda quando a lista muda de verdade.
+  const chaveDosSinais = JSON.stringify([info.sinais ?? [], info.volumeDoSinal ?? 1, !!info.anunciarPouso]);
+  const sinaisAtuais = useRef(chaveDosSinais);
 
   useEffect(() => {
     volumeAtual.current = volume;
     ScreenState.setFlightSoundVolume(volume);
   }, [volume]);
+
+  useEffect(() => {
+    sinaisAtuais.current = chaveDosSinais;
+    const [sinais, vol, pouso] = JSON.parse(chaveDosSinais) as [number[], number, boolean];
+    ScreenState.setFlightSoundCues(sinais, vol, pouso);
+  }, [chaveDosSinais]);
 
   useEffect(() => {
     if (!fonte || !tocando) return;
@@ -91,6 +111,8 @@ function useSomNativo(fonte: Fonte | null, volume: number, tocando: boolean, inf
       const uris = await urisDaFonte(fonte);
       if (cancelado || uris.length === 0) return;
       const { titulo, texto } = textosDaNotificacaoFixa(rota, pousoEm);
+      const [sinais, vol, pouso] = JSON.parse(sinaisAtuais.current) as [number[], number, boolean];
+      ScreenState.setFlightSoundCues(sinais, vol, pouso);
       ScreenState.startFlightSound(uris, fonte === 'playlist-lofi', volumeAtual.current, pousoEm, titulo, texto, FADE_IN_MS);
     })().catch(() => {
       // sem o arquivo (ou sem rede para a playlist) o voo segue sem som

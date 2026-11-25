@@ -1,7 +1,7 @@
 /**
  * 04E · Vista da janela (bottom sheet). PRD: RF-19, RN-18, RN-20.
  * Só a janela é grátis. Na econômica, tocar numa vista da primeira classe abre o paywall (RN-20, RF-25).
- * Com asa e Asa e motor ainda não têm render: aparecem como "Em breve".
+ * Vistas do lançamento: Janela (grátis), Asa e Sem moldura (Plus). Miniaturas: renders v3 do Alberto.
  */
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
@@ -19,8 +19,6 @@ const MINIATURA: Partial<Record<Vista, number>> = {
 
 const NOME: Record<Vista, ChaveDeTexto> = {
   'so-janela': 'vista.soJanela',
-  'com-asa': 'vista.comAsa',
-  'asa-e-motor': 'vista.asaEMotor',
   'asa-completa': 'vista.asaCompleta',
   'sem-moldura': 'vista.semModura',
 };
@@ -42,6 +40,7 @@ export function FolhaVistaDaJanela({
   onFechar: () => void;
 }) {
   const [aviso, setAviso] = useState<ChaveDeTexto | null>(null);
+  const [largura, setLargura] = useState(0);
   const tocar = (v: Vista) => {
     if (!CAMADAS_DA_VISTA[v].pronta) return setAviso('vista.emBreveAviso');
     if (!vistaLiberada(v, classe)) {
@@ -60,7 +59,11 @@ export function FolhaVistaDaJanela({
       }}
       title={t('vista.titulo')}
     >
-      <View style={styles.grade} accessibilityRole="radiogroup">
+      <View
+        style={styles.grade}
+        accessibilityRole="radiogroup"
+        onLayout={(e) => setLargura((e.nativeEvent.layout.width - space[12] * (VISTAS.length - 1)) / VISTAS.length)}
+      >
         {VISTAS.map((v) => {
           const selecionada = v === emUso;
           const pronta = CAMADAS_DA_VISTA[v].pronta;
@@ -75,9 +78,11 @@ export function FolhaVistaDaJanela({
               onPress={() => tocar(v)}
               style={({ pressed }) => [styles.opcao, pressed && { opacity: 0.8 }]}
             >
-              <View style={[styles.miniatura, selecionada && styles.selecionada]}>
-                {mini ? (
-                  <Image source={mini} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              <View style={[styles.miniatura, { width: largura, height: (largura * 4) / 3 }, selecionada && styles.selecionada]}>
+                {mini && largura > 0 ? (
+                  // Tamanho em números: com largura em % o Android desenhava a imagem no tamanho
+                  // original, cortada no canto (build-53).
+                  <Image source={mini} style={{ width: largura - 4, height: ((largura - 4) * 4) / 3 }} resizeMode="cover" />
                 ) : (
                   <View style={styles.semMiniatura}>
                     <Text variant="Caption/Medium 12" tone="tertiary">
@@ -107,9 +112,11 @@ export function FolhaVistaDaJanela({
 }
 
 const styles = StyleSheet.create({
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[16], paddingTop: space[4] },
-  opcao: { width: 96, gap: space[8], alignItems: 'center' },
-  miniatura: { width: 96, height: 128, borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
+  // Três vistas ocupando a largura toda, em partes iguais (pedido do Alberto, build-51: estavam
+  // pequenas e encostadas à esquerda).
+  grade: { flexDirection: 'row', gap: space[12], paddingTop: space[4] },
+  opcao: { flex: 1, gap: space[8], alignItems: 'center' },
+  miniatura: { borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
   selecionada: { borderColor: color.accent.default },
   semMiniatura: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   rotulo: { flexDirection: 'row', alignItems: 'center', gap: space[4] },

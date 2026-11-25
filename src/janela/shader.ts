@@ -91,15 +91,23 @@ float3 ground(float2 g, out float3 night) {
   }
   half4 m = atlMid(g); c = mix(c, grade(float3(m.rgb)), float(m.a));
   half4 n = atlNear(g); c = mix(c, grade(float3(n.rgb)), float(n.a));
-  half4 im = atlImp(g); float bm = max(max(night.r, night.g), night.b);
-  // Fora da Europa (as imagens-base noturnas do protótipo só cobrem a Europa), o brilho vem
-  // das próprias áreas construídas: assim as cidades acendem no mundo inteiro (build-31).
-  float eb = inside(tb) ? smoothstep(0.0, 0.03, min(min(tb.x, 1.0 - tb.x), min(tb.y, 1.0 - tb.y))) : 0.0;
-  // Calibrado para ficar no mesmo nível da Europa (onde o brilho vem do Black Marble).
-  bm = mix(float(im.r), bm, eb);
-  float sp = vn(g * float2(900.0 * cos(radians(g.y)), 900.0)) * vn(g * float2(2300.0 * cos(radians(g.y)), 2300.0) + 7.0);
-  float3 city = float3(1.0, 0.72, 0.42) * pow(float(im.r), 1.3) * (0.12 + 2.0 * bm) * (0.3 + 2.2 * sp);
-  night = mix(night, city, float(im.a));
+  // Luzes das cidades (21/11/2026, Sentinel-2): a camada l9 traz em R a fração de área construída
+  // (ESA WorldCover, 10 m) e em G a luz real medida à noite (Black Marble). A forma vem da área
+  // construída; o brilho, da luz real (centros mais claros e brancos, periferia fraca e laranja);
+  // por cima, pontos de luz na escala de quadras. Antes a luz virava um liga/desliga de cor fixa
+  // e as metrópoles saturavam em manchas lisas.
+  // Imagens-base da Europa (protótipo): a luz delas vira cor, como antes.
+  night = float3(1.0, 0.72, 0.35) * smoothstep(0.25, 0.85, max(max(night.r, night.g), night.b));
+  half4 im = atlImp(g);
+  float built = float(im.r);
+  float rad = float(im.g);
+  // Ruído em km dentro do grau (fract): com graus × milhares o float perde precisão no aparelho.
+  float2 q = fract(g) * float2(111.2 * cos(radians(g.y)), 111.2);
+  float pts = smoothstep(0.58, 0.92, vn(q * 24.0) * 0.55 + vn(q * 65.0 + 3.1) * 0.6);
+  float intens = 0.06 + 0.94 * pow(rad, 1.7);
+  float lz = built * intens * (0.12 + 0.7 * pts * sqrt(built));
+  float3 tint = mix(float3(1.0, 0.5, 0.16), float3(1.0, 0.82, 0.58), smoothstep(0.3, 1.2, lz));
+  night = mix(night, max(night * 0.4, tint * lz), float(im.a) * clamp(built * 6.0, 0.0, 1.0));
   return c;
 }
 
@@ -132,10 +140,12 @@ half4 main(float2 fc) {
   float2 q = float2(fc.x / res.x * 2.0 - 1.0, 1.0 - fc.y / res.y * 2.0);
   q.x *= res.x / res.y;
   float3 F = float3(sin(hd), cos(hd), 0.0); float3 L = float3(-cos(hd), sin(hd), 0.0); float3 Z = float3(0, 0, 1);
-  float3 f = normalize(0.3265 * F + 0.922 * L - 0.2079 * Z);
-  float3 r = normalize(0.9425 * F - 0.3338 * L);
-  float3 u = normalize(0.0694 * F + 0.196 * L + 0.9781 * Z);
-  float3 d = normalize(f + q.x * 0.9 * r + q.y * 0.9 * u);
+  // Câmera da janela v3 do Blender ("Câmera · janela v3"): olha reto para a esquerda, nivelada, sem
+  // rolagem, lente de 25 mm com sensor de 36 mm na altura (tg do meio ângulo vertical = 0,72).
+  // Antes era a câmera da 23A (12° para baixo e virada para trás), e a asa v3 parecia apontar
+  // para baixo em relação ao horizonte (build-53). k leva em conta o "cover" da imagem 1080 × 1440.
+  float k = 0.72 * res.y / (1440.0 * max(res.x / 1080.0, res.y / 1440.0));
+  float3 d = normalize(L + q.x * k * F + q.y * k * Z);
   float day = smoothstep(-0.12, 0.12, sunD.z);
   float warm = exp(-abs(sunD.z - 0.03) * 14.0) * smoothstep(-0.14, -0.02, sunD.z);
   float3 col = skyCol(d, day, warm);
@@ -152,7 +162,7 @@ half4 main(float2 fc) {
     float2 sh = p.xy + sunD.xy / max(sunD.z, 0.15) * (-3.0);
     float cs = hq > 0.5 ? cloudAt(ll(sh), sh + F.xy * drift) : 0.0;
     gc = gc * (0.16 + 1.15 * lit * (1.0 - 0.55 * cs)) * day + gc * 0.03;
-    float lg = smoothstep(0.25, 0.85, max(max(nl.r, nl.g), nl.b)); gc += float3(1.0, 0.72, 0.35) * lg * (1.0 - day) * 1.5;
+    gc += nl * (1.0 - day) * 1.5;
     gc = mix(gc, float3(0.42, 0.52, 0.68) * (lit * day + 0.02), 0.14 * day);
     col = mix(gc, hor * 0.92, 1.0 - exp(-t / 75.0));
   }

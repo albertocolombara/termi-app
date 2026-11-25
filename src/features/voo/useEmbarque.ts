@@ -95,7 +95,7 @@ export function useEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       const pausas = horariosDasPausas(embarcouEm, agendaDePausas(duracaoMin, ajustes.servicoDeBordo));
       try {
         if (sinal.aborted) throw new Error('cancelado');
-        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN, avisoDePouso: ajustes.avisoDePouso });
+        await agendarAvisosDoVoo({ pousoEm: pousoPrevistoEm, minutosDeVoo: duracaoMin, cidadeDestino: nomeDoLugar(voo.destino), pausas, pausaMin: PAUSA_MAXIMA_MIN, avisoDePouso: ajustes.avisoDePouso, somDoServico: ajustes.somDoServico });
         mostrarNotificacaoFixa(`${codigoDoLugar(voo.origem)} → ${codigoDoLugar(voo.destino)}`, pousoPrevistoEm);
       } catch {
         // Sem permissão de avisos o voo segue; os Ajustes avisam que os avisos podem não tocar (UC-05 E1).

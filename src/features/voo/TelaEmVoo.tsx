@@ -5,7 +5,8 @@
  *
  * Pousar antes (E3) abre a confirmação; quando o tempo do usuário acaba, a sessão vira pouso (UC-08).
  * Serviço de bordo: E2 (pausa em andamento, com "Voltar ao foco") e E1 (aviso "De volta ao foco").
- * Ainda não estão aqui: Em espera (E5) e Em solo (E8).
+ * Em espera (E5) e Continuando até o pouso (E5b) entram no horário se o avião real ainda voa (RN-09a).
+ * Ainda não está aqui: Em solo (E8), adiado para a Fase 5 (decisão do Alberto em 25/11/2026).
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -14,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useMotivoDaSessao, useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useContinuandoDesde, useContinuarAtePouso } from '@/data/sessoes/continuarAtePouso';
 import { useIndicesQueVoltaram, useVoltouAoFoco } from '@/data/sessoes/voltouAoFoco';
 import { useBlocosDoVoo } from '@/data/blocos/useBlocosDoVoo';
 import { indiceDaQualidade, quadrosDaJanela, useAjustes } from '@/data/preferencias/ajustes';
@@ -26,6 +28,8 @@ import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { MOTIVO_VAZIO } from '@/domain/sessao/motivo';
 import { somEmUso } from '@/domain/sons/catalogo';
 import { tempoCumprido } from '@/domain/sessao/encerramento';
+import { estadoDaSessao } from '@/domain/sessao/estado';
+import { aviaoReal } from '@/domain/voos/aviaoReal';
 import { minutosAte, pausaEmAndamento, pausaRecemTerminada, proximaPausa, relogioRegressivo } from '@/domain/sessao/progresso';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
@@ -41,6 +45,8 @@ import { useClasse } from '@/services/compras';
 import { codigoDoLugar, duracao, duracaoPorExtenso, horaLocal, kmh, metros, nomeDoLugar } from './formato';
 import { AvisoDeBoasVindas } from './AvisoDeBoasVindas';
 import { AvisoNoApp } from './AvisoNoApp';
+import { FolhaEmEspera } from './FolhaEmEspera';
+import { FolhaInfoDoVoo, type Radar } from './FolhaInfoDoVoo';
 import { FolhaMotivoDaViagem } from './FolhaMotivoDaViagem';
 import { FolhaVistaDaJanela } from './FolhaVistaDaJanela';
 import { FolhaPousarAntes } from './FolhaPousarAntes';
@@ -90,6 +96,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const vistaDaJanela = vistaEmUso(escolhida, classe);
   const [escolhendoSom, setEscolhendoSom] = useState(false);
   const [vendoMotivo, setVendoMotivo] = useState(false);
+  const [vendoInfo, setVendoInfo] = useState(false);
   const motivoDaSessao = useMotivoDaSessao(sessao.id);
   const som = useSomDeFundo();
   // O som em si toca no layout raiz (SomDoVoo), também com a tela bloqueada.
@@ -103,11 +110,21 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
   const { embarcouEm, pousoPrevistoEm } = sessao;
   const { voo, radar } = useVooAtualizado(sessao.voo);
-  // O radar voltou: um sinal perdido de novo volta a avisar.
+  // O radar voltou: aviso curto "Sinal do radar de volta" (pedido do Alberto, 24/11/2026), e um
+  // sinal perdido de novo volta a avisar.
+  const [radarAntes, setRadarAntes] = useState(radar);
+  const [radarVoltou, setRadarVoltou] = useState<{ em: number; de: 'sem-sinal' | 'sem-internet' } | null>(null);
+  if (radar !== radarAntes) {
+    if (radar === 'ok' && (radarAntes === 'sem-sinal' || radarAntes === 'sem-internet')) setRadarVoltou({ em: agora, de: radarAntes });
+    setRadarAntes(radar);
+  }
   const radarFechado = avisosFechados.some((k) => k === 'sem-sinal' || k === 'sem-internet');
   if (radar === 'ok' && radarFechado) setAvisosFechados((f) => f.filter((k) => k !== 'sem-sinal' && k !== 'sem-internet'));
   const trilha = useTrilha(voo).data ?? SEM_TRILHA;
-  useBlocosDoVoo(voo, ativo);
+  // Só com a janela à vista: no globo ou com a tela desligada a paisagem não é baixada
+  // (voo de 5h45 no globo: 36,7 MB de paisagem que ninguém viu). Ao voltar para a janela,
+  // baixa da posição atual em diante e a janela refaz o mosaico quando os blocos chegam.
+  useBlocosDoVoo(voo, ativo && vista === 'janela');
   const pos = projetar(voo, agora);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
   // Onde o avião estará daqui a 1 s: a janela interpola o caminho entre as leituras do relógio.
@@ -136,6 +153,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const larguraDaJanela = Math.max(width, Math.round((alturaDaPaisagem * 3) / 4));
   const mostrarBoasVindas = !boasVindasFechada && agora - embarcouEm < BOAS_VINDAS_MS;
   const avisoDaPausa = emPausa && !avisosFechados.includes(`pausa-${emPausa.indice}`);
+  const avisoRadarVoltou = radar === 'ok' && !!radarVoltou && agora - radarVoltou.em < RADAR_VOLTOU_MS && !avisosFechados.includes(`radar-voltou-${radarVoltou.em}`);
   const avisoDeVolta = !!pausaTerminada && !voltaram.includes(pausaTerminada.indice) && !avisosFechados.includes(`fim-${pausaTerminada.indice}`);
 
   const encerrarPausa = () => {
@@ -147,9 +165,27 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 
   // O horário escolhido chegou: pouso completo garantido (RN-09). Também vale ao reabrir o app depois do pouso.
   // Em espera e "Continuar até o pouso" (RN-09a) entram quando o app souber se o avião real ainda está no ar.
+  // E5 Em espera (RN-09a): no horário, se o avião real ainda está no ar (leitura recente do radar),
+  // pergunta se o usuário quer continuar até o pouso. Na dúvida, pousa no horário (RN-09).
+  const continuandoDesde = useContinuandoDesde(sessao.id);
+  const continuarAtePouso = useContinuarAtePouso((s) => s.continuar);
+  const fimDoTempo = tempoAcabou
+    ? estadoDaSessao({ embarcouEm, pousoPrevistoEm, pausas: [], continuarAtePousoDesde: continuandoDesde }, agora, aviaoReal(voo, radar, agora)).tipo
+    : null;
+  const emEspera = fimDoTempo === 'em-espera';
+  const continuando = fimDoTempo === 'continuando-ate-o-pouso';
   useEffect(() => {
-    if (tempoAcabou) encerrar('pouso');
-  }, [tempoAcabou, encerrar]);
+    if (fimDoTempo !== 'pousou') return;
+    if (continuandoDesde !== undefined) encerrar('pouso', Date.now(), { desde: continuandoDesde });
+    else encerrar('pouso');
+  }, [fimDoTempo, continuandoDesde, encerrar]);
+  const pousarAgora = () => {
+    if (continuandoDesde !== undefined) encerrar('pouso', Date.now(), { desde: continuandoDesde });
+    else encerrar('pouso');
+  };
+  // Durante "Continuar até o pouso", o painel mostra a previsão do avião real.
+  const pousoMostrado = continuando ? voo.pousoPrevistoEm : pousoPrevistoEm;
+  const prefixo = continuando ? '~' : '';
 
   return (
     <View style={styles.tela}>
@@ -202,14 +238,24 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       >
         <View style={styles.linhaTopo} pointerEvents="box-none">
           <View style={{ gap: space[16] }} pointerEvents="box-none">
-            <View style={{ gap: space[6] }}>
-              <Text variant="Body/Medium 14">{voo.callsign}</Text>
+            {/* Toque no código do voo: "Sobre este voo" (pedido do Alberto, 24/11/2026). */}
+            <Pressable
+              onPress={() => setVendoInfo(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('infoDoVoo.abrir', { voo: voo.callsign })}
+              hitSlop={8}
+              style={({ pressed }) => [{ gap: space[6], alignSelf: 'flex-start' }, pressed && { opacity: 0.7 }]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+                <Text variant="Body/Medium 14">{voo.callsign}</Text>
+                <Icon name="chevronRight" color={color.text.tertiary} />
+              </View>
               {voo.companhiaNome ? (
                 <Text variant="Body/Medium 14" tone="tertiary">
                   {voo.companhiaNome}
                 </Text>
               ) : null}
-            </View>
+            </Pressable>
             <View style={{ alignSelf: 'flex-start' }}>
               <SegmentedControl
                 segments={[
@@ -221,15 +267,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               />
             </View>
           </View>
-          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoPrevistoEm, agora)), hora: horaLocal(pousoPrevistoEm) })}>
+          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoMostrado, agora)), hora: horaLocal(pousoMostrado) })}>
             <Text variant="Body/Medium 14" tone="secondary">
               {t('emVoo.pousaEm')}
             </Text>
             <Text variant="Heading/Screen 32" style={{ fontWeight: '500', letterSpacing: -1 }}>
-              {duracao(minutosAte(pousoPrevistoEm, agora))}
+              {prefixo}
+              {duracao(minutosAte(pousoMostrado, agora))}
             </Text>
             <Text variant="Body/Medium 14" tone="secondary">
-              {horaLocal(pousoPrevistoEm)}
+              {horaLocal(pousoMostrado)}
             </Text>
             {vista === 'janela' ? (
               <IconButton
@@ -239,7 +286,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
                 indicator={classe !== 'primeira'}
                 style={{ marginTop: space[10] }}
               />
-            ) : null}
+            ) : (
+              // Mesmo espaço do botão de vistas no globo: os avisos ficam no mesmo lugar nas duas
+              // vistas (Alberto, 25/11/2026).
+              <View style={{ width: 48, height: 48, marginTop: space[10] }} />
+            )}
           </View>
         </View>
       </View>
@@ -247,7 +298,20 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
       <View style={{ flex: 1 }} pointerEvents="box-none">
         {/* Um aviso por vez: serviço de bordo, depois "De volta ao foco", depois boas-vindas. */}
         <View style={{ paddingHorizontal: screenGutter, paddingTop: space[16] }}>
-          {avisoDaPausa ? (
+          {continuando && continuandoDesde !== undefined && !avisosFechados.includes('continuando') ? (
+            // E5b (Figma v3): continuando até o pouso, com os minutos a mais.
+            <AvisoNoApp
+              key="continuando"
+              icone="plane"
+              titulo={t('emEspera.avisoTitulo')}
+              texto={t('emEspera.avisoTexto', {
+                tempo: duracao(Math.round((pousoPrevistoEm - embarcouEm) / 60_000)),
+                extra: duracao(Math.max(0, Math.floor((agora - continuandoDesde) / 60_000))),
+              })}
+              rotuloFechar={t('emVoo.fecharAviso')}
+              onFechar={() => fecharAviso('continuando')}
+            />
+          ) : avisoDaPausa ? (
             <AvisoNoApp
               key={`pausa-${emPausa.indice}`}
               icone="servicoDeBordo"
@@ -265,7 +329,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               rotuloFechar={t('servico.fecharDeVolta')}
               onFechar={() => fecharAviso(`fim-${pausaTerminada.indice}`)}
             />
-          ) : radar !== 'ok' && !avisosFechados.includes(radar) ? (
+          ) : (radar === 'sem-sinal' || radar === 'sem-internet') && !avisosFechados.includes(radar) ? (
             // E4 e X4 (Figma v3): o foco continua; a posição passa a ser estimada.
             <AvisoNoApp
               key={radar}
@@ -274,6 +338,15 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               texto={radar === 'sem-internet' ? t('emVoo.semInternetTexto', { hora: horaLocal(pousoPrevistoEm) }) : t('emVoo.semSinalTexto')}
               rotuloFechar={t('emVoo.fecharAviso')}
               onFechar={() => fecharAviso(radar)}
+            />
+          ) : avisoRadarVoltou && radarVoltou ? (
+            <AvisoNoApp
+              key={`radar-voltou-${radarVoltou.em}`}
+              icone="plane"
+              titulo={radarVoltou.de === 'sem-internet' ? t('emVoo.conexaoVoltouTitulo') : t('emVoo.radarVoltouTitulo')}
+              texto={t('emVoo.radarVoltouTexto')}
+              rotuloFechar={t('emVoo.fecharAviso')}
+              onFechar={() => fecharAviso(`radar-voltou-${radarVoltou.em}`)}
             />
           ) : mostrarBoasVindas ? (
             <AvisoDeBoasVindas voo={voo.callsign} origem={origem} destino={destino} onFechar={() => setBoasVindasFechada(true)} />
@@ -318,9 +391,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Button
             variant="secondary"
             size="mini"
-            label={t('emVoo.pousarAntes')}
-            onPress={() => setConfirmando(true)}
-            disabled={tempoAcabou}
+            label={continuando ? t('emVoo.pousarAgora') : t('emVoo.pousarAntes')}
+            onPress={continuando ? pousarAgora : () => setConfirmando(true)}
+            disabled={tempoAcabou && !continuando}
             style={{ alignSelf: 'center' }}
           />
           {emPausa ? (
@@ -352,7 +425,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         footer={
           emPausa ? (
             <View style={{ gap: space[12] }}>
-              <Button size="medium" icon={null} label={t('servico.voltarAoFoco')} onPress={encerrarPausa} />
+              {/* Secundário (Alberto, build-51): como principal, parecia o botão de fechar a folha e
+                  dava para encerrar a pausa sem querer. */}
+              <Button variant="secondary" size="medium" icon={null} label={t('servico.finalizarPausa')} onPress={encerrarPausa} />
               <Text variant="Caption/Regular 12" tone="tertiary">
                 {t('servico.terminaSozinha')}
               </Text>
@@ -432,6 +507,16 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         onFechar={() => setVendoMotivo(false)}
       />
 
+      <FolhaInfoDoVoo visivel={vendoInfo} voo={voo} pos={pos} radar={radar} agora={agora} onFechar={() => setVendoInfo(false)} />
+
+      <FolhaEmEspera
+        visivel={emEspera}
+        sessao={sessao}
+        minutosAtePousoReal={minutosAte(voo.pousoPrevistoEm, agora)}
+        onContinuar={() => continuarAtePouso(sessao.id, Date.now())}
+        onPousar={pousarAgora}
+      />
+
       <FolhaPousarAntes
         visivel={confirmando}
         sessao={sessao}
@@ -449,6 +534,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
 const SEM_TRILHA: Amostra[] = [];
 const SOBREPOSICAO = 56;
 const BOAS_VINDAS_MS = 90_000;
+/** Quanto tempo o aviso "Sinal do radar de volta" fica na tela. */
+const RADAR_VOLTOU_MS = 8_000;
 /** Quanto tempo o aviso "De volta ao foco" fica depois do fim da pausa. */
 const DE_VOLTA_AO_FOCO_MS = 60_000;
 const PAUSA_MS = PAUSA_MAXIMA_MIN * 60_000;
@@ -457,23 +544,28 @@ const DESCIDA_DA_JANELA = 56;
 
 /**
  * O voo gravado no embarque, trocado pela leitura mais nova do cache quando ela chega (a cada 5 min
- * com a tela aberta, só a região do avião). Assim a posição projetada se corrige pelo dado real.
+ * com a tela aberta). Assim a posição projetada se corrige pelo dado real.
+ * Guarda a última leitura boa: sem sinal, o voo segue projetado a partir dela (antes voltava para
+ * a leitura do embarque) e a próxima busca usa a região onde o avião foi visto por último.
  * Só aceita o mesmo voo: mesmo avião, mesmo destino e pouso previsto parecido.
  */
-function useVooAtualizado(gravado: Voo): { voo: Voo; radar: 'ok' | 'sem-sinal' | 'sem-internet' } {
-  const q = useVooAoVivo(gravado);
-  const vivo = q.data;
-  // X4: a leitura falhou (sem conexão). E4: a leitura chegou, mas o avião não está nela.
-  const radar = q.isError ? 'sem-internet' : q.isSuccess && vivo === null ? 'sem-sinal' : 'ok';
+function useVooAtualizado(gravado: Voo): { voo: Voo; radar: Radar } {
+  const [ultimo, setUltimo] = useState(gravado);
+  const q = useVooAoVivo(ultimo, () => projetar(ultimo, Date.now()));
+  const leitura = q.data;
+  // X4: a leitura falhou (sem conexão). E4: o avião devia estar numa área coletada e não está.
+  // Fora das áreas do coletor: posição estimada, sem aviso (`fora-da-area`).
+  const radar: Radar = q.isError ? 'sem-internet' : leitura ? (leitura.situacao === 'ok' ? 'ok' : leitura.situacao) : 'ok';
+  const vivo = leitura?.voo;
   if (
     vivo &&
-    vivo.coletadoEm > gravado.coletadoEm &&
+    vivo.coletadoEm > ultimo.coletadoEm &&
     distanciaKm(vivo.destino, gravado.destino) < 5 &&
     Math.abs(vivo.pousoPrevistoEm - gravado.pousoPrevistoEm) < 3 * 3_600_000
   ) {
-    return { voo: vivo, radar };
+    setUltimo(vivo);
   }
-  return { voo: gravado, radar };
+  return { voo: ultimo, radar };
 }
 
 function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotulo: string; ativo: boolean; onPress: () => void }) {

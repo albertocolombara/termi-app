@@ -52,13 +52,26 @@ export function rotasVoadas(voos: readonly VooDoDiario[]): RotaVoada[] {
   return [...porChave.values()];
 }
 
-export type ResumoDoDiario = { voos: number; minutos: number; milhas: number };
+export type ResumoDoDiario = {
+  /** Todos os voos (pousou e pousou antes). */
+  voos: number;
+  /** Só os que pousaram: o "voos concluídos" do Início (pedido do Alberto, build-48). */
+  concluidos: number;
+  minutos: number;
+  milhas: number;
+};
 
-/** Totais do Início: todo voo encerrado conta, inclusive os que pousaram antes (nunca punir). */
+/** Totais do Início e do diário. Minutos e milhas contam todo voo encerrado (nunca punir); "concluídos" só os que pousaram. */
 export function resumoDoDiario(voos: readonly VooDoDiario[]): ResumoDoDiario {
+  // Minutos e milhas de quem pousou antes continuam somando: o tempo focado nunca se perde.
   return voos.reduce<ResumoDoDiario>(
-    (r, v) => ({ voos: r.voos + 1, minutos: r.minutos + v.minutosFoco, milhas: r.milhas + v.milhas }),
-    { voos: 0, minutos: 0, milhas: 0 },
+    (r, v) => ({
+      voos: r.voos + 1,
+      concluidos: r.concluidos + (v.resultado === 'pousou' ? 1 : 0),
+      minutos: r.minutos + v.minutosFoco,
+      milhas: r.milhas + v.milhas,
+    }),
+    { voos: 0, concluidos: 0, minutos: 0, milhas: 0 },
   );
 }
 

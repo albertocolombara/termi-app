@@ -19,6 +19,22 @@ describe('projetar', () => {
     expect(projetar(v, AGORA + 45 * 60_000).altitudePes).toBe(17500);
   });
 
+  it('lido subindo perto da origem: sobe até o cruzeiro típico e não fica baixo o voo todo', () => {
+    const subindo = voo(180, {
+      lat: -23.3,
+      lon: -46.3,
+      altitudePes: 4626,
+      destino: { iata: 'SSA', icao: 'SBSV', nome: 'Salvador', cidade: 'Salvador', pais: 'BR', lat: -12.91, lon: -38.33 },
+    });
+    expect(projetar(subindo, AGORA).altitudePes).toBe(4626);
+    expect(projetar(subindo, AGORA + 5 * 60_000).altitudePes).toBe(14626);
+    expect(projetar(subindo, AGORA + 60 * 60_000).altitudePes).toBe(32000);
+  });
+
+  it('baixo longe da origem (descendo): não sobe', () => {
+    expect(projetar(voo(60, { altitudePes: 12000, lat: -22.9, lon: -43.6 }), AGORA + 10 * 60_000).altitudePes).toBe(12000);
+  });
+
   it('fica no destino depois do pouso previsto', () => {
     expect(projetar(v, AGORA + 90 * 60_000).fracao).toBe(1);
   });

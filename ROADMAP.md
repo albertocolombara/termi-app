@@ -1,13 +1,13 @@
 # Roadmap — Termi: Focus Flights
 
 > Planejamento da evolução do produto em fases. Escopo e regras: [PRD.md](PRD.md). Decisões técnicas: [ARCHITECTURE.md](ARCHITECTURE.md).
-> Última atualização: 21/11/2026.
+> Última atualização: 25/11/2026.
 
 Prioridades: **P0** bloqueia o lançamento · **P1** necessário para a v1 · **P2** desejável · **P3** pós-lançamento.
 
 Regra: só marque `[x]` com evidência (PR mergeado, teste passando ou medição registrada).
 
-**Situação em 21/11/2026:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha); **Fase 3 em andamento**, com o núcleo do voo usado pelo Alberto no M35 desde a build-26. Pendências da Fase 3 no fim da seção dela.
+**Situação em 25/11/2026 (tarde):** núcleo do voo da Fase 3 conferido pelo Alberto na build-61 e PRs #50 e #51 mergeados; restam itens menores da Fase 3 (abaixo) e começa a Fase 4. **Antes:** Fase 1 concluída; Fase 2 concluída no essencial (falta o domínio próprio e os 7 dias de cache sem falha, que fecham em 27/11 se não houver falha); **Fase 3 em andamento**, com o núcleo do voo usado pelo Alberto no M35 desde a build-26 (última: build-54). Telas v3 (PR #50) e correções dos builds 48 a 53 (PR #51) abertas, em teste no aparelho. Partes da Fase 4 já começaram nas telas v3. Pendências da Fase 3 no fim da seção dela.
 
 ```mermaid
 flowchart LR
@@ -41,7 +41,7 @@ flowchart LR
 | Validação dos dados de voo | Doc "validacao-dados-voos.md" e coletor `voo-ao-vivo-teste` (24 h, 1.247 pousos) | Disponibilidade resolvida; previsão imprecisa acima de ~1h30, resolvida pela regra do tempo do usuário (RN-09) |
 | Infraestrutura e políticas | Doc "infra-e-politicas.md" | Plano de R2, coletor, custos e riscos da Play |
 | Animações do Termi | Arquivo Rive (nuvem), 5 animações e state machine testada | Falta exportar `.riv` e nomear o arquivo |
-| Janela no Blender | Renders atrás da asa (3 luzes) | Faltam "Com asa" e "Asa e motor" |
+| Janela no Blender | Renders v3 (janela e asa realistas, 3 luzes) e miniaturas | "Com asa" e "Asa e motor" fora do lançamento (24/11/2026); persiana com animação na build-54 |
 | Medalhas | Portugal, EUA, Brasil, Reino Unido, Japão, França | Coleção atual de 13 países: faltam 7 e o verso; novos países em breve |
 
 **Lacunas que bloqueiam decisões estruturais:** aprovação da Play para alarmes exatos e bloqueio de apps. (A previsão de pouso dos voos longos deixou de bloquear em 19/11/2026: RN-09.)
@@ -136,7 +136,6 @@ flowchart LR
 
 ### Telas e serviços
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
-- [ ] Render da janela com o avião no solo (taxiando ou no portão) para o estado Em solo **[Pendente]**
 - [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20; Termi curioso no PR #35 e dica menor no PR #42, ajustes pedidos pelo Alberto depois de usar no M35
 - [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20; no PR #27 as caudas viraram PNG (o SVG por linha derrubava o app ao rolar a lista no build-17); letreiro no PR #34 e nome da cidade correndo no PR #44
 - [x] Sem voo: tempos próximos; dados fora do ar: voo de ontem — PR #18 e #20
@@ -145,27 +144,26 @@ flowchart LR
 - [x] Tela de embarque com etapas reais, download de blocos e "Embarcar com o globo" — `features/voo/TelaEmbarque.tsx`, PR #23: grava a sessão e o motivo numa transação, agenda os avisos e mostra a notificação fixa; Termi do Rive na esteira no PR #32; textos cortados corrigidos no PR #37 (retorno da build-27 no M35)
 - [x] Tela em voo: globo, janela, painel inferior, mensagem de boas-vindas — PR #24: janela e globo seguindo a rota do voo da sessão, painéis superior e inferior, barra de rota com o avião andando, próximo serviço de bordo; aviso de boas-vindas no PR #27; vista da janela (04E) no PR #28, com Só a janela, Asa completa e Sem moldura (Com asa e Asa e motor esperam o render do Blender); botão e folha de som (04D) no PR #29; ajustes do voo no PR #38 e #41; nuvens reais e altitude real no PR #40; usada pelo Alberto no M35 desde a build-26 (retornos nos PR #36 a #46)
 - [x] Sons de fundo em segundo plano — sons (motores, ruído branco, cabine, chuva) no PR #29; com a tela bloqueada no PR #30; sem o controle de mídia do Android e com fade no embarque no PR #39 (testado pelo Alberto na build 31); voo de cruzeiro grátis, motores na primeira classe e lofi em streaming no PR #43
-- [ ] Conferir o lofi no aparelho com a tela bloqueada por um voo inteiro (se travar, avaliar `WAKE_LOCK`, que precisa de aprovação: não está na ARCHITECTURE §10)
-- [ ] Avisos por fase (avisos do comandante: embarque, cruzeiro, descida)
-- [ ] Serviço de bordo com avisos agendados como alarme exato — avisos agendados no embarque (PR #23; no horário num voo curto na build-6, ARCHITECTURE §15); E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") no PR #36; falta conferir no aparelho o ciclo completo com a tela bloqueada e o app fechado
+- [x] Conferir o lofi no aparelho com a tela bloqueada por um voo inteiro — conferido pelo Alberto (25/11/2026, build-61), sem precisar de `WAKE_LOCK`
+- [x] Avisos por fase — decisão do Alberto (25/11/2026): só um aviso, o da comissária no pouso, para não tirar o foco; tocado pelo app com o som de fundo baixando antes (build-61, conferido pelo Alberto)
+- [x] Serviço de bordo com avisos agendados como alarme exato — ciclo completo e sinal de cintos conferidos pelo Alberto com a tela bloqueada (25/11/2026, build-61); avisos agendados no embarque (PR #23; no horário num voo curto na build-6, ARCHITECTURE §15); E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") no PR #36; falta conferir no aparelho o ciclo completo com a tela bloqueada e o app fechado
 - [x] Notificação fixa com contagem — mostrada no embarque (PR #23); é a notificação do serviço do som desde o PR #39 (testado pelo Alberto na build 31)
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
-- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet durante o voo
+- [x] Estados E1–E7, sem sinal, sem internet, em espera — conferidos pelo Alberto (25/11/2026, build-61). Em espera só aparece quando o destino está numa das áreas lidas pelo coletor; manter, trocar por uma informação na tela de pouso ou tirar fica para decidir (análise de 25/11/2026). prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; avisos de sem sinal do radar, sem internet e "radar de volta", com o radar ciente da área do coletor, no PR #51 (builds 51 a 53); E5 Em espera e E5b Continuando até o pouso no PR #51 (build-55, falta testar no aparelho; a tela E5 é proposta no Figma v3). O E8 Em solo saiu da Fase 3 (decisão do Alberto em 25/11/2026) e está na Fase 5
 - [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
 - [x] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS — PR #37 (build-28): `useFrameCallback` + `useDerivedValue`, sem o teto de ~21 fps do timer; 30 fps opcional nos Ajustes (PR #42)
 - [ ] Medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica
-- [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 (build-41 em teste pelo Alberto): falta o teste no aparelho (memória e quadros da janela, globo no zoom máximo de dia e à noite) e o merge
+- [ ] Paisagem do Sentinel-2, luzes das cidades novas e globo até 61 m — PR #47 mergeado; usado pelo Alberto nas builds 48 a 53 (consumo de dados medido); falta medir memória e quadros da janela e do globo no zoom máximo
 
-### Pendente na Fase 3 (21/11/2026)
+### Pendente na Fase 3 (25/11/2026)
 
-1. Testar no aparelho e fazer o merge do PR #47 (paisagem do Sentinel-2, luzes e globo até 61 m).
-2. Estados que faltam na tela em voo: E5 Em espera / Continuando até o pouso, E8 Em solo, sem sinal e sem internet. Depende do render da janela no solo **[Pendente]**.
-3. Avisos por fase (avisos do comandante).
-4. Lugar sobrevoado (GeoNames) no painel e na tela de pouso.
-5. Conferir no aparelho, com a tela bloqueada e o app fechado: o ciclo do serviço de bordo (alarme exato) e o lofi por um voo inteiro.
-6. Medir 30 fps (bateria, temperatura, memória) no M35 e num Android mais fraco.
-7. Tirar os pacotes de paisagem do protótipo do APK.
-8. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9` depois do PR #47.
+Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge dos PRs #50 e #51, estados do voo com Em espera, ciclo do serviço de bordo e lofi com a tela bloqueada, e o aviso de pouso da comissária no lugar dos avisos por fase.
+
+1. Lugar sobrevoado (GeoNames) no painel e na tela de pouso (hoje só na tela de teste da janela).
+2. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
+3. Tirar os pacotes de paisagem do protótipo do APK.
+4. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
+5. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
 
 ---
 
@@ -190,7 +188,7 @@ flowchart LR
 - [ ] RevenueCat: produtos, direitos, compra, restauração
 - [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR #36 (planos, condições, carrossel com os benefícios que já existem; etiqueta "Economize" corrigida no PR #44), sem compra: em builds de teste o botão liga a primeira classe de teste; o Alberto vai ajustar o visual no Figma; faltam RevenueCat, Restaurar compras, Termos e Privacidade
 - [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR #36; faltam os recursos que ainda não existem
-- [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; faltam as vistas "Com asa" e "Asa e motor" (render do Blender)
+- [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; vistas do lançamento (Janela, Asa e Sem moldura) com as renders v3 na build-53, ainda não conferidas no aparelho; "Com asa" e "Asa e motor" saíram (24/11/2026)
 - [ ] Backup do progresso e conta opcional
 - [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste) e janela a 30 fps no PR #42, aberto por uma engrenagem no Início até o menu lateral existir; créditos do M6 atualizados no Figma com ESA WorldCover e OpenStreetMap (21/11/2026), tela ainda não feita no app; faltam os itens que dependem de recursos ainda não feitos
 - [ ] Exportar e apagar dados
@@ -206,7 +204,8 @@ flowchart LR
 - **Prioridade:** P1.
 - **Critérios de conclusão:** nenhuma vista ou medalha da v1 usa placeholder.
 
-- [ ] Renderizar "Com asa" e "Asa e motor" nos três horários, com moldura grafite
+- [ ] Estado E8 Em solo na tela em voo e render da janela com o avião no solo (taxiando ou no portão) **[Pendente]** — saiu da Fase 3 por decisão do Alberto em 25/11/2026
+- [ ] Renderizar "Com asa" e "Asa e motor" nos três horários (fora do lançamento desde 24/11/2026; volta se o Alberto decidir)
 - [ ] Medalhas dos 7 países restantes dos 13 (falta a referência do Uruguai) e o verso padrão
 - [ ] Definir e produzir os próximos países da coleção
 - [ ] Desenhar os 7 adesivos do Termi, os carimbos de nível e a medalha rara do Nômade

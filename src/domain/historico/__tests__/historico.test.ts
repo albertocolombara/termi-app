@@ -50,10 +50,10 @@ describe('rotasVoadas', () => {
 });
 
 describe('resumoDoDiario', () => {
-  it('soma voos, minutos e milhas, inclusive quem pousou antes', () => {
+  it('concluídos são só os que pousaram; minutos e milhas somam também quem pousou antes', () => {
     expect(
       resumoDoDiario([voo('1', BCN, LHR, em(20)), voo('2', BCN, LHR, em(21), { resultado: 'pousou_antes', minutosFoco: 20, milhas: 150 })]),
-    ).toEqual({ voos: 2, minutos: 70, milhas: 550 });
+    ).toEqual({ voos: 2, concluidos: 1, minutos: 70, milhas: 550 });
   });
 });
 

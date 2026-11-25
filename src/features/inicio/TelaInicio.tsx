@@ -89,7 +89,7 @@ export function TelaInicio() {
         {/* Resumo do diário de bordo */}
         <View style={styles.resumo}>
           <View style={styles.indicadores}>
-            <Indicador valor={String(resumo.voos)} rotulo={resumo.voos === 1 ? t('inicio.vooConcluido') : t('inicio.voosConcluidos')} />
+            <Indicador valor={String(resumo.concluidos)} rotulo={resumo.concluidos === 1 ? t('inicio.vooConcluido') : t('inicio.voosConcluidos')} />
             <Indicador valor={duracaoTotal(resumo.minutos)} rotulo={t('inicio.tempoDeFoco')} />
           </View>
           <Pressable

@@ -27,7 +27,7 @@ import { color, Icon, IconButton, space, Text } from '@/ds';
 import { motion, timing } from '@/ds/motion';
 import { t } from '@/i18n';
 import { sun } from '@/janela/geo';
-import { FORA, cantoDoMosaico, criarMosaico, nivelPara, type Mosaico } from './blocos';
+import { FORA, cantoDoMosaico, criarMosaico, nivelDaNoite, nivelDeLonge, nivelDoDia, nivelPara, type Mosaico } from './blocos';
 import { cameraBasis, destino, FOV, grandeCirculo, project, projectZ, sunEcef, type Camera } from './camera';
 import { SKSL_GLOBO, TEX } from './shader';
 
@@ -183,9 +183,15 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   }));
 
   // ── Blocos da NASA: mosaicos perto, longe e noite, no nível do zoom ──
-  const [perto, setPerto] = useState<Mosaico>({ imagem: null, b: FORA });
-  const [longe, setLonge] = useState<Mosaico>({ imagem: null, b: FORA });
-  const [noiteM, setNoiteM] = useState<Mosaico>({ imagem: null, b: FORA });
+  // Imagem e posição de cada mosaico num só valor compartilhado: o shader lê as duas no mesmo quadro.
+  // Antes a imagem vinha do estado do React e a posição dos uniforms; por um quadro a imagem nova
+  // era desenhada na posição velha (build-55: a Antártida "pulava" grande ao girar o globo).
+  const perto = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const longe = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const noiteM = useSharedValue<Mosaico>({ imagem: null, b: FORA, sentinel: false });
+  const setPerto = useCallback((m: Mosaico) => perto.set(m), [perto]);
+  const setLonge = useCallback((m: Mosaico) => longe.set(m), [longe]);
+  const setNoiteM = useCallback((m: Mosaico) => noiteM.set(m), [noiteM]);
   const mosaicos = useRef<ReturnType<typeof criarMosaico>[] | null>(null);
   if (mosaicos.current == null) {
     mosaicos.current = [
@@ -196,13 +202,15 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
   }
   const atualizarBlocos = useCallback((z: number, la: number, lo: number) => {
     const [mp, ml, mn] = mosaicos.current!;
-    mp.atualizar(z, la, lo);
-    ml.atualizar(Math.max(1, z - 2), la, lo);
+    // De perto (nível 8 em diante) o dia vem do Sentinel-2; o de longe continua no Blue Marble,
+    // que cobre o mar (onde não há bloco do Sentinel-2).
+    mp.atualizar(nivelDoDia(z), la, lo);
+    ml.atualizar(nivelDeLonge(z), la, lo);
     // Luzes da cidade só quando a região vista está de noite ou no fim de tarde (build-38: o mosaico
     // noturno era o maior gasto do globo e era baixado mesmo de dia). De longe (nível baixo) a vista
     // pega o mundo todo, e os blocos são poucos: baixa sempre.
     const elevacaoDoSol = (sun(Date.now(), la, lo).el * 180) / Math.PI;
-    if (z < 4 || elevacaoDoSol < 12) mn.atualizar(Math.max(1, z - 1), la, lo);
+    if (z < 4 || elevacaoDoSol < 12) mn.atualizar(nivelDaNoite(z), la, lo);
   }, []);
 
   useAnimatedReaction(
@@ -213,7 +221,7 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
       // Inclinada, a câmera vê mais à frente: centra os blocos um pouco adiante.
       const frente = c.dist * Math.sin(c.tilt) * 0.6;
       const alvo = frente > 1 ? destino(c.lat, c.lon, c.heading / RAD, frente) : [c.lat, c.lon];
-      const [r, col] = cantoDoMosaico(z, alvo[0], alvo[1]);
+      const [r, col] = cantoDoMosaico(nivelDoDia(z), alvo[0], alvo[1]);
       return { chave: `${z}/${r}/${col}`, z, la: alvo[0], lo: alvo[1] };
     },
     (atual, anterior) => {
@@ -221,12 +229,17 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
     },
   );
 
-  const bPerto = perto.imagem ? perto.b : FORA;
-  const bLonge = longe.imagem ? longe.b : FORA;
-  const bNoite = noiteM.imagem ? noiteM.b : FORA;
   const uniforms = useDerivedValue(() => {
     const b = cameraBasis(camera.value);
-    return { res: [width, height], cp: b.pos, cf: b.f, cr: b.right, cu: b.up, k: K, sunD: sol.value, bPerto, bLonge, bNoite };
+    const p = perto.value;
+    const l = longe.value;
+    const n = noiteM.value;
+    const bPerto = p.imagem ? p.b : FORA;
+    const bLonge = l.imagem ? l.b : FORA;
+    const bNoite = n.imagem ? n.b : FORA;
+    const s2Perto = p.sentinel ? 1 : 0;
+    const s2Noite = n.sentinel ? 1 : 0;
+    return { res: [width, height], cp: b.pos, cf: b.f, cr: b.right, cu: b.up, k: K, sunD: sol.value, bPerto, bLonge, bNoite, s2Perto, s2Noite };
   });
 
   // ── Rota: trecho voado em linha; o que falta em pontos no chão (diminuem com a distância) ──
@@ -316,6 +329,9 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
     return s ? s.makeImageSnapshot() : null;
   }, []);
   const pronto = !!dia && !!noite && !!vazio;
+  const imgPerto = useDerivedValue(() => perto.value.imagem ?? vazio);
+  const imgLonge = useDerivedValue(() => longe.value.imagem ?? vazio);
+  const imgNoite = useDerivedValue(() => noiteM.value.imagem ?? vazio);
   const ret = (w: number, h: number) => ({ x: 0, y: 0, width: w, height: h });
 
   return (
@@ -327,10 +343,10 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
               <Shader source={effect} uniforms={uniforms}>
                 <ImageShader image={dia} tx="repeat" ty="clamp" fit="fill" rect={ret(TEX.dia.w, TEX.dia.h)} />
                 <ImageShader image={noite} tx="repeat" ty="clamp" fit="fill" rect={ret(TEX.noite.w, TEX.noite.h)} />
-                <ImageShader image={perto.imagem ?? vazio} tx="decal" ty="decal" fit="fill" rect={ret(TEX.perto, TEX.perto)} />
-                <ImageShader image={longe.imagem ?? vazio} tx="decal" ty="decal" fit="fill" rect={ret(TEX.longe, TEX.longe)} />
+                <ImageShader image={imgPerto} tx="decal" ty="decal" fit="fill" rect={ret(TEX.perto, TEX.perto)} />
+                <ImageShader image={imgLonge} tx="decal" ty="decal" fit="fill" rect={ret(TEX.longe, TEX.longe)} />
                 <ImageShader
-                  image={noiteM.imagem ?? vazio}
+                  image={imgNoite}
                   tx="decal"
                   ty="decal"
                   fit="fill"

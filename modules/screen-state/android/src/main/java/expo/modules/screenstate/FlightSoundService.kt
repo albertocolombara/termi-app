@@ -37,6 +37,10 @@ import java.io.File
  * - Playlist (lofi): faixas do servidor tocadas embaralhadas, em streaming, com cache de 60 MB no
  *   aparelho (as já ouvidas não baixam de novo) e buffer longo (uma faixa inteira à frente), para
  *   seguir tocando com a tela bloqueada mesmo se a rede oscilar. Faixa que falha é pulada.
+ * - Sinais (pedido do Alberto em 25/11/2026, build-58: pelo canal de notificação o som não tocava):
+ *   o próprio serviço toca o sinal de apertar cintos no começo e no fim de cada serviço de bordo e
+ *   o aviso da comissária no pouso. 1 s antes, o som de fundo baixa com fade; depois do sinal, volta.
+ *   No pouso, depois do aviso, o som de fundo sai com fade e o serviço termina.
  */
 class FlightSoundService : Service() {
   private val handler = Handler(Looper.getMainLooper())
@@ -46,6 +50,10 @@ class FlightSoundService : Service() {
   private var lastStartId = 0
   private var falhasSeguidas = 0
   private val landing = Runnable { fadeTo(0f, FADE_OUT_MS) { finish(removeNotification = true) } }
+  private var cuePlayer: ExoPlayer? = null
+  private var cueVolume = 1f
+  private var landingCue = false
+  private val cueRunnables = mutableListOf<Runnable>()
 
   override fun onBind(intent: Intent?): IBinder? = null
 
@@ -72,9 +80,18 @@ class FlightSoundService : Service() {
       finish(removeNotification = uris != null)
       return START_NOT_STICKY
     }
+    // Parado antes de o serviço começar: o pedido de parar chegou com o de tocar ainda na fila
+    // (build-41, primeiro voo depois de atualizar: o som seguiu fora do voo depois de "Pousar antes").
+    val seq = intent?.getLongExtra(EXTRA_SEQ, 0L) ?: 0L
+    if (seq <= paradoAte) {
+      finish(removeNotification = removerAoParar)
+      return START_NOT_STICKY
+    }
     val volume = intent?.getFloatExtra(EXTRA_VOLUME, 1f) ?: 1f
     val fadeInMs = intent?.getLongExtra(EXTRA_FADE_IN_MS, 0L) ?: 0L
     play(uris, playlist, volume, fadeInMs, endAt)
+    val c = cues
+    setCues(c.times, c.volume, c.landing, endAt)
     return START_NOT_STICKY
   }
 
@@ -100,8 +117,9 @@ class FlightSoundService : Service() {
     val p = builder.build()
     p.setAudioAttributes(attributes, true)
     if (playlist) {
-      p.setMediaItems(uris.map { MediaItem.fromUri(it) })
+      // Embaralha a lista antes: com o embaralhamento do ExoPlayer, a primeira faixa era sempre a mesma.
       p.shuffleModeEnabled = true
+      p.setMediaItems(uris.shuffled().map { MediaItem.fromUri(it) })
       p.repeatMode = Player.REPEAT_MODE_ALL
     } else {
       p.setMediaItem(MediaItem.fromUri(uris[0]))
@@ -136,7 +154,85 @@ class FlightSoundService : Service() {
     p.playWhenReady = volume > 0f
     player = p
     if (fadeInMs > 0) fadeTo(volume, fadeInMs, null)
-    handler.postDelayed(landing, maxOf(0L, endAt - System.currentTimeMillis()))
+    endAtAtual = endAt
+  }
+
+  private var endAtAtual = 0L
+
+  /**
+   * Agenda os sinais do serviço de bordo (`cues`, em ms) e o aviso de pouso. Substitui os anteriores
+   * (ex.: o usuário voltou ao foco antes do fim da pausa e o sinal do fim sai da lista).
+   */
+  fun setCues(cues: LongArray, volume: Float, landingAnnouncement: Boolean, endAt: Long = endAtAtual) {
+    // Sem som tocando (serviço ainda começando ou já parado): nada a agendar.
+    if (endAt <= 0L || player == null) return
+    cueRunnables.forEach { handler.removeCallbacks(it) }
+    cueRunnables.clear()
+    cueVolume = volume
+    landingCue = landingAnnouncement
+    endAtAtual = endAt
+    val now = System.currentTimeMillis()
+    for (t in cues) {
+      if (t <= now || t >= endAt) continue
+      val r = Runnable { playCue(RAW_CINTO, then = { fadeTo(targetVolume, DUCK_MS, null) }) }
+      val duck = Runnable { duckForCue() }
+      handler.postDelayed(duck, maxOf(0L, t - DUCK_MS - now))
+      handler.postDelayed(r, t - now)
+      cueRunnables += duck
+      cueRunnables += r
+    }
+    // Pouso: com o aviso, baixa o som 1 s antes, toca o aviso e só então tira o som de fundo.
+    handler.removeCallbacks(landing)
+    if (landingCue && cueVolume > 0f) {
+      val duck = Runnable { duckForCue() }
+      val anuncio = Runnable { playCue(RAW_POUSO, then = { fadeTo(0f, FADE_OUT_MS) { finish(removeNotification = true) } }) }
+      handler.postDelayed(duck, maxOf(0L, endAt - DUCK_MS - now))
+      handler.postDelayed(anuncio, maxOf(0L, endAt - now))
+      cueRunnables += duck
+      cueRunnables += anuncio
+    } else {
+      handler.postDelayed(landing, maxOf(0L, endAt - now))
+    }
+  }
+
+  private fun duckForCue() {
+    if (cueVolume <= 0f) return
+    fadeTo(targetVolume * DUCK_FACTOR, DUCK_MS, null)
+  }
+
+  /** Toca um som do APK (res/raw) por cima do som de fundo, sem pegar o foco de áudio dele. */
+  private fun playCue(nome: String, then: () -> Unit) {
+    val id = resources.getIdentifier(nome, "raw", packageName)
+    if (id == 0 || cueVolume <= 0f) {
+      then()
+      return
+    }
+    cuePlayer?.release()
+    val cp = ExoPlayer.Builder(this).build()
+    cp.setAudioAttributes(
+      AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_SONIFICATION).build(),
+      false,
+    )
+    cp.setMediaItem(MediaItem.fromUri(android.net.Uri.parse("android.resource://$packageName/$id")))
+    cp.volume = cueVolume
+    cp.addListener(object : Player.Listener {
+      override fun onPlaybackStateChanged(state: Int) {
+        if (state == Player.STATE_ENDED) {
+          cp.release()
+          if (cuePlayer === cp) cuePlayer = null
+          then()
+        }
+      }
+
+      override fun onPlayerError(error: PlaybackException) {
+        cp.release()
+        if (cuePlayer === cp) cuePlayer = null
+        then()
+      }
+    })
+    cp.prepare()
+    cp.playWhenReady = true
+    cuePlayer = cp
   }
 
   fun setVolume(volume: Float) {
@@ -156,6 +252,10 @@ class FlightSoundService : Service() {
 
   fun finish(removeNotification: Boolean) {
     handler.removeCallbacks(landing)
+    cueRunnables.forEach { handler.removeCallbacks(it) }
+    cueRunnables.clear()
+    cuePlayer?.release()
+    cuePlayer = null
     cancelFade()
     player?.release()
     player = null
@@ -203,6 +303,8 @@ class FlightSoundService : Service() {
     handler.removeCallbacksAndMessages(null)
     player?.release()
     player = null
+    cuePlayer?.release()
+    cuePlayer = null
     if (instance === this) instance = null
     super.onDestroy()
   }
@@ -215,6 +317,16 @@ class FlightSoundService : Service() {
     const val EXTRA_TITLE = "title"
     const val EXTRA_TEXT = "text"
     const val EXTRA_FADE_IN_MS = "fadeInMs"
+    const val EXTRA_SEQ = "seq"
+    /** Sinais do voo atual, definidos pelo app (setFlightSoundCues) antes e durante o som. */
+    @Volatile
+    var cues = FlightCues(LongArray(0), 1f, false)
+
+    private const val RAW_CINTO = "aviso_cinto"
+    private const val RAW_POUSO = "aviso_pouso"
+    /** O som de fundo baixa para 20% durante o sinal, com fade de 1 s antes e depois. */
+    private const val DUCK_FACTOR = 0.2f
+    private const val DUCK_MS = 1000L
     private const val FADE_OUT_MS = 1500L
     private const val FADE_STEP_MS = 50L
 
@@ -229,8 +341,26 @@ class FlightSoundService : Service() {
         StandaloneDatabaseProvider(ctx),
       ).also { cacheDeMusica = it }
 
+    /** Número de cada pedido de tocar; o serviço ignora os pedidos até paradoAte (parados antes de começar). */
+    val pedidos = java.util.concurrent.atomic.AtomicLong(0)
+
+    @Volatile
+    var paradoAte = 0L
+
+    @Volatile
+    var removerAoParar = false
+
+    /** Para o som (o que toca e o que ainda está na fila para começar). */
+    fun parar(removerNotificacao: Boolean) {
+      removerAoParar = removerNotificacao
+      paradoAte = pedidos.get()
+    }
+
     /** O serviço em execução (só no processo do app, acessado na thread principal). */
     @Volatile
     var instance: FlightSoundService? = null
   }
 }
+
+/** Sinais do voo: horários do sinal de cintos (ms), volume deles e se toca o aviso de pouso. */
+class FlightCues(val times: LongArray, val volume: Float, val landing: Boolean)

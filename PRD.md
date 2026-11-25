@@ -124,7 +124,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 - **RF-17** A tela em voo deve mostrar a posição do avião, rota, altitude e tempo restante, num globo com dois modos de câmera (seguir o avião e visão de cima).
 - **RF-18** A janela deve desenhar céu, terra e nuvens ao vivo pela posição e hora do voo, com asa e moldura renderizadas (dia, entardecer, noite) trocadas pela altura real do sol.
-- **RF-19** O bottom sheet "Vista da janela" deve oferecer: Só a janela (grátis); Com asa, Asa e motor, Asa completa e Sem moldura (primeira classe).
+- **RF-19** O bottom sheet "Vista da janela" deve oferecer: Janela (grátis); Asa e Sem moldura (Plus). Decisão do Alberto em 24/11/2026: "Com asa" e "Asa e motor" ficam fora do lançamento.
 - **RF-20** O app deve tocar sons de cabine e avisos conforme a fase real do voo. Os avisos do comandante são grátis e têm interruptor próprio, separado do som de fundo.
 - **RF-21** O app deve executar o serviço de bordo (pausa) conforme a configuração do usuário e as regras RN-05 a RN-07, com aviso sonoro e notificação no início e no fim, mesmo com o app fechado, e o botão "Voltar ao foco".
 - **RF-22** Durante o voo deve existir uma notificação fixa com contagem regressiva até o pouso (Android) e, no iOS, uma Live Activity.
@@ -163,7 +163,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RF-43** O progresso (voos, mala, saldo, carimbos, milhas) deve ter backup desde a v1, para nunca se perder por reinstalação ou troca de aparelho. **[Pendente]** mecanismo (ver ARCHITECTURE.md).
 - **RF-44** Os Ajustes (M5) devem cobrir: voo (serviço de bordo e intervalo; apps permitidos), som, avisos (pouso, serviço de bordo, lembrete de voo), tela e bateria (manter tela ligada, economia de bateria, qualidade da janela, reduzir movimento), conta e compras, privacidade (voos perto de você, exportar e apagar dados).
 - **RF-45** O usuário deve poder exportar e apagar seus dados.
-- **RF-46** Sobre o Termi deve mostrar os créditos dos dados (adsb.lol, NASA GIBS, GMIS, GeoNames), o agradecimento do GIBS, a citação do GMIS, a nota de que o uso de dados da NASA não implica apoio da NASA, a nota sobre companhias aéreas e os documentos legais.
+- **RF-46** Sobre o Termi deve mostrar os créditos dos dados (adsb.lol, NASA GIBS, ESA WorldCover / Copernicus Sentinel-2, OpenStreetMap, GeoNames), o agradecimento do GIBS, a atribuição do ESA WorldCover, a nota de que o uso de dados da NASA não implica apoio da NASA, a nota sobre companhias aéreas e os documentos legais.
 - **RF-47** Ajuda e sugestões deve ter perguntas frequentes em sanfona e contato (sugestão, relatar problema com o último voo, avaliar na loja).
 - **RF-48** Se os avisos de pouso estiverem desligados, o Início deve mostrar um aviso para ativá-los.
 
@@ -210,7 +210,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 - **RN-08 — Pouso completo.** Rende: minutos do voo inteiro (pausas incluídas), milhas da distância real voada, carimbo no passaporte, $1 por minuto e acesso à loja do destino.
 - **RN-09 — O tempo é do usuário.** O foco dura o tempo do voo escolhido no embarque (horário de pouso fixado no embarque). Quando esse horário chega, o voo conta como **pouso completo** (RN-08), esteja o avião real no ar ou não. O usuário nunca é obrigado a ficar até o avião pousar (decidido pelo Alberto em 19/11/2026).
-- **RN-09a — Em espera (continuar até o pouso).** Se o horário chegou e o avião real ainda está no ar, o app oferece "Continuar até o pouso", sem obrigação. Os minutos a mais contam como foco ($1 por minuto, milhas do trecho a mais). O usuário pode encerrar a qualquer momento ("Pousar agora") e continua com o pouso completo. Se o avião pousar enquanto ele continua, o voo encerra ali.
+- **RN-09a — Em espera (continuar até o pouso).** Se o horário chegou e o avião real ainda está no ar, o app oferece "Continuar até o pouso", sem obrigação. Os minutos a mais contam como foco ($1 por minuto, milhas do trecho a mais). O usuário pode encerrar a qualquer momento ("Pousar agora") e continua com o pouso completo. Se o avião pousar enquanto ele continua, o voo encerra ali. Os minutos a mais contam a partir de quando ele escolhe continuar (não do horário), e o app só oferece continuar com uma leitura recente do radar mostrando o avião no ar; na dúvida, o voo pousa no horário. Telas: Figma v3, "E5 · Em espera" (proposta de 25/11/2026) e "E5b · Continuando até o pouso".
 - **RN-09b — Em solo (avião pousou antes do horário).** Se o avião real pousar antes do horário escolhido, o foco segue até o horário: a janela mostra o avião no solo (taxiando ou no portão) e o pouso completo vem no horário escolhido.
 - **RN-10 — Pousar antes** (encerrar antes do horário escolhido). Rende: minutos até ali, milhas do trecho voado, $1 por minuto voado. Não rende carimbo nem loja do destino. O voo fica no diário como "Pousou antes, sobre [lugar sobrevoado]".
 - **RN-11 — Sem recuperação.** Nunca recuperar um voo pagando ou de qualquer outra forma.
@@ -252,7 +252,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Marca e dados
 
 - **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real.
-- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, GMIS, GeoNames) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
+- **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, ESA WorldCover/CC BY 4.0, OpenStreetMap/ODbL, GeoNames; desde 21/11/2026 o ESA WorldCover substitui o Landsat WELD e o GMIS) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
 
 ### Comparativo de planos
 
@@ -263,7 +263,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | Carimbos no passaporte | Sim | Sim |
 | Souvenirs | Até 3 de amostra | Todos |
 | Sons de fundo | Voo de cruzeiro (ruído marrom gerado) e ruído branco | Também motores (gravação real), cabine, chuva e lofi (playlist) |
-| Vista da janela | Só a janela | Todas as vistas |
+| Vista da janela | Janela | Todas as vistas (Asa e Sem moldura) |
 | Bloqueio de apps | — | Sim (condicionado, RN-23) |
 | Estatísticas | Semana | Também mês e ano |
 | Widgets | — | Sim ([Pendente], RF-41) |
@@ -410,4 +410,4 @@ Testes de preço: dois preços na Play via RevenueCat.
 | Avatar de perfil | Foto ou personalização. |
 | Balão de pensamento do Início | Medalhas genéricas ou souvenirs reais que faltam ao usuário. |
 | Ajuste de cor da terra por estação | Pendente. |
-| Citação do GMIS | Data de acesso a preencher na publicação. |
+| Citação do GMIS | Não se aplica desde 21/11/2026 (GMIS substituído pelo ESA WorldCover). |

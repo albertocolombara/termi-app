@@ -1,15 +1,16 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, PixelRatio, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, PixelRatio, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   Canvas,
-  ColorMatrix,
   FilterMode,
+  Group,
   Image as SkiaImage,
   LinearGradient,
   MipmapMode,
   Picture,
   RadialGradient,
   Rect,
+  rect,
   Skia,
   SkImage,
   SkShader,
@@ -17,13 +18,15 @@ import {
   useImage,
   vec,
 } from '@shopify/react-native-skia';
-import { useDerivedValue, useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import { Easing, useDerivedValue, useFrameCallback, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { ATLAS_PX, SKSL, uniformArray } from './shader';
 import { makeAtlas, AtlasState } from './tiles';
 import { makeAtlasDeNuvens, type NuvensState } from './nuvens';
 import { pesoDaPassagemNoturna } from '@/domain/janela/nuvens';
+import { DURACAO_DA_PERSIANA_MS, MASCARA_DA_PERSIANA, PERSIANA, deslocamentoDaPersiana } from '@/domain/janela/persiana';
 import { sun } from './geo';
+import { t } from '@/i18n';
 
 const effect = Skia.RuntimeEffect.Make(SKSL);
 const EMPTY = Skia.Shader.MakeColor(Skia.Color('transparent'));
@@ -36,13 +39,9 @@ export const QUALITY = [
   { label: 'Máxima', dpr: 2, hq: 1, near: true },
 ];
 
-// Mesmo filtro "warm" do protótipo web (sepia .5, saturação 1,25, brilho .97) na asa do entardecer.
-const WARM = [
-  0.7759, 0.2955, 0.0853, 0, 0,
-  0.143, 0.8514, 0.0725, 0, 0,
-  0.0963, 0.153, 0.6563, 0, 0,
-  0, 0, 0, 1, 0,
-];
+// Luz de posição na ponta da asa (render v3 do Blender, 1080 × 1440): brilha à noite e no entardecer.
+// A render do entardecer já vem quente; o filtro "warm" do protótipo não é mais aplicado.
+const LUZ_DA_ASA = { x: 415 / 1080, y: 813 / 1440 };
 
 const sm = (a: number, b: number, x: number) => {
   x = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -134,7 +133,7 @@ export function Janela({
     atlases.current = [
       makeAtlas('w10', 10, ATLAS_PX.near, setNear),
       makeAtlas('w8', 8, ATLAS_PX.mid, setMid),
-      makeAtlas('i9', 9, ATLAS_PX.imp, setImp),
+      makeAtlas('l9', 9, ATLAS_PX.imp, setImp),
     ];
   }
   // Nuvens reais (satélite, a cada 3 h), em volta do avião.
@@ -161,11 +160,23 @@ export function Janela({
   useEffect(() => {
     intervalo.set(1000 / fps);
   }, [fps, intervalo]);
-  useFrameCallback(() => {
+  // A 30 fps o relógio corre na thread de interface, a cada quadro da tela. A 10 fps (padrão) e a
+  // 2 fps (economia) um timer do JavaScript basta: o callback a cada quadro acordava a thread de
+  // interface 60 a 120 vezes por segundo e segurava a tela na taxa máxima, para desenhar só 10
+  // (build-43: 9 min de CPU em 11 min de uso a 10 fps). O desenho continua fora do JavaScript.
+  const porQuadro = fps > 10;
+  const quadro = useFrameCallback(() => {
     'worklet';
     const agora = Date.now();
     if (agora - relogio.value >= intervalo.value - 4) relogio.value = agora;
-  });
+  }, porQuadro);
+  useEffect(() => {
+    quadro.setActive(porQuadro);
+    if (porQuadro) return;
+    const id = setInterval(() => relogio.set(Date.now()), 1000 / fps);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [porQuadro, fps]);
   const desenhos = useSharedValue(0);
   const meter = useRef({ js: 0, jsFrames: 0, jsLast: Date.now(), drawsLast: 0 });
   const [meterText, setMeterText] = useState('');
@@ -279,13 +290,51 @@ export function Janela({
   });
   const r2 = (x: number) => Math.round(x * 50) / 50;
 
+  // Persiana: um toque fecha, outro volta à posição inicial. Com "reduzir movimento", sem animação.
+  const fechada = useSharedValue(0);
+  const [persianaFechada, setPersianaFechada] = useState(false);
+  const [persianaUsada, setPersianaUsada] = useState(false);
+  const tocarPersiana = () => {
+    const alvo = persianaFechada ? 0 : 1;
+    setPersianaUsada(true);
+    setPersianaFechada(!persianaFechada);
+    fechada.value = reduceMotion ? alvo : withTiming(alvo, { duration: DURACAO_DA_PERSIANA_MS, easing: Easing.inOut(Easing.cubic) });
+  };
+  const sv = width / 1080;
+
   return (
     <View style={[styles.view, { width, height }]}>
       <View style={{ width: lw, height: lh, transform: [{ scale }], transformOrigin: 'top left' }}>
         <Canvas style={{ width: lw, height: lh }}>{showLandscape ? <Picture picture={picture} /> : null}</Canvas>
       </View>
       {showOverlay && (
-        <Overlay width={width} height={height} wt={r2(wt)} wn={r2(wn)} beacon={beacon} piscando={bk > 0.005} glow={r2(wn * 0.75 + wt * 0.25)} asa={asa} moldura={moldura} />
+        <Overlay
+          width={width}
+          height={height}
+          wt={r2(wt)}
+          wn={r2(wn)}
+          beacon={beacon}
+          piscando={bk > 0.005}
+          glow={r2(wn * 0.75 + wt * 0.25)}
+          asa={asa}
+          moldura={moldura}
+          fechada={fechada}
+          persianaUsada={persianaUsada}
+        />
+      )}
+      {showOverlay && moldura && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t(persianaFechada ? 'janela.abrirPersiana' : 'janela.fecharPersiana')}
+          onPress={tocarPersiana}
+          style={{
+            position: 'absolute',
+            left: MASCARA_DA_PERSIANA.x * sv,
+            top: MASCARA_DA_PERSIANA.y * sv,
+            width: MASCARA_DA_PERSIANA.largura * sv,
+            height: MASCARA_DA_PERSIANA.altura * sv,
+          }}
+        />
       )}
       {!bD && <Text style={styles.loading}>Preparando a janela…</Text>}
       {showMeter && (
@@ -297,9 +346,23 @@ export function Janela({
   );
 }
 
+/** Camadas da janela v3 do Blender (assets/janela). `require` fixo para o Metro empacotar. */
+const IMG = {
+  asa: { dia: require('../../assets/janela/asa_dia.webp'), tarde: require('../../assets/janela/asa_entardecer.webp'), noite: require('../../assets/janela/asa_noite.webp') },
+  asaBeacon: require('../../assets/janela/asa_beacon.webp'),
+  moldura: { dia: require('../../assets/janela/moldura_dia.webp'), tarde: require('../../assets/janela/moldura_entardecer.webp'), noite: require('../../assets/janela/moldura_noite.webp') },
+  fechada: { dia: require('../../assets/janela/moldura_dia_fechada.webp'), tarde: require('../../assets/janela/moldura_entardecer_fechada.webp'), noite: require('../../assets/janela/moldura_noite_fechada.webp') },
+  persiana: { dia: require('../../assets/janela/persiana_dia.webp'), tarde: require('../../assets/janela/persiana_entardecer.webp'), noite: require('../../assets/janela/persiana_noite.webp') },
+  mascara: require('../../assets/janela/persiana_mascara.png'),
+};
+type Luz = 'dia' | 'tarde' | 'noite';
+
 /**
- * Asa e moldura do Blender. Só redesenha quando a luz muda (valores arredondados),
- * não a cada quadro da paisagem.
+ * Asa, moldura e persiana do Blender. Só redesenha quando a luz muda (valores arredondados),
+ * não a cada quadro da paisagem; a persiana anima pela thread de interface.
+ *
+ * Memória (visao-do-produto, janela v3): cada camada cheia ocupa ~6 MB decodificada. Só carrega
+ * as luzes que estão aparecendo, e a moldura "fechada" só depois do primeiro toque na persiana.
  */
 const Overlay = memo(function Overlay({
   width,
@@ -311,6 +374,8 @@ const Overlay = memo(function Overlay({
   glow,
   asa,
   moldura,
+  fechada,
+  persianaUsada,
 }: {
   width: number;
   height: number;
@@ -321,27 +386,50 @@ const Overlay = memo(function Overlay({
   glow: number;
   asa: boolean;
   moldura: boolean;
+  /** 0 = persiana na posição inicial, 1 = fechada. */
+  fechada: SharedValue<number>;
+  persianaUsada: boolean;
 }) {
-  const asaDia = useImage(require('../../assets/janela/asa_dia.webp'));
-  const asaTarde = useImage(require('../../assets/janela/asa_entardecer.webp'));
-  const asaNoite = useImage(require('../../assets/janela/asa_noite.webp'));
-  const asaBeacon = useImage(require('../../assets/janela/asa_beacon.webp'));
-  const molDia = useImage(require('../../assets/janela/moldura_dia.webp'));
-  const molTarde = useImage(require('../../assets/janela/moldura_entardecer.webp'));
-  const molNoite = useImage(require('../../assets/janela/moldura_noite.webp'));
+  // Peso de cada luz: o dia fica por baixo; entardecer e noite entram por cima com a sua opacidade.
+  const usa: Record<Luz, boolean> = { dia: wt + wn < 0.999, tarde: wt > 0.001, noite: wn > 0.001 };
+  const peso: Record<Luz, number> = { dia: 1, tarde: wt, noite: wn };
+  const se = <T,>(cond: boolean, fonte: T) => (cond ? fonte : null);
+  const asaImg = {
+    dia: useImage(se(asa && usa.dia, IMG.asa.dia)),
+    tarde: useImage(se(asa && usa.tarde, IMG.asa.tarde)),
+    noite: useImage(se(asa && usa.noite, IMG.asa.noite)),
+  };
+  const asaBeacon = useImage(se(asa && piscando, IMG.asaBeacon));
+  const molImg = {
+    dia: useImage(se(moldura && usa.dia, IMG.moldura.dia)),
+    tarde: useImage(se(moldura && usa.tarde, IMG.moldura.tarde)),
+    noite: useImage(se(moldura && usa.noite, IMG.moldura.noite)),
+  };
+  const fechImg = {
+    dia: useImage(se(moldura && persianaUsada && usa.dia, IMG.fechada.dia)),
+    tarde: useImage(se(moldura && persianaUsada && usa.tarde, IMG.fechada.tarde)),
+    noite: useImage(se(moldura && persianaUsada && usa.noite, IMG.fechada.noite)),
+  };
+  const perImg = {
+    dia: useImage(se(moldura && usa.dia, IMG.persiana.dia)),
+    tarde: useImage(se(moldura && usa.tarde, IMG.persiana.tarde)),
+    noite: useImage(se(moldura && usa.noite, IMG.persiana.noite)),
+  };
+  const mascara = useImage(se(moldura, IMG.mascara));
+
+  const s = width / 1080; // a vista tem 3:4, igual à render
+  const descida = useDerivedValue(() => [{ translateY: deslocamentoDaPersiana(fechada.value) }]);
+  const LUZES: Luz[] = ['dia', 'tarde', 'noite'];
+
   const img = (image: SkImage | null, opacity = 1) =>
     image && opacity > 0.001 ? (
       <SkiaImage image={image} x={0} y={0} width={width} height={height} fit="cover" opacity={opacity} />
     ) : null;
   return (
     <Canvas style={StyleSheet.absoluteFill}>
-      {asa && img(asaDia)}
-      {asa && asaTarde && wt > 0.001 && (
-        <SkiaImage image={asaTarde} x={0} y={0} width={width} height={height} fit="cover" opacity={wt}>
-          <ColorMatrix matrix={WARM} />
-        </SkiaImage>
-      )}
-      {asa && img(asaNoite, wn)}
+      {asa && img(asaImg.dia, usa.dia ? 1 : 0)}
+      {asa && img(asaImg.tarde, wt)}
+      {asa && img(asaImg.noite, wn)}
       {asa && asaBeacon && piscando && (
         <SkiaImage
           image={asaBeacon}
@@ -356,24 +444,64 @@ const Overlay = memo(function Overlay({
       )}
       {asa && glow > 0.001 && (
         <Rect
-          x={width * 0.254 - width * 0.025}
-          y={height * 0.442 - width * 0.025}
+          x={width * LUZ_DA_ASA.x - width * 0.025}
+          y={height * LUZ_DA_ASA.y - width * 0.025}
           width={width * 0.05}
           height={width * 0.05}
           opacity={glow}
           blendMode="screen"
         >
           <RadialGradient
-            c={vec(width * 0.254, height * 0.442)}
+            c={vec(width * LUZ_DA_ASA.x, height * LUZ_DA_ASA.y)}
             r={width * 0.025}
             colors={['#FFFFFF', '#FFFFFF', '#FFFAF059', '#FFFAF000']}
             positions={[0, 0.07, 0.22, 0.65]}
           />
         </Rect>
       )}
-      {moldura && img(molDia)}
-      {moldura && img(molTarde, wt)}
-      {moldura && img(molNoite, wn)}
+      {/* Moldura: a cabine escurece conforme a persiana desce (mistura com a moldura "fechada"). */}
+      {moldura &&
+        LUZES.map((l) =>
+          usa[l] && molImg[l] ? (
+            <Group key={l} opacity={peso[l]}>
+              {img(molImg[l])}
+              {fechImg[l] ? <SkiaImage image={fechImg[l]} x={0} y={0} width={width} height={height} fit="cover" opacity={fechada} /> : null}
+            </Group>
+          ) : null,
+        )}
+      {/* Persiana: desenhada fechada, sobe pelo deslocamento e é recortada pela máscara fixa. */}
+      {moldura && mascara && (
+        <Group transform={[{ scale: s }]}>
+          <Group
+            layer
+            clip={rect(MASCARA_DA_PERSIANA.x, MASCARA_DA_PERSIANA.y, MASCARA_DA_PERSIANA.largura, MASCARA_DA_PERSIANA.altura)}
+          >
+            <Group transform={descida}>
+              {LUZES.map((l) =>
+                usa[l] && perImg[l] ? (
+                  <SkiaImage
+                    key={l}
+                    image={perImg[l]}
+                    x={PERSIANA.x}
+                    y={PERSIANA.y}
+                    width={PERSIANA.largura}
+                    height={PERSIANA.altura}
+                    opacity={peso[l]}
+                  />
+                ) : null,
+              )}
+            </Group>
+            <SkiaImage
+              image={mascara}
+              x={MASCARA_DA_PERSIANA.x}
+              y={MASCARA_DA_PERSIANA.y}
+              width={MASCARA_DA_PERSIANA.largura}
+              height={MASCARA_DA_PERSIANA.altura}
+              blendMode="dstIn"
+            />
+          </Group>
+        </Group>
+      )}
       <Rect x={0} y={0} width={width} height={height}>
         <LinearGradient
           start={vec(0, 0)}

@@ -18,7 +18,7 @@ flowchart LR
   subgraph Externos
     ADSB[adsb.lol<br/>posições ao vivo]
     VRS[VRS Standing Data<br/>rotas, companhias, aeroportos]
-    GIBS[NASA GIBS<br/>Landsat, GMIS, Blue/Black Marble, VIIRS]
+    GIBS[NASA GIBS<br/>Blue/Black Marble, VIIRS, OSM Land/Water<br/>+ ESA WorldCover Sentinel-2]
     GEO[GeoNames<br/>lugares]
   end
 
@@ -72,7 +72,7 @@ flowchart LR
 | Animação de UI | **react-native-reanimated** 4 + worklets | [Decidido] | Animações e, a seguir, o ritmo da janela na thread de interface |
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
 | Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
-| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo |
+| Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo. Sons: sinal de apertar cintos (`assets/sons/aviso_cinto.ogg`) e aviso da comissária no pouso (`aviso_pouso.ogg`: sinal, voz gerada no ElevenLabs e som da cabine). **Com o som de fundo tocando**, quem toca os dois é o próprio app (FlightSoundService): o som de fundo baixa para 20% com fade 1 s antes, o sinal toca no volume de mídia (Ajustes > Volume do sinal) e o som volta; no pouso, depois do aviso, o som de fundo sai. As notificações desses momentos vêm sem som (`servico-sem-som`, `pouso-sem-som`). **Sem som de fundo** (Silêncio), o som vem da notificação, no volume de alarme (`servico-alarme`, `pouso-comissaria`). Os avisos são reagendados quando isso muda no meio do voo (SomDoVoo). Decidido pelo Alberto em 25/11/2026, depois de o som pelo canal de notificação não tocar na build-58 |
 | Sons de fundo | Serviço nativo próprio (`FlightSoundService`, ExoPlayer) no Android; **expo-audio** no iOS. Loops AAC em `assets/sons`; lofi em streaming do R2 | [Decidido] (20/11/2026) | Voo de cruzeiro e ruído branco (grátis); motores, cabine, chuva e lofi (primeira classe). Seção 10 |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
 | Live Activity (iOS) | expo-widgets ou módulo Swift | [Proposta] | Fase iOS |
@@ -301,7 +301,8 @@ Funções puras em `src/domain`:
 |---|---|---|
 | **adsb.lol** | Posições ao vivo (só pelo coletor) | Dados ODbL; crédito obrigatório; chave concedida com uso comercial; 1.000 chamadas/dia e 300/hora com chave; avisar ida à produção; planejar receptor ADS-B próprio |
 | **VRS Standing Data** | Rotas e aeroportos | Cobertura de rotas varia: 51% (Los Angeles) a 91% (Tóquio) |
-| **NASA GIBS** | Blue/Black Marble, Landsat WELD 30 m, GMIS, VIIRS | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
+| **NASA GIBS** | Blue/Black Marble, VIIRS, OSM Land/Water (máscara do mar; © colaboradores do OpenStreetMap, ODbL) | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
+| **ESA WorldCover 2021** (AWS Open Data, `esa-worldcover-s2` e `esa-worldcover`) | Composto Sentinel-2 RGBNIR (10 m) e mapa de cobertura (área construída) para a paisagem e as luzes | CC BY 4.0, uso comercial com crédito: "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium" (Sobre o Termi). Desde 21/11/2026, no lugar do Landsat WELD e do GMIS |
 | **OpenFlights** | País de cada companhia (bandeira na cauda) | Dados ODbL; crédito obrigatório; base desatualizada em companhias novas, corrigida à mão no coletor |
 | **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
 | **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | Blocos do mundo (menos a Antártida): ~7,8 GB, medidos em 20/11/2026 |
@@ -386,8 +387,8 @@ Lições medidas no protótipo (Samsung M35). Detalhes dos testes na seção 18:
 - **10 fps por padrão, 2 fps em economia, 30 fps opcional** (Ajustes > "Janela a 30 quadros por segundo", desligado por padrão). Desde a build-28 o relógio da janela roda na thread de interface (`useFrameCallback` + `useDerivedValue`): cada quadro é montado sem passar pelo JavaScript, o que tira o teto de ~21 fps do timer em JS. A posição e o deslocamento das nuvens são interpolados entre as leituras de 1 s da tela (antes a paisagem andava em degraus de 1 s). **[Pendente]** medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica.
 - **Segundo plano sem trabalho:** janela desmontada e relógios parados (1% de bateria em 25 min de tela bloqueada).
 - **Dados móveis (20/11/2026, depois de 2,01 GB num dia de testes na build 33).** O que o app baixa e como:
-  - Paisagem da janela: ~9 MB por hora de rota (~3 MB na qualidade Econômica), a próxima 1 h à frente; fica no cache do aparelho.
-  - Posição do avião durante o voo: só o arquivo da região do avião (20 a 145 KB) a cada 5 min; antes eram as 12 regiões (~0,7 MB), só para atualizar um avião.
+  - Paisagem da janela: ~6 MB por hora de rota com o Sentinel-2 (36,7 MB num voo de 5h45, medido pelo Alberto em 24/11/2026), a próxima 1 h à frente; fica no cache do aparelho. Desde 24/11/2026 só baixa com a janela à vista (no globo ou com a tela desligada, nada); ao voltar para a janela, baixa da posição atual em diante.
+  - Posição do avião durante o voo: só o arquivo da região do avião a cada 5 min (comprimido em gzip desde 21/11/2026: ~5 a 25 KB); antes eram as 12 regiões (~0,7 MB), só para atualizar um avião. Se o avião não está mais na região (saiu dela ou passou por trecho sem radar), procura em todas as regiões no máximo a cada 20 min, e o voo segue projetado a partir da última leitura boa (24/11/2026; antes ficava preso à região do embarque e nunca mais se corrigia).
   - Trilha do globo: cada faixa de 20 min do histórico é baixada uma vez por abertura do app; antes todas eram baixadas de novo a cada 20 min.
   - Globo: blocos do Blue e do Black Marble recomprimidos em WebP no R2 (`globo/{dia|noite}/{z}/{linha}/{coluna}.webp`, níveis 1 a 7, 34.142 blocos, 149 MB, workflow "Blocos do globo" do coletor, 20/11/2026), guardados no cache do aparelho (até ~800 arquivos). O mosaico noturno só é baixado quando a região vista está de noite. Antes vinham do GIBS a cada abertura do globo (o Black Marble só existe em PNG, ~300 KB por bloco): 17 a 29 MB medidos pelo Alberto num voo de 25 min (build-38).
   - Nuvens: ~0,3 a 1 MB por voo. Lofi (primeira classe): ~40 MB por hora de música.
@@ -453,7 +454,7 @@ Observabilidade:
 | ADR-08 | Local-first com SQLite e livro-caixa | Decidido | Funciona offline; facilita sincronização por união. |
 | ADR-09 | Expo Router, Zustand e TanStack Query | Decidido | Padrão atual do Expo. |
 | ADR-10 | Supabase para conta e sincronização | Decidido | Postgres combina com o livro-caixa e com a sincronização por união; plano grátis suficiente para o beta (~1 a 3 mil usuários sincronizando por alguns meses; o limite é o banco de 500 MB); sem backup automático no grátis. Ver seção 8. |
-| ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada; para mais perto, usar os blocos Landsat da janela. No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
+| ADR-11 | Globo em Skia (SkSL) | Decidido (19/11/2026, após o build-5 no M35) | MapLibre Native não tem globo. Teste em `src/globo` (ferramenta "Globo de teste"). v2: blocos da NASA GIBS (Blue Marble Next Generation e Black Marble, 500 m por pixel no nível 7) carregados no nível de detalhe do zoom, em três mosaicos (perto, longe, noite) sobre a imagem mundial; gestos de pinça e arraste com "Centralizar"; rota restante em pontos no chão, que diminuem com a distância; cidades com 150 mil habitantes ou mais (GeoNames), mais cidades conforme aproxima. ~70 MB de textura; não fica montado junto com a janela. No teste os blocos vêm direto do GIBS; em produção, do R2. Prévia: `docs/imagens/globo-previa.png`. Limite: abaixo de ~250 km de distância a imagem de 500 m fica borrada. **v3 (21/11/2026, decidido pelo Alberto):** do nível 8 ao 10 o globo usa os blocos da paisagem da janela (Sentinel-2, `w8` e `w10`, até 61 m por pixel), com a cor levada ao tom do Blue Marble no shader; o mosaico de longe continua no Blue Marble (cobre o mar); de perto as luzes vêm da camada `l9`. Mesma pasta do aparelho da janela (`cache/paisagem`). Sem arquivos novos no R2. Descartados: Google Maps SDK (plano, sem globo), Maps 3D SDK (experimental, sem pacote para React Native, sem visual próprio), Mapbox (custo por usuário acima de 25 mil por mês) e MapLibre Native (sem globo). No modo Seguir a câmera fica alinhada ao rumo, então a rota à frente aparece reta (mantido assim). Falta medir em Android mais fraco e com ferramenta de memória. |
 | ADR-12 | Rive para o Termi; Filament para souvenirs 3D | Decidido / Proposta | Rive já tem as animações; Filament a validar em peso e memória. |
 | ADR-13 | Protótipo como base técnica; PRD como base de produto | Decidido | Janela, design system, módulo nativo, recursos e medições já validados no aparelho são reaproveitados. Regras de produto divergentes no protótipo são ajustadas ao PRD. |
 | ADR-14 | Catálogo da coleção remoto e versionado | Proposta | Novos países entram em pouco tempo; evita depender de nova versão na loja. Custo: download e cache dos modelos 3D. |
@@ -511,14 +512,20 @@ Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; b
 
 | Arquivos | Conteúdo |
 |---|---|
-| `tras_asa_*` | Asa, com fundo transparente, em três luzes (dia, entardecer, noite) |
-| `tras_moldura_escura_*` | Moldura grafite (teste B: parede da cabine grafite, janela grande, degradê da cor do app no topo e na base), nas mesmas três luzes |
-| `mini_2`, `mini_3` | Só miniaturas das vistas "Com asa" e "Asa e motor" |
-| `asa_*` (na pasta do Blender) | Outro enquadramento, com a moldura clara descartada; não usar |
+| `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-53** |
+| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes, e a versão `_fechada` (cabine escura, com a persiana fechada). **Em uso desde a build-53** (fechada desde a build-54) |
+| `Janela nova (v3)/tras_persiana_v3_*` | Persiana nas três luzes e a máscara do vão. **Em uso desde a build-54** |
+| `Janela nova (v3)/App (otimizado)` | Versões em WebP das camadas acima (fonte dos arquivos de `assets/janela`) |
+| `Vistas · divulgação/Miniaturas` | Miniaturas da folha "Vista da janela" (`thumb_janela`, `thumb_janela_asa`, `thumb_sem_moldura`) |
+| `Asa antiga/`, `tras_moldura_*`, `mini_*` | Versões anteriores; não usar |
 
-As camadas separadas compõem três vistas sem render extra: **Asa completa** (asa + moldura), **Só a janela** (só a moldura) e **Sem moldura** (só a asa). Faltam renders de "Com asa" e "Asa e motor" nos três horários.
+As camadas separadas compõem as três vistas do lançamento sem render extra: **Janela** (só a moldura, grátis), **Asa** (asa + moldura, Plus) e **Sem moldura** (só a asa, Plus). "Com asa" e "Asa e motor" saíram do lançamento (decisão do Alberto em 24/11/2026).
 
-No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite`. A troca entre as três luzes é suave, pela altura real do sol. Ao entardecer, a asa recebe um filtro quente (sépia 0,5, saturação 1,25, brilho 0,97), igual ao do protótipo web.
+No app, as camadas entram como WebP de 1080 × 1440 com transparência: `asa_dia`, `asa_entardecer`, `asa_noite`, `asa_beacon` e `moldura_dia`, `moldura_entardecer`, `moldura_noite` (em `assets/janela`). A troca entre as três luzes é suave, pela altura real do sol. A render v3 do entardecer já vem quente, então o filtro quente do protótipo web saiu. As miniaturas saem das do Alberto, reduzidas para 240 × 320.
+
+**Câmera.** O shader da janela usa a mesma câmera da render v3 ("Câmera · janela v3" em `janela_25_janela_realista.blend`): olha reto para a esquerda, nivelada, lente de 25 mm (tangente do meio ângulo vertical 0,72). Antes usava a câmera da 23A, 12° para baixo e virada para trás, e a asa v3 parecia apontar para baixo (build-53).
+
+**Persiana (build-54).** Começa um pouco abaixada; um toque no vidro fecha, outro volta à posição inicial (0,6 s; sem animação com "reduzir movimento"). Camadas de trás para frente: paisagem, asa, moldura misturada com a moldura fechada conforme a persiana desce, persiana deslocada na vertical e recortada pela máscara (`domain/janela/persiana.ts`). A persiana existe nas vistas com moldura (Janela e Asa). Ela não é salva: cada voo começa com a persiana na posição inicial. Para economizar memória, o app só carrega as luzes que estão aparecendo, e a moldura fechada só depois do primeiro toque.
 
 **Luzes da asa.** Só a luz branca de posição, fixa, na ponta (entardecer e noite) e o beacon vermelho da fuselagem em pulso lento e fraco (um a cada 3,6 s). Sem strobe e sem luz vermelha de navegação. Os pulsos param com "reduzir movimento".
 
@@ -526,11 +533,11 @@ No protótipo, as camadas entram como WebP de 1080 × 1440 com transparência: `
 
 | Camada | Fonte | Textura na GPU |
 |---|---|---|
-| Terra perto do avião | Landsat WELD 30 m sem nuvens (NASA), blocos no nível 10 (~61 m/px) | Atlas 2048 × 2048 |
-| Terra a média distância | Landsat, blocos no nível 8 (~244 m/px) | Atlas 1024 × 1024 |
+| Terra perto do avião | Sentinel-2 (ESA WorldCover 2021, 10 m), blocos no nível 10 (~61 m/px) | Atlas 2048 × 2048 |
+| Terra a média distância | Sentinel-2, blocos no nível 8 (~244 m/px) | Atlas 1024 × 1024 |
 | Terra longe (dia) | Blue Marble, mapa-base `base_dia.jpg` | 2048 × 1792 |
 | Terra longe (noite) | Black Marble, `base_noite.jpg`, e detalhe `det_noite.jpg` | 2048 × 1792 e 1280 × 1536 |
-| Cidades à noite | Áreas construídas GMIS (blocos nível 9), moduladas pelo Black Marble na Europa (onde há a imagem-base noturna) e pela própria densidade das áreas construídas no resto do mundo | Atlas 1024 × 1024 |
+| Cidades à noite | Camada `l9` (nível 9): R = área construída do WorldCover (forma), G = luz real do Black Marble (brilho). O shader soma um brilho de fundo e pontos de luz na escala de quadras; a cor vai do laranja da periferia ao branco quente dos centros (21/11/2026; antes, GMIS num liga/desliga de cor fixa que saturava) | Atlas 1024 × 1024 |
 | Nuvens | Máscara de nuvens do VIIRS (NOAA-20) do mundo inteiro, atualizada a cada 3 h pela coleta "Nuvens" (passagens diurna e noturna; a janela usa a mais recente pela hora solar local), usada como cobertura por região das nuvens geradas por ruído (fbm). Camada a 7,5 km de altitude: na descida o avião a atravessa e as nuvens ficam por cima. Sem rede: só as geradas | Dois mosaicos 2×2 de 1024 × 1024 (dia e noite) |
 | Céu | Calculado: cor pela altura do sol, horizonte, brilho quente no nascer e no pôr, disco do sol, estrelas à noite, névoa pela distância | — |
 
@@ -538,7 +545,9 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 
 **Nuvens no R2 [Decidido em 20/11/2026 pelo Alberto]:** `nuvens/{dia|noite}/{linha}/{coluna}.webp` (20 × 10 blocos de 18°, nível 4 da grade do GIBS, ~4 km/px, cinza 0 = céu limpo, 255 = nuvem) e `nuvens/indice.json` com a versão. Mesmos nomes a cada atualização: o espaço fica fixo em ~22 MB, sem apagar nada. O app baixa os blocos da rota no embarque (`data/nuvens`), pede com `?v=versão` e guarda no cache em `nuvens/{versão}/`, apagando as versões antigas. Por voo, ~0,3 a 1 MB.
 
-**Blocos de terra.** Vêm do NASA GIBS (EPSG:4326, blocos de 512 px; cada bloco cobre 288/2^z graus) e são recomprimidos em WebP (qualidade 78), como no protótipo: `w10` (Landsat WELD, nível 10, ~61 m/px), `w8` (Landsat WELD, nível 8, ~244 m/px) e `i9` (GMIS em cinza, nível 9). No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
+**Blocos de terra.** Grade EPSG:4326 do GIBS (blocos de 512 px; cada bloco cobre 288/2^z graus), em WebP. No protótipo ficavam empacotados em `.bin` dentro do APK (~21 MB, só Barcelona → Londres).
+
+**Sentinel-2 no lugar do Landsat [Decidido em 21/11/2026 pelo Alberto]:** `w10` e `w8` regravadas com o composto Sentinel-2 2021 do ESA WorldCover (WebP 70) e a camada de luzes `l9` no lugar da `i9`. Gerador `blocos/gerar_s2.py` do coletor. Cor casada com o Landsat (a janela foi calibrada nele); rios e lagos com a cor real (meia saturação, brilho limitado); o mar (máscara do OSM) fica todo com a cor do Blue Marble (rodada v2, 21/11/2026: na v1 a água rasa e barrenta do mar virava manchas laranja na Coreia e o mosaico deixava retângulos de 1° no mar). O R2 tem de ficar nos 10 GB grátis (Alberto): gerados em 21/11/2026 (20 partes, ~55 min, sem erros): `w10` 208.462 blocos, 7,22 GB; `w8` 14.855, 0,52 GB; `l9` 33.605, 0,26 GB; total ~8,0 GB (R2 inteiro ~8,3 GB). Sobraram 6.036 blocos `w10` e 1.414 `w8` do Landsat (0,15 GB) que não foram regravados, a apagar com o modo "limpar" do workflow; a `i9` só sai quando nenhum app em teste a usar. No aparelho a pasta mudou de `cache/blocos` para `cache/paisagem` (a antiga é apagada no primeiro download). Antes (Landsat WELD e GMIS, 20/11/2026):
 
 **Em produção [Decidido, 20/11/2026]:** um arquivo por bloco no R2, em `/blocos/{camada}/{linha}/{coluna}.webp`, com cache de 1 ano (imutável). Bloco ausente = oceano ou nada a desenhar (o app trata 404 como vazio). Cobre toda a terra menos a Antártida (decisão do Alberto, 19/11/2026). Gerado pelo workflow "Blocos de paisagem" do coletor (`blocos/gerar.py`), em 20/11/2026:
 
@@ -546,12 +555,12 @@ Ajuste de cor final leve (dessaturação 12% e brilho +12%). A sombra das nuvens
 |---|---|---|
 | `w10` (perto do avião) | 212.788 | 7,20 GB |
 | `w8` (distância média) | 16.076 | 0,52 GB |
-| `i9` (cidades à noite) | 30.372 | 0,11 GB |
+| `i9` (cidades à noite, GMIS; sai depois da troca) | 30.372 | 0,11 GB |
 | **Total** | **259.236** | **~7,8 GB** (dentro dos 10 GB grátis do R2) |
 
 Por voo: ~250 blocos (~9 MB) por hora, baixados no embarque; no modo Econômica, sem o nível 10, ~3 MB por hora.
 
-**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo). Durante o voo, com a tela aberta, o app mantém baixada só a **próxima 1 h** à frente do avião e confere a cada 10 min (`data/blocos/useBlocosDoVoo.ts`); antes baixava a rota inteira até o destino de uma vez. Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
+**Download no embarque (20/11/2026, `domain/voos/blocosDaRota.ts` e `data/blocos`):** o app junta o mosaico 4×4 de cada camada em volta de cada ponto da rota (da posição projetada até o destino, a cada 10 km) e baixa do R2 com 6 pedidos ao mesmo tempo para `cache/blocos/{camada}/{linha}/{coluna}.webp`. O 404 vira um arquivo vazio (oceano), para não pedir de novo. Até 5% de falhas a janela aguenta; acima disso, a tela oferece "Embarcar com o globo" (UC-02 A4). Desde 20/11/2026 o embarque espera só os primeiros 40 min da rota (10 pedidos ao mesmo tempo). Durante o voo, com a tela aberta **e a janela à vista** (24/11/2026), o app mantém baixada só a **próxima 1 h** à frente do avião e confere a cada 10 min (`data/blocos/useBlocosDoVoo.ts`); antes baixava a rota inteira até o destino de uma vez. Por enquanto baixa as três camadas em qualquer qualidade; pular o nível 10 na qualidade Econômica entra com o ajuste de qualidade.
 
 **Níveis de qualidade.**
 
@@ -565,7 +574,7 @@ A paisagem é desenhada num canvas menor e ampliada; asa e moldura ficam sempre 
 
 **Rota e sol.** Posição por arco de grande círculo, rumo e altura do sol calculados pela data, hora e posição (`geo.ts`). O protótipo voa Barcelona → Londres na velocidade real, porque os blocos empacotados cobrem esse trajeto.
 
-**Pendências da janela.** Renderizar "Com asa" e "Asa e motor"; o mosaico Landsat é de ~2000 e com cara de verão (falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
+**Pendências da janela.** Medir a memória com a persiana no aparelho; o mosaico Sentinel-2 é a mediana de 2021 (sem estação: falta ajuste por estação); o sol sempre bate do mesmo lado da asa; texturas comprimidas (KTX2/Basis) no app nativo.
 
 ### 19.2 Souvenirs (medalhas)
 

@@ -1,4 +1,15 @@
-import { blocosDaRota, blocosSuficientes, camadasParaBaixar, dividirBlocos, caminhoDoBloco, grausPorBloco, mosaicoEmVolta } from '../blocosDaRota';
+import {
+  PASTA_ANTIGA_NO_APARELHO,
+  PASTA_NO_APARELHO,
+  blocosDaRota,
+  blocosSuficientes,
+  camadasParaBaixar,
+  caminhoDoBloco,
+  caminhoNoAparelho,
+  dividirBlocos,
+  grausPorBloco,
+  mosaicoEmVolta,
+} from '../blocosDaRota';
 
 const BCN = { lat: 41.2971, lon: 2.0785 };
 const LHR = { lat: 51.47, lon: -0.4543 };
@@ -29,7 +40,7 @@ describe('blocos da rota', () => {
     expect(new Set(chaves).size).toBe(chaves.length);
     expect(blocos.length).toBeGreaterThan(200);
     expect(blocos.length).toBeLessThan(450);
-    expect(chaves[0]).toMatch(/^blocos\/(w10|w8|i9)\/\d+\/\d+\.webp$/);
+    expect(chaves[0]).toMatch(/^blocos\/(w10|w8|l9)\/\d+\/\d+\.webp$/);
   });
 
   it('num ponto parado devolve só os mosaicos daquele ponto', () => {
@@ -52,7 +63,16 @@ describe('blocos da rota', () => {
   });
 
   it('na qualidade Econômica não baixa o nível 10', () => {
-    expect(camadasParaBaixar('economica').map((c) => c.camada)).toEqual(['w8', 'i9']);
+    expect(camadasParaBaixar('economica').map((c) => c.camada)).toEqual(['w8', 'l9']);
     expect(blocosDaRota(BCN, LHR, camadasParaBaixar('economica')).some((b) => b.camada === 'w10')).toBe(false);
+  });
+});
+
+describe('caminhoNoAparelho', () => {
+  it('guarda os blocos numa pasta própria, separada da pasta antiga do Landsat', () => {
+    const b = { camada: 'w10' as const, linha: 400, coluna: 486 };
+    expect(caminhoNoAparelho(b)).toBe('paisagem/w10/400/486.webp');
+    expect(caminhoDoBloco(b)).toBe('blocos/w10/400/486.webp');
+    expect(PASTA_NO_APARELHO).not.toBe(PASTA_ANTIGA_NO_APARELHO);
   });
 });

@@ -39,8 +39,11 @@ export type RegiaoJson = {
 export type IndiceJson = {
   versao: number;
   atualizadoEm: string;
-  regioes: Record<string, { nome: string; coletadoEm: string; voos: number }>;
+  /** `area`: centro e raio consultados no adsb.lol (desde 24/11/2026; índices antigos não têm). */
+  regioes: Record<string, { nome: string; coletadoEm: string; voos: number; area?: AreaDaRegiao }>;
 };
+
+export type AreaDaRegiao = { lat: number; lon: number; raioKm: number };
 
 export class ErroDoCache extends Error {}
 
@@ -93,12 +96,12 @@ async function json<T>(url: string, sinal?: AbortSignal): Promise<T> {
   return (await r.json()) as T;
 }
 
-export type Regiao = { id: string; nome: string; coletadoEm: number; voos: number };
+export type Regiao = { id: string; nome: string; coletadoEm: number; voos: number; area: AreaDaRegiao | null };
 
 export async function buscarIndice(base: string, sinal?: AbortSignal): Promise<Regiao[]> {
   const i = await json<IndiceJson>(`${base}/voos/indice.json`, sinal);
   if (i.versao !== VERSAO_CONTRATO) throw new ErroDoCache(`versão do índice não suportada: ${i.versao}`);
-  return Object.entries(i.regioes).map(([id, r]) => ({ id, nome: r.nome, coletadoEm: Date.parse(r.coletadoEm), voos: r.voos }));
+  return Object.entries(i.regioes).map(([id, r]) => ({ id, nome: r.nome, coletadoEm: Date.parse(r.coletadoEm), voos: r.voos, area: r.area ?? null }));
 }
 
 /** Os voos de uma só região (para acompanhar o avião da sessão). */

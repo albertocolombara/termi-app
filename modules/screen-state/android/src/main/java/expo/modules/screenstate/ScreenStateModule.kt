@@ -89,6 +89,7 @@ class ScreenStateModule : Module() {
 
     Function("hideFlightNotification") {
       val ctx = context
+      FlightSoundService.parar(removerNotificacao = true)
       main.post { FlightSoundService.instance?.finish(removeNotification = true) }
       val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
       nm.cancel(FlightNotification.NOTIFICATION_ID)
@@ -97,6 +98,7 @@ class ScreenStateModule : Module() {
     // Som de fundo sem controle de mídia (FlightSoundService). Só chamar com o app aberto:
     // o Android não deixa iniciar serviço em primeiro plano a partir do segundo plano.
     // `uris`: um arquivo em loop, ou várias faixas (`playlist`) tocadas embaralhadas em sequência.
+    // Os sinais (cintos e aviso de pouso) vêm antes, por setFlightSoundCues: o Expo aceita até 8 argumentos.
     Function("startFlightSound") { uris: List<String>, playlist: Boolean, volume: Double, endAt: Double, title: String, text: String, fadeInMs: Double ->
       val ctx = context
       val intent = Intent(ctx, FlightSoundService::class.java).apply {
@@ -107,12 +109,19 @@ class ScreenStateModule : Module() {
         putExtra(FlightSoundService.EXTRA_TITLE, title)
         putExtra(FlightSoundService.EXTRA_TEXT, text)
         putExtra(FlightSoundService.EXTRA_FADE_IN_MS, fadeInMs.toLong())
+        putExtra(FlightSoundService.EXTRA_SEQ, FlightSoundService.pedidos.incrementAndGet())
       }
       if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(intent) else ctx.startService(intent)
     }
 
     Function("setFlightSoundVolume") { volume: Double ->
       main.post { FlightSoundService.instance?.setVolume(volume.toFloat()) }
+    }
+
+    Function("setFlightSoundCues") { cues: List<Double>, cueVolume: Double, landingCue: Boolean ->
+      val c = FlightCues(cues.map { it.toLong() }.toLongArray(), cueVolume.toFloat(), landingCue)
+      FlightSoundService.cues = c
+      main.post { FlightSoundService.instance?.setCues(c.times, c.volume, c.landing) }
     }
 
     Function("resumeFlightSound") {
@@ -125,6 +134,7 @@ class ScreenStateModule : Module() {
 
     /** Para o som; a notificação do voo fica (com a contagem) se o voo continua. */
     Function("stopFlightSound") {
+      FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }
     }
   }
