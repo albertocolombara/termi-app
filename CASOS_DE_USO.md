@@ -183,9 +183,9 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 - **E1 — Sem sinal do radar:** o Sistema estima a posição e mostra o estado E4; o foco continua.
 - **E2 — Sem internet:** o foco continua; a posição é estimada.
-- **E3 — Em espera:** o horário chegou e o avião real ainda está no ar. O pouso completo está garantido; o Sistema oferece "Continuar até o pouso" e "Pousar agora" (RN-09a). Se o Viajante continuar, os minutos a mais contam, e o voo encerra quando ele tocar em "Pousar agora" ou o avião pousar.
-- **E5 — Em solo:** o avião real pousou antes do horário. A janela mostra o avião no solo e o foco segue até o horário; no horário, segue UC-08 (RN-09b).
+- **E3 — Em espera (estado E5):** o horário chegou e o avião real ainda está no ar. O pouso completo está garantido; o Sistema oferece "Continuar até o pouso" e "Pousar agora" (RN-09a). Se o Viajante continuar (estado E5b), os minutos a mais contam a partir da escolha, e o voo encerra quando ele tocar em "Pousar agora" ou o avião pousar.
 - **E4 — App encerrado pelo sistema ou aparelho reiniciado:** ao reabrir, o Sistema recupera a sessão pelo relógio; se o horário de pouso já passou, conclui o pouso.
+- **E5 — Em solo (estado E8):** o avião real pousou antes do horário. A janela mostra o avião no solo e o foco segue até o horário; no horário, segue UC-08 (RN-09b). **Adiado para a Fase 5** (decisão do Alberto em 25/11/2026).
 
 **Pós-condições:** sessão continua até o pouso ou o pouso antecipado.
 
