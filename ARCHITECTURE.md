@@ -152,7 +152,7 @@ termi-app/
 │   │   ├── voos/                # elegibilidade, projeção, previsão de pouso
 │   │   ├── economia/            # dinheiro, preços, livro-caixa
 │   │   ├── colecao/             # souvenirs, carimbos, níveis
-│   │   └── geo/                 # distância, sol, lugar sobrevoado
+│   │   └── geo/                 # distância, sol
 │   ├── data/
 │   │   ├── db/                  # Esquema SQLite e migrações
 │   │   ├── repos/               # Repositórios por entidade
@@ -304,7 +304,7 @@ Funções puras em `src/domain`:
 | **NASA GIBS** | Blue/Black Marble, VIIRS, OSM Land/Water (máscara do mar; © colaboradores do OpenStreetMap, ODbL) | Uso livre com crédito; sem logo nem sugestão de apoio da NASA; sem garantia de disponibilidade, por isso os blocos são copiados para o R2 |
 | **ESA WorldCover 2021** (AWS Open Data, `esa-worldcover-s2` e `esa-worldcover`) | Composto Sentinel-2 RGBNIR (10 m) e mapa de cobertura (área construída) para a paisagem e as luzes | CC BY 4.0, uso comercial com crédito: "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium" (Sobre o Termi). Desde 21/11/2026, no lugar do Landsat WELD e do GMIS |
 | **OpenFlights** | País de cada companhia (bandeira na cauda) | Dados ODbL; crédito obrigatório; base desatualizada em companhias novas, corrigida à mão no coletor |
-| **GeoNames** | Nomes de lugares (lugar sobrevoado) | Crédito |
+| **GeoNames** | Nomes das cidades no globo | Crédito |
 | **Cloudflare R2 + CDN** | Arquivos de voos, blocos, renders e assets | Blocos do mundo (menos a Antártida): ~7,8 GB, medidos em 20/11/2026 |
 | **GitHub Actions** (repo público `voo-ao-vivo-teste`) | Coletor durante o desenvolvimento e o teste fechado, gravando no R2 (decidido pelo Alberto em 19/11/2026: sem custo e sem servidor) | Antes do lançamento: Oracle Cloud Always Free (configuração automática) ou Cloudflare Workers pago (US$ 5/mês) **[Pendente]**. O Actions não pode ser parte de serviço em produção |
 | **RevenueCat / Google Play Billing** | Compras | Chave pública no app; segredos só no painel |
