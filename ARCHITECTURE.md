@@ -469,7 +469,7 @@ Observabilidade:
 | Memória de textura em aparelhos fracos | Médio | Níveis de qualidade, KTX2, teste em aparelho fraco |
 | Dependência do adsb.lol (cota, disponibilidade) | Médio | Cache, voo de ontem, receptor próprio |
 | Cobertura de rotas desigual por região | Baixo/Médio | Curadoria da lista; descartar rotas incoerentes |
-| Peso de Rive + Filament + Skia no APK e na memória | Médio | Medir no aparelho; carregar sob demanda |
+| Peso de Rive + Filament + Skia no APK e na memória | Médio | Medir no aparelho; carregar sob demanda. Medido em 25/11/2026: o Filament (com o worklets-core) soma 8,6 MB ao APK universal; memória ainda não medida |
 | Backend de sincronização não definido | Alto para RNF-10 | Decidir antes da fase de dados (ROADMAP) |
 | Globo sem biblioteca pronta | Baixo | Globo em Skia aprovado no M35 (ADR-11); falta medir bateria, memória com ferramenta e Android mais fraco |
 | Nome/marca "Termi" provisório | Médio | Confirmar com agente de PI antes de investir na identidade |

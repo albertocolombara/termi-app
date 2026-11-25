@@ -178,7 +178,7 @@ Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge 
 - [ ] Menu lateral e Perfil — menu lateral v3 (Econômica e Plus) com o status de viajante no PR "Telas v3" (falta testar no aparelho; "Criar conta" ainda mostra "em breve")
 - [x] Catálogo da coleção remoto e versionado (13 países; novos sem nova versão do app) — aprovado pelo Alberto em 25/11/2026; publicado no R2 pelo coletor (PR #17 do voo-ao-vivo-teste) e lido pelo app com cópia embutida (PR "Catálogo remoto"); a mala já usa
 - [ ] Loja do destino com prévia na mala e limite de 3 souvenirs na econômica
-- [ ] Sua mala e vitrine 3D (validar react-native-filament: peso e memória)
+- [ ] Sua mala e vitrine 3D (validar react-native-filament: peso e memória) — teste no PR #55 (build-66): o Filament soma 8,6 MB ao APK universal (69,7 → 78,3 MB); falta abrir a tela de teste no M35 e medir memória e fluidez, depois repetir com as medalhas reais em GLB
 - [ ] Passaporte — M2 v3 com os carimbos de pouso no PR "Telas v3" (falta testar no aparelho)
 - [ ] Status de viajante e recompensas
 - [ ] Diário de bordo com filtro e detalhe — M3 e M3b v3 no PR "Telas v3" (falta testar no aparelho)
