@@ -38,11 +38,8 @@ uniform shader noiteM;
 const float R = 6371.0;
 const float2 SZD = float2(4096.0, 2048.0);
 const float2 SZN = float2(2048.0, 1024.0);
-// Globo em preto e branco (Alberto, build-66): o fundo é o do app (#141218, bg/app) e o halo da
-// atmosfera é cinza. As rotas, pontos e o avião (camadas por cima) continuam amarelos.
-const half3 ESPACO = half3(0.0784, 0.0706, 0.0941);
-const half3 AR = half3(0.62, 0.62, 0.64);
-half3 cinza(half3 c) { return half3(dot(c, half3(0.299, 0.587, 0.114))); }
+const half3 ESPACO = half3(0.004, 0.035, 0.067);
+const half3 AR = half3(0.32, 0.52, 0.95);
 
 // Posição (0..1) dentro de um mosaico [lon oeste, lat norte, lado em graus]; fora = negativo.
 float2 noMosaico(float3 b, float lon, float lat) {
@@ -131,7 +128,6 @@ half4 main(float2 xy) {
   col = mix(col, dayc * 0.08 + luzes, half(1.0 - lit));
 
   float rim = pow(1.0 - max(dot(n, -d), 0.0), 3.0);
-  col = cinza(col);
   col = mix(col, AR, half(rim * 0.45 * (0.15 + 0.85 * lit)));
   return half4(col, 1.0);
 }

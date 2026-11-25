@@ -1,5 +1,5 @@
 import { lerCatalogo } from '../catalogo';
-import { emPaginas, LIMITE_DA_ECONOMICA, lojasDosPousos, pousouNoPais, situacaoDaCompra } from '../loja';
+import { emPaginas, LIMITE_DA_ECONOMICA, lojasDosPousos, pousouNoPais, precoNaLoja, situacaoDaCompra } from '../loja';
 
 const CATALOGO = lerCatalogo({
   versao: 1,
@@ -14,8 +14,9 @@ const CATALOGO = lerCatalogo({
 const jp = { id: 'pais-jp', preco: 200 };
 
 describe('situacaoDaCompra', () => {
-  it('Plus com saldo compra em qualquer loja', () => {
-    expect(situacaoDaCompra({ souvenir: jp, naMala: [], saldo: 200, classe: 'primeira', origem: 'lojas' })).toEqual({ tipo: 'pode' });
+  it('Plus com saldo compra em qualquer loja; a remota cobra 25% a mais', () => {
+    expect(situacaoDaCompra({ souvenir: jp, naMala: [], saldo: 250, classe: 'primeira', origem: 'lojas' })).toEqual({ tipo: 'pode' });
+    expect(situacaoDaCompra({ souvenir: jp, naMala: [], saldo: 200, classe: 'primeira', origem: 'lojas' })).toEqual({ tipo: 'falta_saldo', faltam: 50 });
     expect(situacaoDaCompra({ souvenir: jp, naMala: ['a', 'b', 'c'], saldo: 500, classe: 'primeira', origem: 'pouso' })).toEqual({ tipo: 'pode' });
   });
 
@@ -66,6 +67,15 @@ describe('lojasDosPousos', () => {
   it('pousouNoPais ignora maiúsculas', () => {
     expect(pousouNoPais(pousos, 'pt')).toBe(true);
     expect(pousouNoPais(pousos, 'FR')).toBe(false);
+  });
+});
+
+describe('precoNaLoja', () => {
+  it('pouso cobra o preço do catálogo; a loja remota, 25% a mais', () => {
+    expect(precoNaLoja({ preco: 200 }, 'pouso')).toBe(200);
+    expect(precoNaLoja({ preco: 200 }, 'lojas')).toBe(250);
+    expect(precoNaLoja({ preco: 100 }, 'lojas')).toBe(125);
+    expect(precoNaLoja({ preco: 500 }, 'lojas')).toBe(625);
   });
 });
 

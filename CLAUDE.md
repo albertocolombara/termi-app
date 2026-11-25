@@ -39,7 +39,7 @@ Se um documento contradiz outro, **pare e pergunte**. Não escolha sozinho.
 - Instale dependências **sempre** com `npx expo install <pacote>` (nunca `npm install` direto para pacotes de runtime).
 - `android/` e `ios/` são gerados (Continuous Native Generation). **Nunca edite à mão.** Configure em `app.json`/`app.config.ts` e config plugins.
 - Código nativo só em `modules/*` (Expo Modules API, Kotlin e Swift), acessado por `src/services`.
-- **Expo Router, expo-sqlite, Zustand e TanStack Query** estão aprovados. Itens ainda marcados como **[Proposta]** na arquitetura (ex.: Sentry, Maestro, Filament) só viram padrão depois de aprovados. Ao iniciar uma fase que depende deles, confirme com o Alberto.
+- **Expo Router, expo-sqlite, Zustand e TanStack Query** estão aprovados. Itens ainda marcados como **[Proposta]** na arquitetura (ex.: Sentry, Maestro) só viram padrão depois de aprovados. Ao iniciar uma fase que depende deles, confirme com o Alberto.
 
 ## 4. Organização do código
 

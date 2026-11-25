@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCatalogo } from '@/data/colecao/catalogo';
 import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico';
-import { Button, color, Icon, Plus, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
+import { color, Icon, Plus, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
 import { Medalha } from '@/features/loja/Medalha';
 import { t } from '@/i18n';
 
@@ -62,7 +62,7 @@ export function TelaMala() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${t('mala.lojas')}, Plus`}
+            accessibilityLabel={`${t('mala.lojas')}, Plus. ${t('mala.lojasDescricao')}`}
             onPress={() => router.push('/loja')}
             style={({ pressed }) => [styles.lojas, pressed && { opacity: 0.85 }]}
           >
@@ -93,7 +93,6 @@ export function TelaMala() {
         </View>
       </View>
 
-      {vazia ? <Button variant="secondary" label={t('mala.encontrarVoos')} onPress={() => router.push('/voo')} /> : null}
     </ScrollView>
   );
 }
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
   espaco: { width: '25%', alignItems: 'center', gap: space[6] },
   encaixe: { width: 64, height: 64, borderRadius: 32 },
   encaixeVazio: { borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.border.strong },
-  lojas: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 64, paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
+  lojas: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 64, paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, backgroundColor: color.surface.default },
   tituloDasLojas: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
-  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
+  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle },
 });

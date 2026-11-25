@@ -63,10 +63,20 @@ export function FirstClassSeal({
  * Geist Pixel Grid. Sem o mascote (decidido pelo Alberto no Figma v3, 24/11/2026).
  * `pequeno` é a versão das listas (sons, vistas), no lugar do antigo selo dourado.
  */
-export function Plus({ tamanho = 'padrao', rotulo = 'Plus' }: { tamanho?: 'padrao' | 'pequeno'; rotulo?: string }) {
-  const pequeno = tamanho === 'pequeno';
+export function Plus({
+  tamanho = 'padrao',
+  rotulo = 'Plus',
+  bloqueado,
+}: {
+  tamanho?: 'padrao' | 'pequeno';
+  rotulo?: string;
+  /** Variante "Bloqueado" do Figma: cadeado + Plus, no tamanho pequeno (ex.: cartões da loja remota na econômica). */
+  bloqueado?: boolean;
+}) {
+  const pequeno = tamanho === 'pequeno' || bloqueado;
   return (
-    <View style={[styles.plus, pequeno && styles.plusPequeno]}>
+    <View style={[styles.plus, pequeno && styles.plusPequeno, bloqueado && styles.plusBloqueado]}>
+      {bloqueado ? <Icon name="lock" size={12} /> : null}
       <Text variant="Label/Medium 14" style={[styles.plusTexto, pequeno && styles.plusTextoPequeno]}>
         {rotulo}
       </Text>
@@ -310,6 +320,7 @@ const styles = StyleSheet.create({
     borderColor: C.plus.borda,
     backgroundColor: C.plus.fundo,
   },
+  plusBloqueado: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   plusPequeno: { paddingVertical: space[2], paddingHorizontal: space[8] },
   plusTexto: { fontFamily: fontFamily.pixel, fontWeight: '400', fontSize: 14, lineHeight: 20, letterSpacing: 0, color: C.text.accent },
   plusTextoPequeno: { fontSize: 12, lineHeight: 16 },

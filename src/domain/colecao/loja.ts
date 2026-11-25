@@ -4,7 +4,7 @@
  * - Loja do destino: abre depois de um pouso completo no país (RN-08), para todos.
  * - Econômica: até 2 souvenirs na mala (amostra), comprados só na loja do pouso. O 3º abre o paywall.
  *   Quem já tem mais que o limite continua com todos (nada se tira, CLAUDE.md §2.2).
- * - Plus: a tela "Lojas" fica aberta a qualquer hora, com os países onde já houve pouso completo.
+ * - Plus: a loja remota fica aberta a qualquer hora, 25% mais cara, com os países onde já houve pouso completo.
  *   Na econômica ela aparece bloqueada.
  * Funções puras: sem banco, sem React.
  */
@@ -15,8 +15,19 @@ import type { Souvenir } from './catalogo';
 /** Quantos souvenirs cabem na mala de amostra da econômica (RN-14). */
 export const LIMITE_DA_ECONOMICA = 2;
 
-/** De onde a compra está sendo feita. */
+/** De onde a compra está sendo feita: a loja do pouso ou a loja remota (Plus). */
 export type Origem = 'pouso' | 'lojas';
+
+/**
+ * Acréscimo da loja remota (Alberto, 25/11/2026): quem pousa leva pelo preço normal; quem compra
+ * depois, pela loja remota, paga 25% a mais (país $250, cidade $125, rara $625).
+ */
+export const ACRESCIMO_DA_LOJA_REMOTA = 0.25;
+
+/** Preço cobrado conforme a loja. */
+export function precoNaLoja(souvenir: Pick<Souvenir, 'preco'>, origem: Origem): number {
+  return origem === 'lojas' ? Math.round(souvenir.preco * (1 + ACRESCIMO_DA_LOJA_REMOTA)) : souvenir.preco;
+}
 
 export type SituacaoDaCompra =
   | { tipo: 'pode' }
@@ -43,7 +54,8 @@ export function situacaoDaCompra(p: {
     if (p.origem !== 'pouso') return { tipo: 'so_no_plus' };
     if (p.naMala.length >= LIMITE_DA_ECONOMICA) return { tipo: 'mala_cheia' };
   }
-  if (p.saldo < p.souvenir.preco) return { tipo: 'falta_saldo', faltam: p.souvenir.preco - p.saldo };
+  const preco = precoNaLoja(p.souvenir, p.origem);
+  if (p.saldo < preco) return { tipo: 'falta_saldo', faltam: preco - p.saldo };
   return { tipo: 'pode' };
 }
 

@@ -47,9 +47,10 @@ describe('comprarSouvenir', () => {
     }
   });
 
-  it('Plus compra pelas Lojas, sem sessão, fora da amostra', async () => {
-    const { db, escritas } = bancoFalso(200, ['a', 'b', 'c']);
+  it('Plus compra pela loja remota, sem sessão, fora da amostra, com o acréscimo', async () => {
+    const { db, escritas } = bancoFalso(250, ['a', 'b', 'c']);
     expect(await comprarSouvenir(db, { ...pedido, classe: 'primeira', origem: 'lojas', sessaoId: null })).toEqual({ tipo: 'pode' });
-    expect(escritas[0].params).toEqual(['pais-jp', 1000, null, 200, 0]);
+    expect(escritas[0].params).toEqual(['pais-jp', 1000, null, 250, 0]);
+    expect(escritas[1].params).toEqual(['compra-pais-jp', -250, null, 'pais-jp', 1000]);
   });
 });
