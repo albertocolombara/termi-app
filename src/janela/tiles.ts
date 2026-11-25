@@ -1,58 +1,17 @@
-import { Asset } from 'expo-asset';
 import { File, Paths } from 'expo-file-system';
 import { Skia, SkImage } from '@shopify/react-native-skia';
 
 import { caminhoNoAparelho, type Camada } from '@/domain/voos/blocosDaRota';
 
-// Blocos da rota: primeiro os baixados do R2 no embarque; senão, os pacotes do protótipo
-// (Barcelona → Londres), que ainda vêm no APK para a tela de teste e saem antes do lançamento.
-const INDEX: Record<string, [string, number, number]> = require('../../assets/janela/pk/index.json');
-
-const PACKS: Record<string, number> = {
-  'pk/w10_22.bin': require('../../assets/janela/pk/w10_22.bin'),
-  'pk/w10_23.bin': require('../../assets/janela/pk/w10_23.bin'),
-  'pk/w10_24.bin': require('../../assets/janela/pk/w10_24.bin'),
-  'pk/w10_25.bin': require('../../assets/janela/pk/w10_25.bin'),
-  'pk/w10_26.bin': require('../../assets/janela/pk/w10_26.bin'),
-  'pk/w10_27.bin': require('../../assets/janela/pk/w10_27.bin'),
-  'pk/w10_28.bin': require('../../assets/janela/pk/w10_28.bin'),
-  'pk/w10_29.bin': require('../../assets/janela/pk/w10_29.bin'),
-  'pk/w8_8.bin': require('../../assets/janela/pk/w8_8.bin'),
-  'pk/w8_9.bin': require('../../assets/janela/pk/w8_9.bin'),
-  'pk/w8_10.bin': require('../../assets/janela/pk/w8_10.bin'),
-  'pk/w8_11.bin': require('../../assets/janela/pk/w8_11.bin'),
-  'pk/i9_16.bin': require('../../assets/janela/pk/i9_16.bin'),
-  'pk/i9_17.bin': require('../../assets/janela/pk/i9_17.bin'),
-  'pk/i9_18.bin': require('../../assets/janela/pk/i9_18.bin'),
-  'pk/i9_19.bin': require('../../assets/janela/pk/i9_19.bin'),
-  'pk/i9_20.bin': require('../../assets/janela/pk/i9_20.bin'),
-  'pk/i9_21.bin': require('../../assets/janela/pk/i9_21.bin'),
-  'pk/i9_22.bin': require('../../assets/janela/pk/i9_22.bin'),
-};
-
-const packFiles = new Map<string, Promise<File | null>>();
-
-function packFile(name: string) {
-  if (!packFiles.has(name)) {
-    const mod = PACKS[name];
-    packFiles.set(
-      name,
-      mod
-        ? Asset.fromModule(mod)
-            .downloadAsync()
-            .then((a) => (a.localUri ? new File(a.localUri) : null))
-            .catch(() => null)
-        : Promise.resolve(null),
-    );
-  }
-  return packFiles.get(name)!;
-}
+// Blocos da rota, baixados do R2 no embarque e durante o voo (data/blocos). Os pacotes do protótipo
+// (Barcelona → Londres, 21 MB no APK) saíram em 25/11/2026: bloco ainda não baixado fica pendente e
+// a janela mostra a base até ele chegar.
 
 const decodificar = (bytes: Uint8Array) => Skia.Image.MakeImageFromEncoded(Skia.Data.fromBytes(bytes));
 
 /**
  * Bloco baixado no embarque (data/blocos), em `cache/paisagem/{camada}/{linha}/{coluna}.webp`.
- * Arquivo vazio = oceano (404 no R2). `undefined` = não baixado: cai nos pacotes do protótipo.
+ * Arquivo vazio = oceano (404 no R2). `undefined` = ainda não baixado.
  */
 async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
   const [camada, rc] = key.split('/');
@@ -67,27 +26,12 @@ async function blocoBaixado(key: string): Promise<SkImage | null | undefined> {
   }
 }
 
-/** Ainda não baixado (nem nos pacotes do protótipo): o atlas tenta de novo daqui a pouco. */
+/** Ainda não baixado: o atlas tenta de novo daqui a pouco. */
 const PENDENTE = Symbol('pendente');
 
 async function tile(key: string): Promise<SkImage | null | typeof PENDENTE> {
   const baixado = await blocoBaixado(key);
-  if (baixado !== undefined) return baixado;
-  // Pacotes do protótipo: as luzes ainda são a antiga camada i9 (GMIS em cinza: R = G = área construída).
-  const ix = INDEX[key] ?? INDEX[key.replace(/^l9\//, 'i9/')];
-  if (!ix) return PENDENTE;
-  const [p, offset, length] = ix;
-  const f = await packFile(p);
-  if (!f) return null;
-  try {
-    const h = f.open();
-    h.offset = offset;
-    const bytes = await h.readBytes(length);
-    h.close();
-    return decodificar(bytes);
-  } catch {
-    return null;
-  }
+  return baixado === undefined ? PENDENTE : baixado;
 }
 
 export type AtlasState = { image: SkImage | null; b: [number, number, number] };

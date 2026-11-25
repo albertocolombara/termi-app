@@ -59,7 +59,7 @@ Estrutura do código (as pastas `features/` e as telas do produto entram a parti
 termi-app/
 ├── assets/          # fontes, renders da janela, ícones (blocos de teste baixados por script)
 ├── modules/         # código nativo (Kotlin/Swift) via Expo Modules: screen-state (notificação fixa)
-├── scripts/         # baixar-blocos-dev.mjs
+├── scripts/         # utilitários de desenvolvimento
 └── src/
     ├── app/         # rotas (Expo Router)
     ├── features/    # telas e lógica por domínio
@@ -119,7 +119,6 @@ Nenhum segredo vai para o app. A chave do adsb.lol e as credenciais de escrita d
 | `npm run typecheck` | Checagem de tipos |
 | `npm run lint` | Lint |
 | `npm test` | Testes unitários (Jest) |
-| `npm run blocos:dev` | Baixa de novo os blocos de teste da janela |
 | `npx expo-doctor` | Diagnóstico de dependências |
 
 ## Documentação

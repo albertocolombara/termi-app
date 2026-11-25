@@ -8,9 +8,7 @@
     "android": "expo run:android",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
-    "blocos:dev": "node scripts/baixar-blocos-dev.mjs",
-    "postinstall": "node scripts/baixar-blocos-dev.mjs --se-faltar"
+    "test": "jest"
   },
   "dependencies": {
     "@expo-google-fonts/geist": "^0.4.2",
