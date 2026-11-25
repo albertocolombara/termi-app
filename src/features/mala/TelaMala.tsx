@@ -9,7 +9,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CATALOGO } from '@/data/colecao/catalogo';
+import { useCatalogo } from '@/data/colecao/catalogo';
 import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico';
 import { Button, color, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
@@ -17,6 +17,7 @@ import { t } from '@/i18n';
 export function TelaMala() {
   const insets = useSafeAreaInsets();
   const naMala = new Set(useSouvenirsNaMala().data ?? []);
+  const catalogo = useCatalogo();
   const saldo = useContagens().data?.saldo ?? 0;
   const vazia = naMala.size === 0;
 
@@ -30,7 +31,7 @@ export function TelaMala() {
         <View style={{ gap: space[16] }}>
           <View style={styles.linha}>
             <Text variant="Label/Medium 14" tone="secondary">
-              {t('mala.contagem', { n: naMala.size, total: CATALOGO.length })}
+              {t('mala.contagem', { n: naMala.size, total: catalogo.length })}
             </Text>
             <View style={styles.saldo}>
               <Text variant="Label/Strong 14">{t('mala.saldo', { valor: saldo.toLocaleString('pt-BR') })}</Text>
@@ -38,7 +39,7 @@ export function TelaMala() {
           </View>
 
           <View style={styles.grade}>
-            {CATALOGO.map((s) => {
+            {catalogo.map((s) => {
               const tem = naMala.has(s.id);
               return (
                 <View key={s.id} style={styles.espaco} accessible accessibilityLabel={s.nome}>
