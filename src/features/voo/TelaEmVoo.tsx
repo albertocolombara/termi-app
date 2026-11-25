@@ -286,7 +286,11 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
                 indicator={classe !== 'primeira'}
                 style={{ marginTop: space[10] }}
               />
-            ) : null}
+            ) : (
+              // Mesmo espaço do botão de vistas no globo: os avisos ficam no mesmo lugar nas duas
+              // vistas (Alberto, 25/11/2026).
+              <View style={{ width: 48, height: 48, marginTop: space[10] }} />
+            )}
           </View>
         </View>
       </View>

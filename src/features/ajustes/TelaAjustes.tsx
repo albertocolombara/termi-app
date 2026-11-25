@@ -14,7 +14,7 @@ import { useAjustes, type QualidadeDaJanela } from '@/data/preferencias/ajustes'
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import type { IntervaloServicoDeBordo } from '@/domain/sessao/pausas';
 import { somEmUso } from '@/domain/sons/catalogo';
-import { BottomSheet, color, ListOption, screenGutter, space, TopBar } from '@/ds';
+import { BottomSheet, color, ListOption, screenGutter, Slider, space, TopBar } from '@/ds';
 import { FolhaSons } from '@/features/voo/FolhaSons';
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
@@ -80,6 +80,10 @@ export function TelaAjustes() {
             valor={a.somDoServico}
             onMudar={(v) => a.mudar({ somDoServico: v })}
           />
+          {/* Volume do sinal e do aviso de pouso, sobre o som do voo (Alberto, 25/11/2026). */}
+          <View style={{ paddingVertical: space[12] }}>
+            <Slider label={t('ajustes.volumeDoSinal')} value={a.volumeDoSinal} onChange={(v) => a.mudar({ volumeDoSinal: v })} surface={color.bg.app} />
+          </View>
         </Secao>
 
         <Secao titulo={t('ajustes.telaEBateria')}>
