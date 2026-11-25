@@ -136,7 +136,6 @@ flowchart LR
 
 ### Telas e serviços
 - [x] Telas de Em espera, Continuando até o pouso e Em solo no Figma — 20/11/2026, seção "Estados do voo · v2"; barra de rota como componente com progresso (DESIGN.md)
-- [ ] Render da janela com o avião no solo (taxiando ou no portão) para o estado Em solo **[Pendente]**
 - [x] Dial (15 min–6 h; faixa premium marcada) — `features/voo/DialDeTempo.tsx` e seletor numérico, PR #20; Termi curioso no PR #35 e dica menor no PR #42, ajustes pedidos pelo Alberto depois de usar no M35
 - [x] Painel de partidas com filtros de região e cauda com bandeira — PR #20; no PR #27 as caudas viraram PNG (o SVG por linha derrubava o app ao rolar a lista no build-17); letreiro no PR #34 e nome da cidade correndo no PR #44
 - [x] Sem voo: tempos próximos; dados fora do ar: voo de ontem — PR #18 e #20
@@ -150,7 +149,7 @@ flowchart LR
 - [ ] Serviço de bordo com avisos agendados como alarme exato — avisos agendados no embarque (PR #23; no horário num voo curto na build-6, ARCHITECTURE §15); E2 (pausa em andamento com contagem e "Voltar ao foco", que cancela o aviso de fim) e E1 ("De volta ao foco") no PR #36; falta conferir no aparelho o ciclo completo com a tela bloqueada e o app fechado
 - [x] Notificação fixa com contagem — mostrada no embarque (PR #23); é a notificação do serviço do som desde o PR #39 (testado pelo Alberto na build 31)
 - [x] Pousar antes com confirmação — E3 e E7, encerramento numa transação (sessão, crédito e carimbo), PR #25 (falta conferir no aparelho)
-- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; avisos de sem sinal do radar, sem internet e "radar de volta", com o radar ciente da área do coletor, no PR #51 (builds 51 a 53); faltam na tela em voo: E5 Em espera / Continuando até o pouso e E8 Em solo
+- [ ] Estados E1–E8, sem sinal, sem internet, em espera, em solo — prontos: E1, E2 (PR #36), E3, E6, E7 (PR #25); regras de Em espera e Em solo no domínio (PR #17) e telas no Figma; avisos de sem sinal do radar, sem internet e "radar de volta", com o radar ciente da área do coletor, no PR #51 (builds 51 a 53); falta na tela em voo: E5 Em espera / Continuando até o pouso (telas v3 do Figma). O E8 Em solo saiu da Fase 3 (decisão do Alberto em 25/11/2026) e está na Fase 5
 - [x] Tela de pouso com carimbo e rendimentos — E6, PR #25; o botão da loja do destino entra com a loja (Fase 4), e o lugar sobrevoado com o GeoNames
 - [x] Desenhar a paisagem pela thread de interface (Reanimated) em vez de timer JS — PR #37 (build-28): `useFrameCallback` + `useDerivedValue`, sem o teto de ~21 fps do timer; 30 fps opcional nos Ajustes (PR #42)
 - [ ] Medir 30 fps no M35 e num Android mais fraco (bateria, temperatura, memória) antes de decidir se fica
@@ -159,7 +158,7 @@ flowchart LR
 ### Pendente na Fase 3 (25/11/2026)
 
 1. Testar no aparelho e fazer o merge dos PRs #50 (telas v3) e #51 (informações do voo, radar por área, janela v3 com persiana, correções dos builds 48 a 53).
-2. Estados que faltam na tela em voo: E5 Em espera / Continuando até o pouso e E8 Em solo. O E8 depende do render da janela no solo **[Pendente]**.
+2. Estado que falta na tela em voo: E5 Em espera / Continuando até o pouso, pelas telas v3 do Figma. O E8 Em solo foi para a Fase 5 (decisão do Alberto em 25/11/2026).
 3. Avisos por fase (avisos do comandante).
 4. Lugar sobrevoado (GeoNames) no painel e na tela de pouso (hoje só na tela de teste da janela).
 5. Conferir no aparelho, com a tela bloqueada e o app fechado: o ciclo do serviço de bordo (alarme exato) e o lofi por um voo inteiro.
@@ -206,6 +205,7 @@ flowchart LR
 - **Prioridade:** P1.
 - **Critérios de conclusão:** nenhuma vista ou medalha da v1 usa placeholder.
 
+- [ ] Estado E8 Em solo na tela em voo e render da janela com o avião no solo (taxiando ou no portão) **[Pendente]** — saiu da Fase 3 por decisão do Alberto em 25/11/2026
 - [ ] Renderizar "Com asa" e "Asa e motor" nos três horários (fora do lançamento desde 24/11/2026; volta se o Alberto decidir)
 - [ ] Medalhas dos 7 países restantes dos 13 (falta a referência do Uruguai) e o verso padrão
 - [ ] Definir e produzir os próximos países da coleção
