@@ -4,13 +4,17 @@
  *
  * E6: carimbo com a animação de "bater", o que o voo rendeu, o motivo da viagem e "Voltar ao início".
  * E7: carimbo apagado ("sem carimbo"), o que o voo rendeu, o aviso de carimbo e loja e o diário.
- * A loja do destino (bloco "Loja de Londres" do Figma) entra com a loja, na Fase 4.
+ * E6 também abre a loja do destino (bloco "Loja de Londres" do Figma), quando o país tem souvenir
+ * na coleção (UC-08 passo 4). País sem souvenir: o bloco não aparece (UC-08 E1 segue [Pendente]).
  */
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useCatalogo } from '@/data/colecao/catalogo';
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
+import { souvenirDoPais } from '@/domain/colecao/catalogo';
 import { Button, CategoriaTag, color, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
@@ -24,6 +28,8 @@ export function TelaPouso({ id }: { id: string | undefined }) {
   const insets = useSafeAreaInsets();
   const q = useSessaoEncerrada(id);
   const s = q.data;
+  const catalogo = useCatalogo();
+  const [agora] = useState(() => Date.now());
 
   if (!s) {
     return (
@@ -42,6 +48,8 @@ export function TelaPouso({ id }: { id: string | undefined }) {
   const feitas = motivo.tarefas.filter((x) => x.feita).length;
   const tudoFeito = motivo.tarefas.length > 0 && feitas === motivo.tarefas.length;
   const verNoDiario = () => router.push({ pathname: '/diario/[id]', params: { id: s.id } });
+  const souvenir = pousou ? souvenirDoPais(catalogo, s.voo.destino.pais, agora) : null;
+  const abrirLoja = () => souvenir && router.push({ pathname: '/loja/[pais]', params: { pais: souvenir.pais, sessao: s.id } });
 
   return (
     <ScrollView
@@ -122,6 +130,18 @@ export function TelaPouso({ id }: { id: string | undefined }) {
               <Icon name="chevronRight" />
             </Pressable>
           )}
+          {souvenir ? (
+            <Pressable accessibilityRole="button" onPress={abrirLoja} style={({ pressed }) => [styles.linha, styles.linhaLoja, pressed && { opacity: 0.85 }]}>
+              <Icon name="suitcaseLine" />
+              <View style={{ flex: 1, gap: space[4] }}>
+                <Text variant="Label/Medium 14">{t('loja.abrirLoja', { cidade })}</Text>
+                <Text variant="Caption/Regular 12" tone="tertiary">
+                  {t('loja.abrirLojaDescricao')}
+                </Text>
+              </View>
+              <Icon name="chevronRight" color={color.accent.default} />
+            </Pressable>
+          ) : null}
         </View>
       </View>
 
@@ -157,5 +177,7 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle, backgroundColor: color.surface.default },
   // E7 (Figma 443:11349): a linha do diário fica no fundo da tela, só com a borda.
   linhaApagada: { backgroundColor: color.bg.app },
+  // E6 (Figma 443:11469): a loja do destino com a borda amarela e fundo âmbar bem leve.
+  linhaLoja: { borderColor: color.border.accent, backgroundColor: color.accent.subtle },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
 });

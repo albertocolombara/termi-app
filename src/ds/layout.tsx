@@ -34,9 +34,13 @@ export type TopBarProps = {
   time?: string;
   /** Etapa atual do fluxo; omitir esconde o progresso. */
   step?: number;
+  /** Saldo em $ à direita (Figma v3: "Saldo" na mala e na loja), já formatado. */
+  saldo?: string;
+  /** Rótulo de acessibilidade do saldo. */
+  saldoAcessivel?: string;
 };
 
-export function TopBar({ title, onBack, time, step }: TopBarProps) {
+export function TopBar({ title, onBack, time, step, saldo, saldoAcessivel }: TopBarProps) {
   return (
     <View style={styles.topBar}>
       <View style={styles.topRow}>
@@ -50,6 +54,11 @@ export function TopBar({ title, onBack, time, step }: TopBarProps) {
             <Text variant="Body/Large 16" tone="tertiary">
               {time}
             </Text>
+          </View>
+        ) : null}
+        {saldo ? (
+          <View style={styles.saldo} accessible accessibilityLabel={saldoAcessivel ?? saldo}>
+            <Text variant="Label/Strong 14">{saldo}</Text>
           </View>
         ) : null}
       </View>
@@ -169,6 +178,7 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   back: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
   time: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
+  saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, borderWidth: 1, borderColor: C.border.subtle },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
