@@ -20,8 +20,10 @@ import { ScreenState } from '../../../modules/screen-state/src';
  * Canais não mudam de som depois de criados, por isso os ids novos; os antigos são apagados.
  */
 const COMO_ALARME = { usage: AndroidAudioUsage.ALARM, contentType: AndroidAudioContentType.SONIFICATION };
-const CANAIS_ANTIGOS = ['pouso', 'servico', 'servico-cinto'];
-const CANAL_POUSO = 'pouso-alarme';
+const CANAIS_ANTIGOS = ['pouso', 'pouso-alarme', 'servico', 'servico-cinto'];
+/** Pouso: sinal, voz da comissária e som da cabine (assets/sons/aviso_pouso.ogg, ~6 s). */
+const CANAL_POUSO = 'pouso-comissaria';
+const SOM_DO_POUSO = 'aviso_pouso.ogg';
 /**
  * Serviço de bordo: o sinal de apertar cintos no começo e no fim da pausa (pedido do Alberto em 25/11/2026).
  * Canais do Android não mudam de som depois de criados, por isso o id novo; o canal antigo ('servico',
@@ -49,7 +51,7 @@ export async function configurarAvisos() {
   await Notifications.setNotificationChannelAsync(CANAL_POUSO, {
     name: t('avisos.canalPouso'),
     importance: AndroidImportance.HIGH,
-    sound: 'default',
+    sound: SOM_DO_POUSO,
     audioAttributes: COMO_ALARME,
     vibrationPattern: [0, 250, 150, 250],
   });
@@ -127,6 +129,7 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
     content: {
       title: t('avisos.pousoTitulo', { cidade: v.cidadeDestino }),
       body: t('avisos.pousoCorpo', { min: v.minutosDeVoo }),
+      sound: SOM_DO_POUSO,
     },
     trigger: emHorario(v.pousoEm, CANAL_POUSO),
   });
