@@ -19,3 +19,9 @@ describe('aviaoReal', () => {
     expect(aviaoReal(voo(10), 'sem-sinal', AGORA + 11 * MIN)).toBe('pousou');
   });
 });
+
+describe('aviaoReal depois da previsão', () => {
+  it('passou da previsão de pouso do avião real: pousou, mesmo com leitura recente (build-66)', () => {
+    expect(aviaoReal(voo(10), 'ok', AGORA + 11 * 60_000)).toBe('pousou');
+  });
+});

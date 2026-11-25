@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAjustes } from '@/data/preferencias/ajustes';
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
+import { useContinuandoDesde } from '@/data/sessoes/continuarAtePouso';
 import { useIndicesQueVoltaram } from '@/data/sessoes/voltouAoFoco';
 import { agendaDePausas, horariosDasPausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
 import { somEmUso } from '@/domain/sons/catalogo';
@@ -26,6 +27,9 @@ import { useClasse } from '@/services/compras';
 
 import { codigoDoLugar, nomeDoLugar } from './formato';
 import { useSomLiberado } from './somLiberado';
+
+/** Teto do som em "Continuar até o pouso": o voo encerra antes, quando o avião real pousa. */
+const LIMITE_DE_CONTINUACAO_MS = 3 * 3_600_000;
 
 export function SomDoVoo() {
   const sessao = useSessaoEmAndamento().data;
@@ -48,7 +52,10 @@ export function SomDoVoo() {
   // Embarque feito com o app já aberto: espera a animação. Voo que já estava em andamento: toca.
   const embarqueAgora = !!sessao && sessao.embarcouEm >= abriuEm;
   const podeTocar = !!sessao && (!embarqueAgora || liberado === sessao.id);
-  const tocando = podeTocar && antesDoPouso;
+  // "Continuar até o pouso" (RN-09a): o som segue depois do horário (build-66: parava no horário e
+  // nenhum som voltava). Termina quando a sessão encerra (o avião real pousou ou "Pousar agora").
+  const continuando = useContinuandoDesde(sessao?.id ?? '') !== undefined;
+  const tocando = podeTocar && (antesDoPouso || continuando);
   const rota = sessao ? `${codigoDoLugar(sessao.voo.origem)} → ${codigoDoLugar(sessao.voo.destino)}` : '';
   const ajustes = useAjustes();
   const voltaram = useIndicesQueVoltaram(sessao?.id ?? '');
@@ -63,12 +70,13 @@ export function SomDoVoo() {
   const somAtual = somEmUso(escolhido, classe);
   useSomQueToca(somAtual, volume, tocando, {
     rota,
-    pousoEm: pouso,
+    // Continuando: o serviço de som não tem um horário de pouso; a sessão é que o encerra.
+    pousoEm: continuando ? pouso + LIMITE_DE_CONTINUACAO_MS : pouso,
     titulo: sessao ? t('sons.tituloNaNotificacao', { voo: sessao.voo.callsign }) : '',
     subtitulo: rota,
     sinais,
     volumeDoSinal: ajustes.volumeDoSinal,
-    anunciarPouso: ajustes.avisoDePouso,
+    anunciarPouso: ajustes.avisoDePouso && !continuando,
   });
 
   // Quem toca os sinais: o app (com som de fundo) ou a notificação (sem). Reagenda quando muda.

@@ -22,8 +22,11 @@ export function aviaoReal(ultimo: Voo, radar: SituacaoDoRadar, agora: number): A
     ultimo.distanciaRestanteKm <= PERTO_DO_DESTINO_KM && (ultimo.altitudePes === null || ultimo.altitudePes <= ALTITUDE_DE_SOLO_PES);
   if (noSolo) return 'pousou';
   const recente = agora - ultimo.coletadoEm <= LEITURA_RECENTE_MS;
+  // Passou da previsão de pouso do avião real: conta como pousado, sem esperar a próxima leitura
+  // (build-66: o avião pousou às 18:07, a previsão era 18:14, e o voo só terminou ~20 min depois,
+  // na leitura seguinte do radar).
+  if (agora >= ultimo.pousoPrevistoEm) return 'pousou';
   if (radar === 'ok' && recente) return 'no-ar';
-  // Sem leitura nova: depois da previsão de pouso do avião real, conta como pousado
-  // (encerra "Continuar até o pouso"); antes dela, não dá para saber.
-  return agora >= ultimo.pousoPrevistoEm ? 'pousou' : 'desconhecido';
+  // Sem leitura nova antes da previsão de pouso: não dá para saber.
+  return 'desconhecido';
 }

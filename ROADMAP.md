@@ -160,8 +160,7 @@ flowchart LR
 Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge dos PRs #50 e #51, estados do voo com Em espera, ciclo do serviço de bordo e lofi com a tela bloqueada, e o aviso de pouso da comissária no lugar dos avisos por fase.
 
 1. Medir no M35 e num Android mais fraco: 30 fps (bateria, temperatura) e memória da janela com a persiana.
-2. Decidir o futuro do Em espera (manter só nas áreas do coletor, trocar por informação na tela de pouso ou tirar).
-3. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
+2. Fora do app, mas da Fase 2: domínio próprio no R2, 7 dias de cache sem falha e apagar a `i9`.
 
 ---
 
@@ -258,6 +257,7 @@ Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge 
 - **Prioridade:** P0.
 - **Critérios de conclusão:** app aprovado e publicado; compras reais funcionando; créditos e avisos legais completos.
 
+- [ ] **Decidir se "Continuar até o pouso" (RN-09a, E5/E5b) fica no lançamento** [Pendente, Alberto] — situação em 25/11/2026: funciona, mas só nos destinos dentro das 12 áreas do coletor, e a previsão do avião real só se atualiza a cada leitura (20 min). No teste da build-66, o avião pousou às 18:07 com previsão de 18:14 e o voo só terminou na leitura seguinte (corrigido: agora termina na previsão). O ideal seria a previsão ser recalculada ao longo da rota, o que o limite de chamadas ao adsb.lol não permite hoje. Dúvida do Alberto: quantos usuários vão querer esperar ainda mais. Opções na análise de 25/11/2026: manter, trocar por uma informação na tela de pouso ou tirar
 - [ ] Confirmar o nome com agente de propriedade industrial; registrar marca mista (classes 9 e 41)
 - [ ] Tirar o coletor do GitHub Actions: Oracle Cloud grátis (configuração automática) ou Cloudflare Workers pago (US$ 5/mês), antes do teste fechado
 - [ ] Definir o identificador do pacote de produção
