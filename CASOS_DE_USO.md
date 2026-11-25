@@ -324,9 +324,10 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 - **A1 — Saldo insuficiente:** o Sistema mostra quanto falta; o Viajante sai da loja.
 - **A2 — Souvenir já comprado:** o Sistema mostra "Já está na sua mala".
-- **A3 — Econômica com 3 souvenirs (mala de amostra cheia):** o Sistema mostra o aviso e, se o Viajante quiser, o paywall (UC-13).
+- **A3 — Econômica com 2 souvenirs (mala de amostra cheia):** o Sistema mostra o aviso e, se o Viajante quiser, o paywall (UC-13).
 - **A4 — Sobe de nível:** segue UC-10.
 - **A5 — Não comprar agora:** o Viajante volta ao Início.
+- **A6 — Plus, depois do pouso:** o Viajante abre "Lojas" (pela mala) e compra o souvenir de qualquer país onde já teve um pouso completo. Na econômica, "Lojas" aparece bloqueada e o toque abre o paywall (RN-14, RN-20).
 
 **Exceções e erros**
 
