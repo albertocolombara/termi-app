@@ -512,8 +512,8 @@ Falta testar: Android mais fraco que o M35; paisagem pela thread de interface; b
 
 | Arquivos | Conteúdo |
 |---|---|
-| `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-52** |
-| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes. **Em uso desde a build-52**. As versões `_fechada` e `tras_persiana_v3_*` (persiana e máscara) ainda não entram no app |
+| `Janela nova (v3)/tras_asa_v3_*` | Asa realista (`janela_25_janela_realista.blend`), fundo transparente: dia, entardecer, noite, beacon e strobe. **Em uso desde a build-53** |
+| `Janela nova (v3)/tras_moldura_v3_*` | Moldura realista nas três luzes. **Em uso desde a build-53**. As versões `_fechada` e `tras_persiana_v3_*` (persiana e máscara) ainda não entram no app |
 | `Vistas · divulgação/Miniaturas` | Miniaturas da folha "Vista da janela" (`thumb_janela`, `thumb_janela_asa`, `thumb_sem_moldura`) |
 | `Asa antiga/`, `tras_moldura_*`, `mini_*` | Versões anteriores; não usar |
 
