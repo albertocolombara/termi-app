@@ -219,7 +219,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 ### Economia e coleção
 
 - **RN-13 — Moeda do jogo.** Dólar com símbolo $, sem parecer dinheiro real nem sacável. Só se ganha voando ($1 por minuto, pausas incluídas). Não se compra com dinheiro real.
-- **RN-14 — Souvenirs.** Comprados só na loja do destino, depois de um pouso completo no país. Preços: país (níquel) $200; cidade (cobre) $100; rara (latão) $500. Na econômica, até 3 souvenirs de amostra, que são do usuário para sempre; a tentativa de comprar o 4º abre o paywall.
+- **RN-14 — Souvenirs.** Comprados na loja do destino, depois de um pouso completo no país. Preços: país (níquel) $200; cidade (cobre) $100; rara (latão) $500. Na econômica, até 2 souvenirs de amostra, que são do usuário para sempre; a tentativa de comprar o 3º abre o paywall. **Plus:** a loja fica aberta a qualquer hora (tela "Lojas") para todos os países onde o usuário já teve um pouso completo, sem precisar pousar de novo. Na econômica, a tela "Lojas" aparece, para o usuário saber que existe, mas fica bloqueada: comprar fora da tela de pouso é do Plus. (Decidido pelo Alberto em 25/11/2026; antes eram 3 souvenirs na econômica e a loja só abria no pouso. Quem já tiver mais souvenirs que o limite continua com todos.)
 - **RN-15 — Status de viajante.** Níveis por milhas acumuladas (milhas não se gastam):
 
 | Nível | Milhas | Recompensa (grátis para todos) |
@@ -241,7 +241,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RN-18 — Sem anúncios**, nunca.
 - **RN-19 — Planos (Brasil, lançamento):** Mensal R$ 14,90; Anual R$ 89,90 (7 dias grátis, "Economize 50%"); Vitalício R$ 179,90 (compra única). Oferta de boas-vindas: 1º ano do anual por R$ 59,90 (−33%), com os 7 dias grátis. O período grátis existe só no anual.
 - **RN-20 — Quando o paywall abre:**
-  - **Regra geral (decidida em 19/11/2026): na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive durante o voo.** Exemplos: comprar o 4º souvenir, uma vista da janela ou um som exclusivo, mês ou ano nas estatísticas, o Termi Premium no Início, o item "Primeira classe" do menu e "Conhecer a primeira classe" na mala.
+  - **Regra geral (decidida em 19/11/2026): na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive durante o voo.** Exemplos: comprar o 3º souvenir, comprar pela tela "Lojas" fora do pouso, uma vista da janela ou um som exclusivo, mês ou ano nas estatísticas, o Termi Premium no Início, o item "Primeira classe" do menu e "Conhecer a primeira classe" na mala.
   - Oferta de boas-vindas: no fim do onboarding e depois do 3º voo (mesma oferta, sem contador), sempre fora do voo.
   - **Entre o embarque e o pouso, nenhum paywall, banner ou lembrete de assinatura abre sozinho.** Só o toque do usuário abre.
   - **Exceção: o dial.** A faixa acima de 3 h aparece visualmente como conteúdo da primeira classe, mas não abre o paywall, para não atrapalhar a escolha do tempo (RF-09; decidido em 19/11/2026).
@@ -261,7 +261,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 | Duração do voo | Até 3 h | Até 6 h |
 | Serviço de bordo | Sim | Sim |
 | Carimbos no passaporte | Sim | Sim |
-| Souvenirs | Até 3 de amostra | Todos |
+| Souvenirs | Até 2 de amostra, comprados na tela de pouso | Todos, e a loja dos países já pousados a qualquer hora |
 | Sons de fundo | Voo de cruzeiro (ruído marrom gerado) e ruído branco | Também motores (gravação real), cabine, chuva e lofi (playlist) |
 | Vista da janela | Janela | Todas as vistas (Asa e Sem moldura) |
 | Bloqueio de apps | — | Sim (condicionado, RN-23) |
