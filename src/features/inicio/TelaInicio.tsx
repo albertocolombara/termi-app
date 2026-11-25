@@ -4,7 +4,7 @@
  * - globo pontilhado com as rotas voadas (GloboDeRotas), girando devagar e interativo;
  * - resumo do diário (voos e tempo de foco) com "Ver diário";
  * - último voo com "Repetir" (caminho rápido com o mesmo tempo de foco);
- * - marca do Plus no cabeçalho (na econômica, abre o paywall: RN-20).
+ * - marca do Plus no cabeçalho só na econômica (abre o paywall: RN-20); some para quem já é Plus.
  */
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -69,15 +69,17 @@ export function TelaInicio() {
             </View>
           </Pressable>
           <View style={styles.direita}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={classe === 'primeira' ? 'Plus' : t('inicio.plusAcessivel')}
-              disabled={classe === 'primeira'}
-              onPress={() => router.push('/primeira-classe')}
-              style={({ pressed }) => pressed && { opacity: 0.8 }}
-            >
-              <Plus />
-            </Pressable>
+            {/* Só na econômica: quem já é Plus não vê o convite (Alberto, build-66). */}
+            {classe !== 'primeira' ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('inicio.plusAcessivel')}
+                onPress={() => router.push('/primeira-classe')}
+                style={({ pressed }) => pressed && { opacity: 0.8 }}
+              >
+                <Plus />
+              </Pressable>
+            ) : null}
             <View style={styles.saldo} accessible accessibilityLabel={t('inicio.saldoAcessivel', { valor: contagens.data?.saldo ?? 0 })}>
               <Text variant="Label/Strong 14">{t('inicio.saldo', { valor: (contagens.data?.saldo ?? 0).toLocaleString('pt-BR') })}</Text>
             </View>

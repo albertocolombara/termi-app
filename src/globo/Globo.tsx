@@ -336,7 +336,7 @@ export function Globo({ width, height, aviao, origem, destino: chegada, trilha =
 
   return (
     <GestureDetector gesture={gestos}>
-      <View style={{ width, height, backgroundColor: color.bg.flight }}>
+      <View style={{ width, height, backgroundColor: color.bg.app }}>
         {pronto && (
           <Canvas style={StyleSheet.absoluteFill}>
             <Fill>
