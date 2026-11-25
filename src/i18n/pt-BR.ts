@@ -268,7 +268,7 @@ export const ptBR = {
     avisoDePouso: 'Aviso de pouso',
     avisoDePousoDescricao: 'Toca mesmo com o celular no silencioso',
     somDoServico: 'Sinal de apertar cintos',
-    somDoServicoDescricao: 'Toca no começo e no fim do serviço de bordo, mais alto que o som do voo. O volume é o das notificações do celular. Vale a partir do próximo voo',
+    somDoServicoDescricao: 'Toca no começo e no fim do serviço de bordo, mais alto que o som do voo e mesmo no silencioso. O volume é o de alarme do celular. Vale a partir do próximo voo',
     telaEBateria: 'Tela e bateria',
     economiaDeBateria: 'Economia de bateria',
     economiaDeBateriaDescricao: 'Janela a 2 quadros por segundo',

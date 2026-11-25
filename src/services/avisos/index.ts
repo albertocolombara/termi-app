@@ -8,18 +8,26 @@
  */
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
+import { AndroidAudioContentType, AndroidAudioUsage, AndroidImportance } from 'expo-notifications';
 
 import { t } from '@/i18n';
 import { ScreenState } from '../../../modules/screen-state/src';
 
-const CANAL_POUSO = 'pouso';
+/**
+ * Pouso e serviço de bordo tocam no volume de alarme (uso ALARM do Android), para tocar mesmo com o
+ * celular no silencioso, como diz o Ajuste "Aviso de pouso" (build-56: o sinal de cintos não tocou,
+ * provavelmente porque o celular estava no silencioso). O modo "Não perturbe" continua valendo.
+ * Canais não mudam de som depois de criados, por isso os ids novos; os antigos são apagados.
+ */
+const COMO_ALARME = { usage: AndroidAudioUsage.ALARM, contentType: AndroidAudioContentType.SONIFICATION };
+const CANAIS_ANTIGOS = ['pouso', 'servico', 'servico-cinto'];
+const CANAL_POUSO = 'pouso-alarme';
 /**
  * Serviço de bordo: o sinal de apertar cintos no começo e no fim da pausa (pedido do Alberto em 25/11/2026).
  * Canais do Android não mudam de som depois de criados, por isso o id novo; o canal antigo ('servico',
  * com o som padrão) é apagado. O Android abaixa o som de fundo do voo enquanto o sinal toca.
  */
-const CANAL_SERVICO = 'servico-cinto';
+const CANAL_SERVICO = 'servico-alarme';
 const CANAL_SERVICO_SEM_SOM = 'servico-sem-som';
 const SOM_DO_SERVICO = 'aviso_cinto.ogg';
 
@@ -42,13 +50,15 @@ export async function configurarAvisos() {
     name: t('avisos.canalPouso'),
     importance: AndroidImportance.HIGH,
     sound: 'default',
+    audioAttributes: COMO_ALARME,
     vibrationPattern: [0, 250, 150, 250],
   });
-  await Notifications.deleteNotificationChannelAsync('servico').catch(() => {});
+  for (const antigo of CANAIS_ANTIGOS) await Notifications.deleteNotificationChannelAsync(antigo).catch(() => {});
   await Notifications.setNotificationChannelAsync(CANAL_SERVICO, {
     name: t('avisos.canalServico'),
     importance: AndroidImportance.HIGH,
     sound: SOM_DO_SERVICO,
+    audioAttributes: COMO_ALARME,
   });
   await Notifications.setNotificationChannelAsync(CANAL_SERVICO_SEM_SOM, {
     name: t('avisos.canalServicoSemSom'),
