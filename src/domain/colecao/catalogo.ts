@@ -26,6 +26,8 @@ export type Souvenir = {
   nome: string;
   /** Nome na forma nativa, como gravado na medalha (RN-16). */
   nomeNativo: string;
+  /** Desenho da medalha ("Sakura", "Bonde"), mostrado na loja e na mala; null = ainda sem nome. */
+  motivo: string | null;
   /** Caminhos no R2 (relativos à base), baixados sob demanda. */
   imagem2d: string | null;
   modelo3d: string | null;
@@ -63,6 +65,7 @@ function lerSouvenir(e: unknown): Souvenir | null {
     preco,
     nome,
     nomeNativo: texto(o.nomeNativo) ?? nome,
+    motivo: texto(o.motivo),
     imagem2d: texto(o.imagem2d),
     modelo3d: texto(o.modelo3d),
     disponivelDesde: Number.isFinite(desde) ? desde : null,

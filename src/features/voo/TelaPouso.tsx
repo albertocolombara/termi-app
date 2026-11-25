@@ -5,7 +5,8 @@
  * E6: carimbo com a animação de "bater", o que o voo rendeu, o motivo da viagem e "Voltar ao início".
  * E7: carimbo apagado ("sem carimbo"), o que o voo rendeu, o aviso de carimbo e loja e o diário.
  * E6 também abre a loja do destino (bloco "Loja de Londres" do Figma), quando o país tem souvenir
- * na coleção (UC-08 passo 4). País sem souvenir: o bloco não aparece (UC-08 E1 segue [Pendente]).
+ * na coleção (UC-08 passo 4). País sem souvenir: o bloco aparece desabilitado, "Loja indisponível
+ * nessa cidade" (Figma 570:13515, Alberto em 25/11/2026; UC-08 E1).
  */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -132,7 +133,7 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           )}
           {souvenir ? (
             <Pressable accessibilityRole="button" onPress={abrirLoja} style={({ pressed }) => [styles.linha, styles.linhaLoja, pressed && { opacity: 0.85 }]}>
-              <Icon name="suitcaseLine" />
+              <Icon name="store" />
               <View style={{ flex: 1, gap: space[4] }}>
                 <Text variant="Label/Medium 14">{t('loja.abrirLoja', { cidade })}</Text>
                 <Text variant="Caption/Regular 12" tone="tertiary">
@@ -141,6 +142,24 @@ export function TelaPouso({ id }: { id: string | undefined }) {
               </View>
               <Icon name="chevronRight" color={color.accent.default} />
             </Pressable>
+          ) : pousou ? (
+            <View
+              style={[styles.linha, styles.linhaIndisponivel]}
+              accessible
+              accessibilityState={{ disabled: true }}
+              accessibilityLabel={`${t('loja.indisponivelTitulo', { cidade })}. ${t('loja.indisponivelTexto')}`}
+            >
+              <Icon name="store" color={color.state.disabledContainer} />
+              <View style={{ flex: 1, gap: space[4] }}>
+                <Text variant="Label/Medium 14" tone="disabled">
+                  {t('loja.indisponivelTitulo', { cidade })}
+                </Text>
+                <Text variant="Caption/Regular 12" tone="disabled">
+                  {t('loja.indisponivelTexto')}
+                </Text>
+              </View>
+              <Icon name="chevronRight" color={color.state.disabledContainer} />
+            </View>
           ) : null}
         </View>
       </View>
@@ -178,6 +197,8 @@ const styles = StyleSheet.create({
   // E7 (Figma 443:11349): a linha do diário fica no fundo da tela, só com a borda.
   linhaApagada: { backgroundColor: color.bg.app },
   // E6 (Figma 443:11469): a loja do destino com a borda amarela e fundo âmbar bem leve.
+  // Figma 570:13515: borda tracejada, sem fundo, textos e ícones desabilitados.
+  linhaIndisponivel: { borderStyle: 'dashed', borderColor: color.border.default, backgroundColor: 'transparent' },
   linhaLoja: { borderColor: color.border.accent, backgroundColor: color.accent.subtle },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
 });

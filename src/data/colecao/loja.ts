@@ -5,7 +5,7 @@
  * `domain/colecao/loja` e grava o souvenir na mala e o débito no livro-caixa. Assim dois toques
  * seguidos não compram duas vezes nem deixam o saldo negativo. Só acrescenta: nada de DELETE.
  */
-import { situacaoDaCompra, type Origem, type PousoCompleto, type SituacaoDaCompra } from '@/domain/colecao/loja';
+import { precoNaLoja, situacaoDaCompra, type Origem, type PousoCompleto, type SituacaoDaCompra } from '@/domain/colecao/loja';
 import type { Classe } from '@/domain/sessao/duracao';
 
 type Valor = string | number | null;
@@ -23,6 +23,7 @@ export type BancoDaLoja = Leitura & {
 
 export type PedidoDeCompra = {
   souvenirId: string;
+  /** Preço do catálogo; a loja remota cobra o acréscimo (`precoNaLoja`). */
   preco: number;
   classe: Classe;
   origem: Origem;
@@ -45,18 +46,19 @@ export async function comprarSouvenir(db: BancoDaLoja, p: PedidoDeCompra): Promi
       origem: p.origem,
     });
     if (resultado.tipo !== 'pode') return;
+    const preco = precoNaLoja({ preco: p.preco }, p.origem);
     await txn.runAsync(
       'INSERT INTO souvenirs_na_mala (souvenir_id, comprado_em, sessao_id, preco, amostra) VALUES (?, ?, ?, ?, ?)',
       p.souvenirId,
       p.quando,
       p.sessaoId,
-      p.preco,
+      preco,
       p.classe === 'primeira' ? 0 : 1,
     );
     await txn.runAsync(
       "INSERT INTO lancamentos (id, tipo, valor, sessao_id, souvenir_id, criado_em) VALUES (?, 'compra_souvenir', ?, ?, ?, ?)",
       `compra-${p.souvenirId}`,
-      -p.preco,
+      -preco,
       p.sessaoId,
       p.souvenirId,
       p.quando,

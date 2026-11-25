@@ -80,6 +80,12 @@ export const color = {
     muted: p['white/a60'],
     accent: p['yellow/500'],
     onAccent: p['brown/950'],
+    /** Figma `text/disabled` (branco a 38%): itens indisponíveis, como a loja de cidade sem souvenir. */
+    disabled: 'rgba(255,255,255,0.38)',
+  },
+  /** Figma `state/disabled-container` (branco a 12%): ícones e fundos de itens indisponíveis. */
+  state: {
+    disabledContainer: 'rgba(255,255,255,0.12)',
   },
   /** Cartão de embarque (papel branco, Figma "03 · Cartão de embarque"). */
   cartao: {
@@ -153,11 +159,13 @@ export const color = {
     icone: 'rgba(244,74,34,0.10)',
   },
   /** Globo de rotas do Início e das Estatísticas (Figma: "Globo/Detalhes da rota"; cores locais da ilustração). */
+  // Globo de rotas do Início e das Estatísticas, em preto e branco (Alberto, build-66 e build-70):
+  // o mar vai até o fundo do app (#141218); rotas e pontos seguem amarelos. O globo do voo não usa isto.
   globo: {
-    terra: '#9FB4D6',
-    marCentro: '#1E2742',
-    marBorda: '#0E1220',
-    halo: 'rgba(90,140,255,0.16)',
+    terra: '#B8B7BD',
+    marCentro: '#2A2830',
+    marBorda: '#141218',
+    halo: 'rgba(255,255,255,0.08)',
     cartao: '#201D25',
     sombraDoCartao: 'rgba(0,0,0,0.53)',
   },
@@ -177,7 +185,7 @@ export const color = {
  * entrarem no catálogo (`imagem2d`).
  */
 export const loja = {
-  luzDaVitrine: 'rgba(255,204,64,0.16)',
+  luzDaVitrine: 'rgba(255,204,64,0.05)', // bem leve (Alberto, build-70)
   reflexo: 'rgba(255,255,255,0.05)',
   sombra: 'rgba(0,0,0,0.45)',
   metal: {

@@ -12,7 +12,8 @@ export type ButtonProps = Omit<PressableProps, 'style' | 'children'> & {
   /** primary = amarelo; secondary = superfície translúcida (small = contorno); link = só texto. */
   variant?: ButtonVariant;
   /**
-   * large = rótulo à esquerda + ícone à direita; medium = centralizado; small = compacto (secondary).
+   * large = rótulo à esquerda + ícone à direita (sem ícone, rótulo centralizado, como "Mostrar ícone" desligado no Figma);
+   * medium = centralizado; small = compacto (secondary).
    * mini = contorno com rótulo de 12, para ações discretas sobre a janela e o embarque ("Pousar antes", "Cancelar embarque").
    */
   size?: ButtonSize;
@@ -41,7 +42,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
-        isLink ? styles.link : isOutline ? styles.outline : size === 'large' ? styles.large : styles.medium,
+        isLink ? styles.link : isOutline ? styles.outline : size === 'large' ? [styles.large, !icon && styles.centro] : styles.medium,
         !isLink && !isOutline && { backgroundColor: isPrimary ? C.accent.default : C.surface.strong },
         pressed && styles.pressed,
         disabled && styles.disabled,
@@ -75,6 +76,7 @@ function rotulo(variant: ButtonVariant, size: ButtonSize) {
 const styles = StyleSheet.create({
   base: { flexDirection: 'row', alignItems: 'center' },
   large: { justifyContent: 'space-between', gap: space[14], padding: space[16], minHeight: 56 },
+  centro: { justifyContent: 'center' },
   medium: { justifyContent: 'center', paddingVertical: space[14], minHeight: 54 },
   outline: {
     alignSelf: 'flex-start',

@@ -18,14 +18,14 @@ import { useComprarSouvenir, usePousosCompletos } from '@/data/colecao/useLoja';
 import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico';
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
-import { pousouNoPais, situacaoDaCompra } from '@/domain/colecao/loja';
+import { pousouNoPais, precoNaLoja, situacaoDaCompra } from '@/domain/colecao/loja';
 import { Button, color, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { nomeDoLugar } from '@/features/voo/formato';
 import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
 import { FolhaMalaCheia } from './FolhaMalaCheia';
-import { Medalha } from './Medalha';
+import { Medalha3D } from './Medalha3D';
 import { Toldo } from './Toldo';
 
 const ALTURA_DA_VITRINE = 240;
@@ -71,11 +71,13 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
     );
   }
 
-  const situacao = situacaoDaCompra({ souvenir, naMala: mala.data ?? [], saldo, classe, origem: doPouso ? 'pouso' : 'lojas' });
+  const origem = doPouso ? 'pouso' : 'lojas';
+  const preco = precoNaLoja(souvenir, origem);
+  const situacao = situacaoDaCompra({ souvenir, naMala: mala.data ?? [], saldo, classe, origem });
   const comprar = () => {
     if (situacao.tipo === 'mala_cheia') return setMalaCheiaAberta(true);
     compra.mutate(
-      { souvenirId: souvenir.id, preco: souvenir.preco, classe, origem: doPouso ? 'pouso' : 'lojas', sessaoId: doPouso ? s.id : null },
+      { souvenirId: souvenir.id, preco: souvenir.preco, classe, origem, sessaoId: doPouso ? s.id : null },
       { onSuccess: (r) => r.tipo === 'mala_cheia' && setMalaCheiaAberta(true) },
     );
   };
@@ -98,10 +100,10 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
             </View>
 
             <Vitrine>
-              <Medalha souvenir={souvenir} tamanho={168} />
-              <View style={styles.etiqueta} accessible accessibilityLabel={t('loja.preco', { valor: souvenir.preco })}>
+              <Medalha3D souvenir={souvenir} tamanho={168} />
+              <View style={styles.etiqueta} accessible accessibilityLabel={t('loja.preco', { valor: preco })}>
                 <Text variant="Label/Strong 14" tone="onAccent">
-                  {t('loja.preco', { valor: souvenir.preco })}
+                  {t('loja.preco', { valor: preco })}
                 </Text>
               </View>
             </Vitrine>
@@ -109,14 +111,16 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
             <View style={{ alignItems: 'center', gap: space[4] }}>
               <Text variant="Heading/Data 24">{souvenir.nome}</Text>
               <Text variant="Body/Small 13" tone="secondary">
-                {t(`loja.metal.${souvenir.metal}`)}
+                {souvenir.motivo
+                  ? t('loja.tipoComMotivo', { tipo: t(`loja.metal.${souvenir.metal}`), motivo: souvenir.motivo })
+                  : t(`loja.metal.${souvenir.metal}`)}
               </Text>
             </View>
           </View>
 
           <Acoes
             situacao={situacao}
-            preco={souvenir.preco}
+            preco={preco}
             comprando={compra.isPending}
             erro={compra.isError}
             onComprar={comprar}
@@ -209,6 +213,8 @@ function Vitrine({ children }: { children: React.ReactNode }) {
             </RadialGradient>
           </Defs>
           <Rect x={0} y={0} width={largura} height={ALTURA_DA_VITRINE} fill="url(#luz)" />
+          {/* Reflexo do vidro da vitrine (Figma: faixa branca a 5%, inclinada). */}
+          <Rect x={10} y={-150} width={50} height={420} fill={loja.reflexo} transform="rotate(30 35 60)" />
           <Rect x={0} y={ALTURA_DA_VITRINE - 26} width={largura} height={26} fill={color.surface.strong} />
           <Ellipse cx={largura / 2} cy={ALTURA_DA_VITRINE - 26} rx={75} ry={9} fill={loja.sombra} />
         </Svg>
