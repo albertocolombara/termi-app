@@ -33,17 +33,23 @@ object SinalDeBordo {
   private const val CHAVE_TOCADOS = "tocados"
   private const val EXTRA_SOM = "som"
   private const val EXTRA_ID = "id"
+  private const val EXTRA_VOLUME = "volume"
+  /** O aviso da comissária no pouso toca sempre por aqui, mesmo com o som de fundo (que só sai com fade). */
+  private const val SOM_DO_POUSO = "aviso_pouso"
   private const val ACAO = "expo.modules.screenstate.SINAL_DE_BORDO"
 
-  private fun intencao(ctx: Context, id: Int, som: String): PendingIntent {
-    val i = Intent(ctx, Receptor::class.java).setAction(ACAO).putExtra(EXTRA_SOM, som).putExtra(EXTRA_ID, id)
+  private fun intencao(ctx: Context, id: Int, som: String, volume: Float = 1f): PendingIntent {
+    val i = Intent(ctx, Receptor::class.java).setAction(ACAO).putExtra(EXTRA_SOM, som).putExtra(EXTRA_ID, id).putExtra(EXTRA_VOLUME, volume)
     return PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
   }
 
-  /** Agenda o som `som` (nome em res/raw, sem extensão) para `emMs`. Retorna como foi agendado. */
-  fun agendar(ctx: Context, id: Int, emMs: Long, som: String): String {
+  /**
+   * Agenda o som `som` (nome em res/raw, sem extensão) para `emMs`, no `volume` dos avisos do app
+   * (0 a 1, sobre o volume de alarme do aparelho). Retorna como foi agendado.
+   */
+  fun agendar(ctx: Context, id: Int, emMs: Long, som: String, volume: Float = 1f): String {
     val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    val pi = intencao(ctx, id, som)
+    val pi = intencao(ctx, id, som, volume)
     val modo = try {
       if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) {
         am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, emMs, pi)
@@ -110,12 +116,18 @@ object SinalDeBordo {
       val som = intent.getStringExtra(EXTRA_SOM) ?: return
       val id = intent.getIntExtra(EXTRA_ID, 0)
       cancelar(ctx, id)
+      val volume = intent.getFloatExtra(EXTRA_VOLUME, 1f).coerceIn(0f, 1f)
+      if (volume <= 0f) {
+        registrar(ctx, "$som nao tocou: volume dos avisos em 0")
+        return
+      }
       if (naoPerturbeBloqueia(ctx)) {
         registrar(ctx, "$som nao tocou: nao perturbe")
         return
       }
-      // O som de fundo do voo já toca os próprios sinais por cima dele.
-      if (FlightSoundService.instance != null) {
+      // O som de fundo do voo já toca o sinal de cintos por cima dele. O aviso de pouso não: o app
+      // pode parar o som de fundo no horário do pouso e o aviso se perdia junto (Alberto, 26/11/2026).
+      if (som != SOM_DO_POUSO && FlightSoundService.instance != null) {
         registrar(ctx, "$som nao tocou: som de fundo tocando")
         return
       }
@@ -153,6 +165,7 @@ object SinalDeBordo {
         val player = MediaPlayer()
         player.setAudioAttributes(atributos)
         player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+        player.setVolume(volume, volume)
         afd.close()
         player.setOnCompletionListener { terminar(it) }
         player.setOnErrorListener { mp, what, _ ->
@@ -162,7 +175,7 @@ object SinalDeBordo {
         }
         player.prepare()
         player.start()
-        registrar(ctx, "$som tocou (alarme ${audio.getStreamVolume(AudioManager.STREAM_ALARM)}/${audio.getStreamMaxVolume(AudioManager.STREAM_ALARM)})")
+        registrar(ctx, "$som tocou a ${(volume * 100).toInt()}% (alarme ${audio.getStreamVolume(AudioManager.STREAM_ALARM)}/${audio.getStreamMaxVolume(AudioManager.STREAM_ALARM)})")
         // Segurança: o receptor tem ~10 s; os sons têm 3 s e 6 s.
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ terminar(player) }, 9_000)
       } catch (e: Exception) {

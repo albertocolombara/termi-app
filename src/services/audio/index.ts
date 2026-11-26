@@ -49,7 +49,7 @@ export type InfoDoSom = {
   /** Sinais de cintos (ms): começo e fim de cada serviço de bordo ainda por vir. Tocados pelo serviço nativo. */
   sinais?: number[];
   /** Volume do sinal e do aviso de pouso (0 a 1). */
-  volumeDoSinal?: number;
+  volumeDosAvisos?: number;
   /** Aviso da comissária no horário do pouso. */
   anunciarPouso?: boolean;
 };
@@ -90,7 +90,7 @@ function useSomNativo(fonte: Fonte | null, volume: number, tocando: boolean, inf
   const [reinicio, setReinicio] = useState(0);
   const { rota, pousoEm } = info;
   // Sinais numa chave de texto: o efeito só roda quando a lista muda de verdade.
-  const chaveDosSinais = JSON.stringify([info.sinais ?? [], info.volumeDoSinal ?? 1, !!info.anunciarPouso]);
+  const chaveDosSinais = JSON.stringify([info.sinais ?? [], info.volumeDosAvisos ?? 1, !!info.anunciarPouso]);
   const sinaisAtuais = useRef(chaveDosSinais);
 
   useEffect(() => {

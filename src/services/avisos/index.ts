@@ -6,6 +6,7 @@
  * Precisa da permissão "Alarmes e lembretes" (SCHEDULE_EXACT_ALARM), pedida no onboarding.
  * Lição do protótipo (build-7): sem ela, o aviso de pouso não tocou com a tela bloqueada.
  */
+import { useAjustes } from '@/data/preferencias/ajustes';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { AndroidAudioContentType, AndroidAudioUsage, AndroidImportance } from 'expo-notifications';
@@ -118,6 +119,8 @@ export type AvisosDoVoo = {
    * som vem da notificação (volume de alarme).
    */
   somDeFundo?: boolean;
+  /** Volume dos avisos no app (Ajustes, 0 a 1), sobre o volume de alarme do aparelho. */
+  volume?: number;
   /** Pausas encerradas antes da hora ("De volta ao foco"): sem aviso de fim. */
   pausasEncerradas?: number[];
 };
@@ -127,7 +130,7 @@ export type AvisosDoVoo = {
  * despertador) e as notificações vêm sem som. 26/11/2026, Samsung M35: o som do canal não tocou nem
  * no silencioso nem no modo normal, com o canal certo e o volume de alarme alto.
  */
-const appTocaOsSinais = () => Platform.OS === 'android' && ScreenState.temSinais;
+export const appTocaOsSinais = () => Platform.OS === 'android' && ScreenState.temSinais;
 
 /** Ids dos alarmes de som (nativos): 1 = pouso; 100 + 2i = início da pausa i; 101 + 2i = fim. */
 const SINAL_DO_POUSO = 1;
@@ -142,6 +145,7 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
   let n = 0;
   const agora = Date.now();
   const appToca = appTocaOsSinais();
+  const volume = v.volume ?? 1;
   // Com o som de fundo tocando, o FlightSoundService toca os sinais por cima dele.
   const servicoComSom = v.somDoServico !== false && !v.somDeFundo;
   const canal = servicoComSom && !appToca ? CANAL_SERVICO : CANAL_SERVICO_SEM_SOM;
@@ -152,7 +156,7 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
         content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }), sound: som },
         trigger: emHorario(p.inicio, canal),
       });
-      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoInicio(i), p.inicio, RAW_CINTO);
+      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoInicio(i), p.inicio, RAW_CINTO, volume);
       n++;
     }
     if (p.fim > agora && !v.pausasEncerradas?.includes(i)) {
@@ -161,7 +165,7 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
         content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo'), sound: som },
         trigger: emHorario(p.fim, canal),
       });
-      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoFim(i), p.fim, RAW_CINTO);
+      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoFim(i), p.fim, RAW_CINTO, volume);
       n++;
     }
   }
@@ -175,7 +179,9 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
     },
     trigger: emHorario(v.pousoEm, pousoComSom ? CANAL_POUSO : CANAL_POUSO_SEM_SOM),
   });
-  if (!v.somDeFundo && appToca) ScreenState.agendarSinal(SINAL_DO_POUSO, v.pousoEm, RAW_POUSO);
+  // O aviso da comissária toca pelo app mesmo com o som de fundo: o som de fundo pode parar no
+  // horário do pouso (app aberto) e o aviso se perdia junto (Alberto, 26/11/2026).
+  if (appToca) ScreenState.agendarSinal(SINAL_DO_POUSO, v.pousoEm, RAW_POUSO, volume);
   return n + 1;
 }
 
@@ -211,7 +217,7 @@ export async function testarSinal(tipo: 'servico' | 'pouso', emSegundos = 10): P
     },
     trigger: emHorario(em, canal),
   });
-  return appToca ? `som pelo app (${ScreenState.agendarSinal(SINAL_DE_TESTE, em, servico ? RAW_CINTO : RAW_POUSO)})` : 'som pelo canal';
+  return appToca ? `som pelo app (${ScreenState.agendarSinal(SINAL_DE_TESTE, em, servico ? RAW_CINTO : RAW_POUSO, useAjustes.getState().volumeDosAvisos)})` : 'som pelo canal';
 }
 
 export async function cancelarAvisos() {
