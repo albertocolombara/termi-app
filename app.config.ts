@@ -9,7 +9,10 @@ const APP_ENV = (process.env.APP_ENV ?? 'development') as 'development' | 'previ
 
 // Identificador provisório de desenvolvimento. O definitivo será escolhido antes do
 // primeiro envio à Play (ROADMAP, Fase 1) e não poderá mudar depois da publicação.
-const ANDROID_PACKAGE = 'com.albertocolombara.termiapp.dev';
+const PACOTE_DE_TESTE = 'com.albertocolombara.termiapp.dev';
+// Build de desenvolvimento (expo-dev-client, carrega o JS do computador): pacote próprio, para
+// ficar instalada ao lado do app de teste sem substituí-lo (cada uma com os próprios dados).
+const ANDROID_PACKAGE = APP_ENV === 'development' ? 'com.albertocolombara.termiapp.desenvolvimento' : PACOTE_DE_TESTE;
 
 // Cores de sistema (fundo do app, splash e ícone). Ver DESIGN.md.
 const BG_APP = '#141218'; // color.bg.app
@@ -22,7 +25,7 @@ const pixelFamilies = [['Geist Pixel Grid', 'Grid']] as const;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: APP_ENV === 'production' ? 'Termi' : 'Termi (dev)',
+  name: APP_ENV === 'production' ? 'Termi' : APP_ENV === 'development' ? 'Termi (desenv.)' : 'Termi (dev)',
   slug: 'termi-app',
   scheme: 'termi',
   version: '0.1.0',
