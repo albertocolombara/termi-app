@@ -43,12 +43,27 @@ export function TelaMala() {
           <View style={styles.grade}>
             {catalogo.map((s) => {
               const tem = naMala.has(s.id);
-              return (
+              const nome = (
+                <Text variant="Caption/Regular 12" tone={tem ? 'primary' : 'muted'} numberOfLines={1}>
+                  {s.nome}
+                </Text>
+              );
+              // Medalha comprada: toque abre o destaque (M1b), com a medalha em 3D.
+              return tem ? (
+                <Pressable
+                  key={s.id}
+                  style={({ pressed }) => [styles.espaco, pressed && { opacity: 0.85 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('mala.abrirSouvenir', { nome: s.nome })}
+                  onPress={() => router.push({ pathname: '/mala/[id]', params: { id: s.id } })}
+                >
+                  <Medalha souvenir={s} tamanho={64} />
+                  {nome}
+                </Pressable>
+              ) : (
                 <View key={s.id} style={styles.espaco} accessible accessibilityLabel={s.nome}>
-                  {tem ? <Medalha souvenir={s} tamanho={64} /> : <View style={[styles.encaixe, styles.encaixeVazio]} />}
-                  <Text variant="Caption/Regular 12" tone={tem ? 'primary' : 'muted'} numberOfLines={1}>
-                    {s.nome}
-                  </Text>
+                  <View style={[styles.encaixe, styles.encaixeVazio]} />
+                  {nome}
                 </View>
               );
             })}
