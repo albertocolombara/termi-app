@@ -287,8 +287,9 @@ export const typography = {
   'Heading/Screen 32': type(S, '600', 32, -6, 120),
   'Heading/Data 24': type(S, '500', 24, -3, 120),
   'Heading/Sheet 22': type(S, '600', 22, 0, 130),
-  'Button/Large 24': type(S, '600', 24, -3, 120),
-  'Button/Medium 20': type(S, '600', 20, 0, 130),
+  // Rótulo de todos os botões: "Label Large" do Material 3 (14/20, peso 500, espaçamento 0,1).
+  // Pedido do Alberto em 26/11/2026; antes, Button/Large 24 e Button/Medium 20 nos primários.
+  'Button/Label 14': type(S, '500', 14, 0.714, 142.86),
   'Nav/Title 20': type(S, '400', 20, -3, 130),
   'Body/Large 16': type(S, '400', 16, -3, 130),
   'Body/Large Medium 16': type(S, '500', 16, 0, 130),

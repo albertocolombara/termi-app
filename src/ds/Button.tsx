@@ -63,14 +63,13 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
 }
 
 /**
- * Estilo do rótulo (Figma v3, componente Button): o primário grande usa "Button/Large 24" e o médio
- * "Button/Medium 20"; os demais, "Body/Large Medium 16". O link não tem mais sublinhado (v3).
+ * Estilo do rótulo: "Button/Label 14", o Label Large do Material 3, em todos os botões e tamanhos
+ * (Alberto, 26/11/2026: os primários estavam grandes demais). Só o mini, de contorno, segue com 12.
+ * O link não tem sublinhado (Figma v3).
  */
-function rotulo(variant: ButtonVariant, size: ButtonSize) {
+function rotulo(_variant: ButtonVariant, size: ButtonSize) {
   if (size === 'mini') return 'Caption/Regular 12' as const;
-  if (variant === 'link' || size === 'small') return 'Body/Large Medium 16' as const;
-  if (size === 'medium') return 'Button/Medium 20' as const;
-  return variant === 'primary' ? ('Button/Large 24' as const) : ('Body/Large Medium 16' as const);
+  return 'Button/Label 14' as const;
 }
 
 const styles = StyleSheet.create({
