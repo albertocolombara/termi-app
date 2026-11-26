@@ -129,11 +129,11 @@ export function TelaEstatisticas() {
 
         {/* Por dia (ou faixa do período) */}
         <View style={styles.barras}>
-          {e.barras.map((b) => {
+          {e.barras.map((b, i) => {
             const altura = b.minutos ? Math.max(6, (b.minutos / maior) * 76) : 3;
             return (
               <View
-                key={b.rotulo}
+                key={i}
                 style={styles.coluna}
                 accessible
                 accessibilityLabel={t('estatisticas.barraAcessivel', { rotulo: b.rotulo, tempo: duracaoTotal(b.minutos) })}
