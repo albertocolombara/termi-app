@@ -78,6 +78,8 @@ export const ptBR = {
     diagnosticoErroJs: 'Último erro de JavaScript',
     diagnosticoSemErro: 'Nenhum erro de JavaScript guardado.',
     diagnosticoFechamentos: 'Últimos fechamentos (Android)',
+    diagnosticoCrashJava: 'Último crash nativo (Java/Kotlin)',
+    diagnosticoSemCrashJava: 'Nenhum crash de Java guardado.',
     diagnosticoSemFechamentos: 'O Android não registrou fechamentos (ou é anterior ao Android 11).',
     diagnosticoCompartilhar: 'Compartilhar diagnóstico',
     primeiraClasse: 'Teste: Plus',

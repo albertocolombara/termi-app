@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, color, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
-import { fechamentosRecentes, ultimoErroJs } from '@/services/diagnostico';
+import { fechamentosRecentes, ultimoCrashJava, ultimoErroJs } from '@/services/diagnostico';
 
 const hora = (ms: number) => new Date(ms).toLocaleString('pt-BR');
 
@@ -17,10 +17,13 @@ export default function Diagnostico() {
   const insets = useSafeAreaInsets();
   const [erro] = useState(ultimoErroJs);
   const [saidas] = useState(fechamentosRecentes);
+  const [java] = useState(ultimoCrashJava);
 
   const texto = [
     `== ${t('dev.diagnosticoErroJs')}`,
     erro ? `${hora(erro.quando)} fatal=${erro.fatal}\n${erro.mensagem}\n${erro.pilha}` : t('dev.diagnosticoSemErro'),
+    `\n== ${t('dev.diagnosticoCrashJava')}`,
+    java || t('dev.diagnosticoSemCrashJava'),
     `\n== ${t('dev.diagnosticoFechamentos')}`,
     ...(saidas.length
       ? saidas.map((s) => `${hora(s.quando)} ${s.motivo} pss=${Math.round(s.pss / 1024)}MB\n${s.descricao}\n${s.pilha.slice(0, 4000)}`)

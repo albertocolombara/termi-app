@@ -17,6 +17,8 @@ type ScreenStateNative = {
   stopFlightSound(): void;
   /** Últimos fechamentos do app registrados pelo Android 11+ (diagnóstico). */
   recentExits(): SaidaDoApp[];
+  /** Pilha do último crash de Java/Kotlin, ou "" (diagnóstico). */
+  lastJavaCrash(): string;
 };
 
 export type SaidaDoApp = { motivo: string; quando: number; descricao: string; pss: number; pilha: string };
@@ -40,4 +42,5 @@ export const ScreenState: ScreenStateNative & { available: boolean } = {
   isFlightSoundRunning: () => native?.isFlightSoundRunning() ?? false,
   stopFlightSound: () => native?.stopFlightSound(),
   recentExits: () => native?.recentExits() ?? [],
+  lastJavaCrash: () => native?.lastJavaCrash() ?? '',
 };

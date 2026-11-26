@@ -60,6 +60,15 @@ export function fechamentosRecentes(): SaidaDoApp[] {
   }
 }
 
+/** Pilha do último crash de Java/Kotlin (ex.: dentro de uma biblioteca nativa). */
+export function ultimoCrashJava(): string {
+  try {
+    return ScreenState.lastJavaCrash();
+  } catch {
+    return '';
+  }
+}
+
 function lerVitrine3d(): boolean {
   if (!mostrarFerramentasDev) return false;
   try {
