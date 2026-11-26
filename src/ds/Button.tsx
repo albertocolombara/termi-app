@@ -50,7 +50,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       ]}
       {...rest}
     >
-      <Text variant={rotulo(variant, size)} style={{ color: fg }} numberOfLines={1}>
+      <Text variant={rotulo(size)} style={{ color: fg }} numberOfLines={1}>
         {label}
       </Text>
       {size === 'large' && !isLink && !isOutline && icon ? (
@@ -63,13 +63,14 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
 }
 
 /**
- * Estilo do rótulo: "Button/Label 14", o Label Large do Material 3, em todos os botões e tamanhos
- * (Alberto, 26/11/2026: os primários estavam grandes demais). Só o mini, de contorno, segue com 12.
- * O link não tem sublinhado (Figma v3).
+ * Estilo do rótulo pelo tamanho do botão, como no Material 3 Expressive (Alberto, 26/11/2026):
+ * grande e médio (54–56 dp, o "médio" do M3E) usam "Button/Label 16" (Title Medium); o pequeno,
+ * "Button/Label 14" (Label Large); o mini, de contorno, segue com 12. O link não tem sublinhado (Figma v3).
  */
-function rotulo(_variant: ButtonVariant, size: ButtonSize) {
+function rotulo(size: ButtonSize) {
   if (size === 'mini') return 'Caption/Regular 12' as const;
-  return 'Button/Label 14' as const;
+  if (size === 'small') return 'Button/Label 14' as const;
+  return 'Button/Label 16' as const;
 }
 
 const styles = StyleSheet.create({
