@@ -246,7 +246,7 @@ export const ptBR = {
     altitude: 'Altitude',
     velocidade: 'Velocidade',
     horaLocal: 'Hora local',
-    horaLocalComFuso: 'Hora local · {fuso}',
+    horaComFuso: '{hora} ({fuso})',
     avisoOrigem: 'Termi • agora',
     boasVindasTitulo: 'Bem-vindo(a) a bordo do {voo}',
     boasVindasTexto: 'De {origem} para {destino}. Pode sair do app à vontade; só não ligue o modo avião, para o voo ao vivo e os avisos continuarem.',

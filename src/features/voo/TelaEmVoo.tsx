@@ -394,7 +394,7 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
           <Dado rotulo={t('emVoo.altitude')} valor={metros(pos.altitudePes) ?? '—'} />
           <Dado rotulo={t('emVoo.velocidade')} valor={kmh(pos.noSolo ? 0 : voo.velocidadeNos)} />
           {/* Hora de onde o avião está, com o fuso (Alberto, 26/11/2026). */}
-          <Dado rotulo={horaDoVoo.fuso ? t('emVoo.horaLocalComFuso', { fuso: horaDoVoo.fuso }) : t('emVoo.horaLocal')} valor={horaDoVoo.hora} />
+          <Dado rotulo={t('emVoo.horaLocal')} valor={horaDoVoo.fuso ? t('emVoo.horaComFuso', { hora: horaDoVoo.hora, fuso: horaDoVoo.fuso }) : horaDoVoo.hora} />
         </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
           <Button
