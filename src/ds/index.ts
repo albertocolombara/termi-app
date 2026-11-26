@@ -26,6 +26,7 @@ export {
   Plus,
   FirstClassSeal,
   IconButton,
+  ICON_BUTTON_SIZE,
   InfoBanner,
   ListOption,
   PremiumBadge,

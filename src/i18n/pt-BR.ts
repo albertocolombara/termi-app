@@ -74,6 +74,11 @@ export const ptBR = {
   },
   dev: {
     diagnostico: 'Diagnóstico',
+    testeDoPouso: 'Teste do aviso de pouso',
+    testeDoSinal: 'Aviso de teste do Diagnóstico.',
+    testarServico: 'Testar sinal do serviço (10 s)',
+    testarPouso: 'Testar aviso de pouso (10 s)',
+    testeAgendado: 'Agendado para {hora}. Pode bloquear a tela ou sair do app.',
     diagnosticoDescricao: 'Últimos fechamentos do app e o último erro, para enviar',
     diagnosticoErroJs: 'Último erro de JavaScript',
     diagnosticoSemErro: 'Nenhum erro de JavaScript guardado.',

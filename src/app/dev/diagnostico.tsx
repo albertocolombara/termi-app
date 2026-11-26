@@ -9,7 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, color, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
-import { avisosAgendados, avisosRecebidos, fechamentosRecentes, ultimoCrashJava, ultimoErroJs, type AvisoAgendado } from '@/services/diagnostico';
+import { testarSinal } from '@/services/avisos';
+import { audioDosAvisos, avisosAgendados, avisosRecebidos, fechamentosRecentes, ultimoCrashJava, ultimoErroJs, type AvisoAgendado } from '@/services/diagnostico';
 
 const hora = (ms: number) => new Date(ms).toLocaleString('pt-BR');
 
@@ -20,14 +21,27 @@ export default function Diagnostico() {
   const [java] = useState(ultimoCrashJava);
   const [recebidos] = useState(avisosRecebidos);
   const [agendados, setAgendados] = useState<AvisoAgendado[]>([]);
+  const [audio] = useState(audioDosAvisos);
+  const [teste, setTeste] = useState<string | null>(null);
   useEffect(() => {
     avisosAgendados().then(setAgendados);
   }, []);
+  const testar = (tipo: 'servico' | 'pouso') => {
+    const em = Date.now() + 10_000;
+    testarSinal(tipo, 10)
+      .then(() => {
+        setTeste(t('dev.testeAgendado', { hora: new Date(em).toLocaleTimeString('pt-BR') }));
+        avisosAgendados().then(setAgendados);
+      })
+      .catch((e: unknown) => setTeste(String(e)));
+  };
   const horaCurta = (ms: number | null) => (ms ? new Date(ms).toLocaleTimeString('pt-BR') : '?');
 
   const texto = [
     `== ${t('dev.diagnosticoErroJs')}`,
     erro ? `${hora(erro.quando)} fatal=${erro.fatal}\n${erro.mensagem}\n${erro.pilha}` : t('dev.diagnosticoSemErro'),
+    `\n== Som dos avisos`,
+    audio,
     `\n== Avisos agendados`,
     agendados.length ? agendados.map((a) => `${horaCurta(a.quando)} [${a.canal ?? 'sem canal'}] ${a.titulo}`).join('\n') : 'nenhum',
     `\n== Avisos recebidos (com o app vivo)`,
@@ -47,6 +61,13 @@ export default function Diagnostico() {
     >
       <TopBar title={t('dev.diagnostico')} onBack={() => router.back()} />
       <Button size="medium" icon={null} label={t('dev.diagnosticoCompartilhar')} onPress={() => Share.share({ message: texto }).catch(() => {})} />
+      <Button size="medium" variant="secondary" icon={null} label={t('dev.testarServico')} onPress={() => testar('servico')} />
+      <Button size="medium" variant="secondary" icon={null} label={t('dev.testarPouso')} onPress={() => testar('pouso')} />
+      {teste ? (
+        <Text variant="Body/Medium 14" tone="secondary">
+          {teste}
+        </Text>
+      ) : null}
       <View style={{ padding: space[12], borderRadius: radius.xl, backgroundColor: color.surface.default }}>
         <Text variant="Caption/Regular 12" tone="secondary" selectable>
           {texto}

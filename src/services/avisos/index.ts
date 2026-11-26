@@ -166,6 +166,25 @@ export async function cancelarAvisoDeFimDaPausa(indice: number) {
   await Notifications.cancelScheduledNotificationAsync(idDoFimDaPausa(indice)).catch(() => {});
 }
 
+/** Canais dos avisos, para o Diagnóstico mostrar como ficaram gravados no aparelho. */
+export const CANAIS_DOS_AVISOS = [CANAL_SERVICO, CANAL_SERVICO_SEM_SOM, CANAL_POUSO, CANAL_POUSO_SEM_SOM];
+
+/**
+ * Diagnóstico: agenda um aviso de teste daqui a alguns segundos, como alarme exato e no mesmo canal
+ * com som do voo de verdade. Serve para ouvir o sinal com o app aberto, em segundo plano ou bloqueado.
+ */
+export async function testarSinal(tipo: 'servico' | 'pouso', emSegundos = 10) {
+  const servico = tipo === 'servico';
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: servico ? t('avisos.servicoTitulo') : t('dev.testeDoPouso'),
+      body: t('dev.testeDoSinal'),
+      sound: servico ? SOM_DO_SERVICO : SOM_DO_POUSO,
+    },
+    trigger: emHorario(Date.now() + emSegundos * 1000, servico ? CANAL_SERVICO : CANAL_POUSO),
+  });
+}
+
 export async function cancelarAvisos() {
   await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
 }

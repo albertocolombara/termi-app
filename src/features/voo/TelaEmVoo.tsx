@@ -36,7 +36,7 @@ import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
 import { fusoDaPosicao, horaNoFuso } from '@/domain/voos/horaLocal';
 import { progressoNaRota, type Amostra } from '@/domain/voos/trilha';
-import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
+import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, ICON_BUTTON_SIZE, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
 import { t } from '@/i18n';
 import { Janela } from '@/janela/Janela';
@@ -58,8 +58,11 @@ import { useSomLiberado } from './somLiberado';
 
 type Vista = 'janela' | 'globo';
 
-/** IconButton de 48 dp: o espaço reservado embaixo do horário do pouso. */
-const TAMANHO_DO_BOTAO = 48;
+/**
+ * Espaço embaixo do horário do pouso: botão de vistas na janela, "Centralizar" no globo. Tem de ser
+ * igual ao IconButton: com 48 o painel crescia 4 dp no globo e o aviso e o botão pulavam ao trocar de vista.
+ */
+const TAMANHO_DO_BOTAO = ICON_BUTTON_SIZE;
 
 export function TelaEmVoo() {
   const insets = useSafeAreaInsets();

@@ -144,6 +144,9 @@ export type IconButtonProps = {
 };
 
 /** Botão flutuante 44×44 sobre a vista do voo. */
+/** Lado do IconButton (dp). Para reservar o espaço dele em layouts que trocam de conteúdo. */
+export const ICON_BUTTON_SIZE = 44;
+
 export function IconButton({ icon, accessibilityLabel, onPress, indicator, style }: IconButtonProps) {
   return (
     <Pressable
@@ -325,8 +328,8 @@ const styles = StyleSheet.create({
   plusTexto: { fontFamily: fontFamily.pixel, fontWeight: '400', fontSize: 14, lineHeight: 20, letterSpacing: 0, color: C.text.accent },
   plusTextoPequeno: { fontSize: 12, lineHeight: 16 },
   iconButton: {
-    width: 44,
-    height: 44,
+    width: ICON_BUTTON_SIZE,
+    height: ICON_BUTTON_SIZE,
     borderRadius: radius.xl,
     backgroundColor: C.surface.strong,
     alignItems: 'center',

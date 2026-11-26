@@ -19,6 +19,8 @@ type ScreenStateNative = {
   recentExits(): SaidaDoApp[];
   /** Pilha do último crash de Java/Kotlin, ou "" (diagnóstico). */
   lastJavaCrash(): string;
+  /** Volumes, modo do toque, "Não perturbe" e os canais pedidos, em texto (diagnóstico). */
+  audioDosAvisos(canais: string[]): string;
 };
 
 export type SaidaDoApp = { motivo: string; quando: number; descricao: string; pss: number; pilha: string };
@@ -43,4 +45,5 @@ export const ScreenState: ScreenStateNative & { available: boolean } = {
   stopFlightSound: () => native?.stopFlightSound(),
   recentExits: () => native?.recentExits() ?? [],
   lastJavaCrash: () => native?.lastJavaCrash() ?? '',
+  audioDosAvisos: (c) => native?.audioDosAvisos(c) ?? '',
 };
