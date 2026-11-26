@@ -59,7 +59,7 @@ Famílias: **Geist** (400, 500, 600) e **Geist Pixel Grid** (display; a forma da
 | Heading/Data 24 | Geist | 500 | 24 | −3% | 120% | Dados em destaque |
 | Heading/Sheet 22 | Geist | 600 | 22 | 0 | 130% | Título de bottom sheet |
 | Button/Label 16 | Geist | 500 | 16 | 0,15 px | 24 px | Rótulo dos botões grande e médio (Title Medium; tamanho "médio" do Material 3 Expressive, 56 dp). Alberto, 26/11/2026, no lugar de Button/Large 24 e Button/Medium 20 |
-| Button/Label Strong 16 | Geist | 600 | 16 | 0,15 px | 24 px | Rótulo do botão primário com seta (peso maior para combinar com a seta; Alberto, 26/11/2026) |
+| Button/Label Strong 16 | Geist | 600 | 16 | 0,15 px | 24 px | Rótulo do botão primário grande, com ou sem seta (peso maior para combinar com a seta; Alberto, 26/11/2026) |
 | Button/Label 14 | Geist | 500 | 14 | 0,1 px | 20 px | Rótulo do botão pequeno (Label Large do Material 3) |
 | Nav/Title 20 | Geist | 400 | 20 | −3% | 130% | Barra superior |
 | Body/Large 16 | Geist | 400 | 16 | −3% | 130% | Texto principal |
