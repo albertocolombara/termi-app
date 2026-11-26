@@ -3,13 +3,20 @@
  * Os GLBs vêm do Blender com a face para cima (+Y no glTF): girar 90° em X deixa a face para a câmera.
  * As rotações do Filament são aplicadas na ordem X, Y, Z (no mundo), então Y gira em torno da vertical.
  */
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { PanResponder, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { Camera, DefaultLight, FilamentScene, FilamentView, ModelRenderer, useModel } from 'react-native-filament';
 import { useSharedValue } from 'react-native-worklets-core';
 
 const DE_FRENTE = Math.PI / 2;
+
+/**
+ * Luz padrão do Filament, que nunca re-renderiza. O `EnvironmentalLight` dele aplica a luz e libera
+ * o buffer num efeito sem dependências: cada nova renderização tentava usar o buffer já liberado e
+ * fechava o app ("Pointer FilamentBuffer has already been manually released", build-75).
+ */
+const Luz = memo(DefaultLight);
 
 export function CenaFilament(props: { url: string; onPronto: () => void }) {
   return (
@@ -60,7 +67,7 @@ function Cena({ url, onPronto }: { url: string; onPronto: () => void }) {
   return (
     <View style={{ flex: 1, opacity: modelo.state === 'loaded' ? 1 : 0 }} {...pan.panHandlers}>
       <FilamentView style={{ flex: 1 }}>
-        <DefaultLight />
+        <Luz />
         {/* Medalha com ~2 unidades de largura: a câmera a 4,6 deixa uma folga pequena na borda. */}
         <Camera cameraPosition={[0, 0, 4.6]} cameraTarget={[0, 0, 0]} />
         <ModelRenderer model={modelo} rotate={rotacao} multiplyWithCurrentTransform={false} />
