@@ -10,7 +10,12 @@ import { CATEGORIAS, type Categoria } from '@/domain/sessao/motivo';
 
 import { inicioDoPeriodo, type Periodo, type VooDoDiario } from './historico';
 
-export type VooComServico = VooDoDiario & { intervaloServico: IntervaloServicoDeBordo };
+export type VooComServico = VooDoDiario & {
+  intervaloServico: IntervaloServicoDeBordo;
+  /** Tarefas do motivo da viagem (só as com texto) e quantas foram feitas. */
+  tarefas?: number;
+  tarefasFeitas?: number;
+};
 
 export type Barra = { rotulo: string; minutos: number; atual: boolean };
 

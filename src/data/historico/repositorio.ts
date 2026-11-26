@@ -25,13 +25,17 @@ type Linha = {
   categoria: string | null;
   foco: string | null;
   intervalo_servico: string;
+  tarefas: number | null;
+  tarefas_feitas: number | null;
 };
 
 /** Todos os voos encerrados (pousou e pousou antes), do mais recente para o mais antigo. */
 export async function voosEncerrados(db: BancoDeLeitura): Promise<VooComServico[]> {
   const linhas = await db.getAllAsync<Linha>(
     `SELECT s.id, s.voo_json, s.tempo_escolhido_min, s.embarcou_em, s.encerrou_em, s.minutos_foco, s.milhas, s.resultado,
-            s.intervalo_servico, m.categoria, m.foco
+            s.intervalo_servico, m.categoria, m.foco,
+            (SELECT COUNT(*) FROM tarefas t WHERE t.sessao_id = s.id AND t.texto <> '') AS tarefas,
+            (SELECT COUNT(*) FROM tarefas t WHERE t.sessao_id = s.id AND t.texto <> '' AND t.feita = 1) AS tarefas_feitas
        FROM sessoes s LEFT JOIN motivos_da_viagem m ON m.sessao_id = s.id
       WHERE s.resultado IN ('pousou', 'pousou_antes')
       ORDER BY s.encerrou_em DESC`,
@@ -56,6 +60,8 @@ function daLinha(l: Linha): VooComServico {
     categoria: (l.categoria as Categoria | null) ?? null,
     foco: l.foco ?? '',
     intervaloServico: l.intervalo_servico === 'desligado' ? 'desligado' : l.intervalo_servico === '50' ? 50 : 25,
+    tarefas: l.tarefas ?? 0,
+    tarefasFeitas: l.tarefas_feitas ?? 0,
   };
 }
 

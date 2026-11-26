@@ -181,7 +181,7 @@ Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge 
 - [ ] Passaporte — M2 v3 com os carimbos de pouso no PR "Telas v3" (falta testar no aparelho)
 - [ ] Status de viajante e recompensas
 - [ ] Diário de bordo com filtro e detalhe — M3 e M3b v3 no PR "Telas v3" (falta testar no aparelho)
-- [ ] Estatísticas — M4 v3 (dia a ano para todos, globo do período, "Por categoria" no Plus) no PR "Telas v3"; faltam os blocos de desempenho depois de "Por categoria" (ainda não desenhados)
+- [ ] Estatísticas — M4 v3 (dia a ano para todos, globo do período) e os blocos de desempenho da proposta v4 (Figma 546:8545, 26/11/2026): média e melhor dia, resumo, sequência da semana e "Quando você foca" para todos; Por categoria, Bagagem de mão, Pelo mundo e Milhas no Plus. Implementado em `feat/estatisticas-v4`; falta conferir no aparelho
 - [ ] RevenueCat: produtos, direitos, compra, restauração
 - [ ] Paywall P1, oferta de boas-vindas (fim do onboarding e após o 3º voo), compra concluída P4, gerenciar P5 — P1 visual no PR #36 (planos, condições, carrossel com os benefícios que já existem; etiqueta "Economize" corrigida no PR #44), sem compra: em builds de teste o botão liga a primeira classe de teste; o Alberto vai ajustar o visual no Figma; faltam RevenueCat, Restaurar compras, Termos e Privacidade
 - [ ] Gatilhos do paywall (RN-20): todo recurso da primeira classe abre o paywall ao toque, dentro e fora do voo — vistas e sons com cadeado abrem o P1 (em voo e nos Ajustes) no PR #36; faltam os recursos que ainda não existem
