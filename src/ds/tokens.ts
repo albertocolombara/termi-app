@@ -291,6 +291,8 @@ export const typography = {
   // Button/Large 24 e Button/Medium 20 nos primários). Botões de 54–56 dp = "médio" do M3E:
   // Title Medium (16/24, peso 500, espaçamento 0,15). Botão pequeno: Label Large (14/20, 0,1).
   'Button/Label 16': type(S, '500', 16, 0.9375, 150),
+  // Primário com seta: o mesmo 16, em peso 600 para combinar com a seta (Alberto, 26/11/2026).
+  'Button/Label Strong 16': type(S, '600', 16, 0.9375, 150),
   'Button/Label 14': type(S, '500', 14, 0.714, 142.86),
   'Nav/Title 20': type(S, '400', 20, -3, 130),
   'Body/Large 16': type(S, '400', 16, -3, 130),
