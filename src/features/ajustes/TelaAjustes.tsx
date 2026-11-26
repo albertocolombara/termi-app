@@ -83,7 +83,7 @@ export function TelaAjustes() {
           />
           {/* Volume do sinal e do aviso de pouso, sobre o som do voo (Alberto, 25/11/2026). */}
           <View style={{ paddingVertical: space[12] }}>
-            <Slider label={t('ajustes.volumeDoSinal')} value={a.volumeDoSinal} onChange={(v) => a.mudar({ volumeDoSinal: v })} surface={color.bg.app} />
+            <Slider label={t('ajustes.volumeDosAvisos')} value={a.volumeDosAvisos} onChange={(v) => a.mudar({ volumeDosAvisos: v })} surface={color.bg.app} />
           </View>
         </Secao>
 

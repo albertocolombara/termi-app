@@ -15,14 +15,21 @@ type Ajustes = {
   /** Sinal de apertar cintos no começo e no fim do serviço de bordo. */
   somDoServico: boolean;
   /** Volume do sinal de cintos e do aviso de pouso, de 0 a 1, sobre o volume de mídia (o som de fundo baixa durante o sinal). */
-  volumeDoSinal: number;
+  volumeDosAvisos: number;
   economiaDeBateria: boolean;
   qualidadeDaJanela: QualidadeDaJanela;
   /** Janela a 30 quadros por segundo (padrão: 10). Economia de bateria vence e deixa em 2. */
   janelaFluida: boolean;
 };
 
-const PADRAO: Ajustes = { servicoDeBordo: INTERVALO_PADRAO, avisoDePouso: true, somDoServico: true, volumeDoSinal: 1, economiaDeBateria: false, qualidadeDaJanela: 'automatica', janelaFluida: false };
+/**
+ * Volume dos avisos (sinal de cintos e aviso de pouso) no controle do app: 70% por padrão (Alberto,
+ * 26/11/2026). A chave mudou de `volumeDoSinal` para `volumeDosAvisos` para quem já tinha 100% salvo
+ * também começar em 70%.
+ */
+export const VOLUME_DOS_AVISOS_PADRAO = 0.7;
+
+const PADRAO: Ajustes = { servicoDeBordo: INTERVALO_PADRAO, avisoDePouso: true, somDoServico: true, volumeDosAvisos: VOLUME_DOS_AVISOS_PADRAO, economiaDeBateria: false, qualidadeDaJanela: 'automatica', janelaFluida: false };
 const CHAVE = 'ajustes';
 
 function lidos(): Ajustes {
@@ -38,9 +45,9 @@ export const useAjustes = create<Ajustes & { mudar: (parcial: Partial<Ajustes>) 
   ...lidos(),
   mudar: (parcial) => {
     set(parcial);
-    const { servicoDeBordo, avisoDePouso, somDoServico, volumeDoSinal, economiaDeBateria, qualidadeDaJanela, janelaFluida } = get();
+    const { servicoDeBordo, avisoDePouso, somDoServico, volumeDosAvisos, economiaDeBateria, qualidadeDaJanela, janelaFluida } = get();
     try {
-      Storage.setItemSync(CHAVE, JSON.stringify({ servicoDeBordo, avisoDePouso, somDoServico, volumeDoSinal, economiaDeBateria, qualidadeDaJanela, janelaFluida }));
+      Storage.setItemSync(CHAVE, JSON.stringify({ servicoDeBordo, avisoDePouso, somDoServico, volumeDosAvisos, economiaDeBateria, qualidadeDaJanela, janelaFluida }));
     } catch {
       // sem persistência: vale só enquanto o app está aberto
     }

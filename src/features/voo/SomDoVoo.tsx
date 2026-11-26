@@ -22,7 +22,7 @@ import { agendaDePausas, horariosDasPausas, PAUSA_MAXIMA_MIN } from '@/domain/se
 import { somEmUso } from '@/domain/sons/catalogo';
 import { t } from '@/i18n';
 import { useSomQueToca } from '@/services/audio';
-import { agendarAvisosDoVoo } from '@/services/avisos';
+import { agendarAvisosDoVoo, appTocaOsSinais } from '@/services/avisos';
 import { useClasse } from '@/services/compras';
 
 import { codigoDoLugar, nomeDoLugar } from './formato';
@@ -75,8 +75,9 @@ export function SomDoVoo() {
     titulo: sessao ? t('sons.tituloNaNotificacao', { voo: sessao.voo.callsign }) : '',
     subtitulo: rota,
     sinais,
-    volumeDoSinal: ajustes.volumeDoSinal,
-    anunciarPouso: ajustes.avisoDePouso && !continuando,
+    volumeDosAvisos: ajustes.volumeDosAvisos,
+    // No Android o aviso de pouso toca pelo alarme do app (SinalDeBordo), não pelo som de fundo.
+    anunciarPouso: ajustes.avisoDePouso && !continuando && !appTocaOsSinais(),
   });
 
   // Quem toca os sinais: o app (com som de fundo) ou a notificação (sem). Reagenda quando muda.
@@ -84,7 +85,7 @@ export function SomDoVoo() {
   const agendadoCom = useRef<string | null>(null);
   useEffect(() => {
     if (!sessao || !podeTocar || Date.now() >= sessao.pousoPrevistoEm) return;
-    const chave = `${sessao.id}:${somDeFundo}:${ajustes.somDoServico}:${ajustes.avisoDePouso}`;
+    const chave = `${sessao.id}:${somDeFundo}:${ajustes.somDoServico}:${ajustes.avisoDePouso}:${ajustes.volumeDosAvisos}`;
     if (agendadoCom.current === chave) return;
     agendadoCom.current = chave;
     agendarAvisosDoVoo({
@@ -96,10 +97,11 @@ export function SomDoVoo() {
       avisoDePouso: ajustes.avisoDePouso,
       somDoServico: ajustes.somDoServico,
       somDeFundo,
+      volume: ajustes.volumeDosAvisos,
       pausasEncerradas: voltaram,
     }).catch(() => {
       agendadoCom.current = null;
     });
-  }, [sessao, podeTocar, somDeFundo, ajustes.somDoServico, ajustes.avisoDePouso, pausas, voltaram]);
+  }, [sessao, podeTocar, somDeFundo, ajustes.somDoServico, ajustes.avisoDePouso, ajustes.volumeDosAvisos, pausas, voltaram]);
   return null;
 }

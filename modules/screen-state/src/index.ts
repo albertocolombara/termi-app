@@ -22,7 +22,8 @@ type ScreenStateNative = {
   /** Volumes, modo do toque, "Não perturbe" e os canais pedidos, em texto (diagnóstico). */
   audioDosAvisos(canais: string[]): string;
   /** Toca `som` (res/raw, sem extensão) em `emMs`, no volume de alarme. Retorna "exato" ou "inexato". */
-  agendarSinal(id: number, emMs: number, som: string): string;
+  /** `volume` de 0 a 1: o volume dos avisos do app, sobre o volume de alarme do aparelho. */
+  agendarSinal(id: number, emMs: number, som: string, volume: number): string;
   cancelarSinal(id: number): void;
   cancelarSinais(): void;
   /** Últimos sinais tocados ou não, com o motivo (diagnóstico). */
@@ -54,7 +55,7 @@ export const ScreenState: ScreenStateNative & { available: boolean; temSinais: b
   lastJavaCrash: () => native?.lastJavaCrash() ?? '',
   audioDosAvisos: (c) => native?.audioDosAvisos?.(c) ?? '',
   // Os sinais chegaram no APK de 26/11/2026; num APK anterior as funções não existem.
-  agendarSinal: (i, e, s) => native?.agendarSinal?.(i, e, s) ?? '',
+  agendarSinal: (i, e, s, v) => native?.agendarSinal?.(i, e, s, v) ?? '',
   cancelarSinal: (i) => native?.cancelarSinal?.(i),
   cancelarSinais: () => native?.cancelarSinais?.(),
   sinaisTocados: () => native?.sinaisTocados?.() ?? 'indisponível (APK anterior)',

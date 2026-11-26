@@ -190,7 +190,7 @@ class ScreenStateModule : Module() {
     }
 
     // Sinais tocados pelo app como despertador (SinalDeBordo.kt).
-    Function("agendarSinal") { id: Int, emMs: Double, som: String -> SinalDeBordo.agendar(context, id, emMs.toLong(), som) }
+    Function("agendarSinal") { id: Int, emMs: Double, som: String, volume: Double -> SinalDeBordo.agendar(context, id, emMs.toLong(), som, volume.toFloat()) }
     Function("cancelarSinal") { id: Int -> SinalDeBordo.cancelar(context, id) }
     Function("cancelarSinais") { SinalDeBordo.cancelarTodos(context) }
     Function("sinaisTocados") { SinalDeBordo.tocados(context) }
