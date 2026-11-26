@@ -18,7 +18,7 @@ module.exports = function (api) {
         // Função (e não RegExp direto): o Expo monta a configuração uma vez sem nome de arquivo.
         test: (arquivo) => !!arquivo && SO_FILAMENT.test(arquivo),
         presets: [['babel-preset-expo', { worklets: false, reanimated: false }]],
-        plugins: [['react-native-worklets-core/plugin']],
+        plugins: [['react-native-worklets-core/plugin', { processNestedWorklets: true }]],
       },
     ],
   };

@@ -12,10 +12,13 @@ import { color } from '@/ds';
 import { SomDoVoo } from '@/features/voo/SomDoVoo';
 import { mostrarFerramentasDev } from '@/config/env';
 import { configurarAvisos } from '@/services/avisos';
+import { instalarDiagnostico } from '@/services/diagnostico';
 import { instalarMedidorDeDados } from '@/services/rede/medidor';
 
 // Builds de teste: medidor de dados baixados nos Ajustes (consumo de dados, build-37).
 if (mostrarFerramentasDev) instalarMedidorDeDados();
+// Builds de teste: guarda o último erro fatal de JS para a tela Diagnóstico (build-72).
+if (mostrarFerramentasDev) instalarDiagnostico();
 
 export default function RootLayout() {
   useEffect(() => {

@@ -15,7 +15,11 @@ type ScreenStateNative = {
   resumeFlightSound(): void;
   isFlightSoundRunning(): boolean;
   stopFlightSound(): void;
+  /** Últimos fechamentos do app registrados pelo Android 11+ (diagnóstico). */
+  recentExits(): SaidaDoApp[];
 };
+
+export type SaidaDoApp = { motivo: string; quando: number; descricao: string; pss: number; pilha: string };
 
 const native = requireOptionalNativeModule<ScreenStateNative>('ScreenState');
 
@@ -35,4 +39,5 @@ export const ScreenState: ScreenStateNative & { available: boolean } = {
   resumeFlightSound: () => native?.resumeFlightSound(),
   isFlightSoundRunning: () => native?.isFlightSoundRunning() ?? false,
   stopFlightSound: () => native?.stopFlightSound(),
+  recentExits: () => native?.recentExits() ?? [],
 };
