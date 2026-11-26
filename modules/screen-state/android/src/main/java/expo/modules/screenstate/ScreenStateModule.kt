@@ -189,6 +189,12 @@ class ScreenStateModule : Module() {
       linhas.joinToString("\n")
     }
 
+    // Sinais tocados pelo app como despertador (SinalDeBordo.kt).
+    Function("agendarSinal") { id: Int, emMs: Double, som: String -> SinalDeBordo.agendar(context, id, emMs.toLong(), som) }
+    Function("cancelarSinal") { id: Int -> SinalDeBordo.cancelar(context, id) }
+    Function("cancelarSinais") { SinalDeBordo.cancelarTodos(context) }
+    Function("sinaisTocados") { SinalDeBordo.tocados(context) }
+
     Function("stopFlightSound") {
       FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }

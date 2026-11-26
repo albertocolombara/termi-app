@@ -122,20 +122,37 @@ export type AvisosDoVoo = {
   pausasEncerradas?: number[];
 };
 
+/**
+ * No Android o próprio app toca o sinal e o aviso de pouso na hora (SinalDeBordo.kt, como um
+ * despertador) e as notificações vêm sem som. 26/11/2026, Samsung M35: o som do canal não tocou nem
+ * no silencioso nem no modo normal, com o canal certo e o volume de alarme alto.
+ */
+const appTocaOsSinais = () => Platform.OS === 'android' && ScreenState.temSinais;
+
+/** Ids dos alarmes de som (nativos): 1 = pouso; 100 + 2i = início da pausa i; 101 + 2i = fim. */
+const SINAL_DO_POUSO = 1;
+const sinalDoInicio = (i: number) => 100 + 2 * i;
+const sinalDoFim = (i: number) => 101 + 2 * i;
+const RAW_CINTO = SOM_DO_SERVICO.replace('.ogg', '');
+const RAW_POUSO = SOM_DO_POUSO.replace('.ogg', '');
+
 /** Agenda o pouso e as pausas. Cancela avisos anteriores. Retorna quantos avisos foram agendados. */
 export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
   await cancelarAvisos();
   let n = 0;
   const agora = Date.now();
+  const appToca = appTocaOsSinais();
+  // Com o som de fundo tocando, o FlightSoundService toca os sinais por cima dele.
   const servicoComSom = v.somDoServico !== false && !v.somDeFundo;
-  const canal = servicoComSom ? CANAL_SERVICO : CANAL_SERVICO_SEM_SOM;
-  const som = servicoComSom ? SOM_DO_SERVICO : undefined;
+  const canal = servicoComSom && !appToca ? CANAL_SERVICO : CANAL_SERVICO_SEM_SOM;
+  const som = servicoComSom && !appToca ? SOM_DO_SERVICO : undefined;
   for (const [i, p] of v.pausas.entries()) {
     if (p.inicio > agora) {
       await Notifications.scheduleNotificationAsync({
         content: { title: t('avisos.servicoTitulo'), body: t('avisos.servicoCorpo', { min: v.pausaMin }), sound: som },
         trigger: emHorario(p.inicio, canal),
       });
+      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoInicio(i), p.inicio, RAW_CINTO);
       n++;
     }
     if (p.fim > agora && !v.pausasEncerradas?.includes(i)) {
@@ -144,18 +161,21 @@ export async function agendarAvisosDoVoo(v: AvisosDoVoo): Promise<number> {
         content: { title: t('avisos.fimServicoTitulo'), body: t('avisos.fimServicoCorpo'), sound: som },
         trigger: emHorario(p.fim, canal),
       });
+      if (servicoComSom && appToca) ScreenState.agendarSinal(sinalDoFim(i), p.fim, RAW_CINTO);
       n++;
     }
   }
   if (v.avisoDePouso === false || v.pousoEm <= agora) return n;
+  const pousoComSom = !v.somDeFundo && !appToca;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: t('avisos.pousoTitulo', { cidade: v.cidadeDestino }),
       body: t('avisos.pousoCorpo', { min: v.minutosDeVoo }),
-      sound: v.somDeFundo ? undefined : SOM_DO_POUSO,
+      sound: pousoComSom ? SOM_DO_POUSO : undefined,
     },
-    trigger: emHorario(v.pousoEm, v.somDeFundo ? CANAL_POUSO_SEM_SOM : CANAL_POUSO),
+    trigger: emHorario(v.pousoEm, pousoComSom ? CANAL_POUSO : CANAL_POUSO_SEM_SOM),
   });
+  if (!v.somDeFundo && appToca) ScreenState.agendarSinal(SINAL_DO_POUSO, v.pousoEm, RAW_POUSO);
   return n + 1;
 }
 
@@ -164,29 +184,39 @@ const idDoFimDaPausa = (indice: number) => `fim-servico-${indice}`;
 /** "Voltar ao foco" (UC-05 A1): a pausa acabou antes, então o aviso de fim dela não toca. */
 export async function cancelarAvisoDeFimDaPausa(indice: number) {
   await Notifications.cancelScheduledNotificationAsync(idDoFimDaPausa(indice)).catch(() => {});
+  if (appTocaOsSinais()) ScreenState.cancelarSinal(sinalDoFim(indice));
 }
 
 /** Canais dos avisos, para o Diagnóstico mostrar como ficaram gravados no aparelho. */
 export const CANAIS_DOS_AVISOS = [CANAL_SERVICO, CANAL_SERVICO_SEM_SOM, CANAL_POUSO, CANAL_POUSO_SEM_SOM];
 
+/** Id do alarme de som do teste do Diagnóstico (fora da faixa do voo). */
+const SINAL_DE_TESTE = 9;
+
 /**
- * Diagnóstico: agenda um aviso de teste daqui a alguns segundos, como alarme exato e no mesmo canal
- * com som do voo de verdade. Serve para ouvir o sinal com o app aberto, em segundo plano ou bloqueado.
+ * Diagnóstico: agenda um aviso de teste daqui a alguns segundos pelo mesmo caminho do voo (alarme
+ * exato; no Android, notificação sem som e o app tocando o sinal). Serve para ouvir o sinal com o app
+ * aberto, em segundo plano ou bloqueado. Retorna como o som foi agendado.
  */
-export async function testarSinal(tipo: 'servico' | 'pouso', emSegundos = 10) {
+export async function testarSinal(tipo: 'servico' | 'pouso', emSegundos = 10): Promise<string> {
   const servico = tipo === 'servico';
+  const appToca = appTocaOsSinais();
+  const em = Date.now() + emSegundos * 1000;
+  const canal = appToca ? (servico ? CANAL_SERVICO_SEM_SOM : CANAL_POUSO_SEM_SOM) : servico ? CANAL_SERVICO : CANAL_POUSO;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: servico ? t('avisos.servicoTitulo') : t('dev.testeDoPouso'),
       body: t('dev.testeDoSinal'),
-      sound: servico ? SOM_DO_SERVICO : SOM_DO_POUSO,
+      sound: appToca ? undefined : servico ? SOM_DO_SERVICO : SOM_DO_POUSO,
     },
-    trigger: emHorario(Date.now() + emSegundos * 1000, servico ? CANAL_SERVICO : CANAL_POUSO),
+    trigger: emHorario(em, canal),
   });
+  return appToca ? `som pelo app (${ScreenState.agendarSinal(SINAL_DE_TESTE, em, servico ? RAW_CINTO : RAW_POUSO)})` : 'som pelo canal';
 }
 
 export async function cancelarAvisos() {
   await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+  if (appTocaOsSinais()) ScreenState.cancelarSinais();
 }
 
 /** Título e texto da notificação fixa do voo (a mesma do som de fundo no Android). */

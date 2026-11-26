@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, color, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
 import { testarSinal } from '@/services/avisos';
-import { audioDosAvisos, avisosAgendados, avisosRecebidos, fechamentosRecentes, ultimoCrashJava, ultimoErroJs, type AvisoAgendado } from '@/services/diagnostico';
+import { audioDosAvisos, sinaisTocados, avisosAgendados, avisosRecebidos, fechamentosRecentes, ultimoCrashJava, ultimoErroJs, type AvisoAgendado } from '@/services/diagnostico';
 
 const hora = (ms: number) => new Date(ms).toLocaleString('pt-BR');
 
@@ -22,6 +22,7 @@ export default function Diagnostico() {
   const [recebidos] = useState(avisosRecebidos);
   const [agendados, setAgendados] = useState<AvisoAgendado[]>([]);
   const [audio] = useState(audioDosAvisos);
+  const [sinais] = useState(sinaisTocados);
   const [teste, setTeste] = useState<string | null>(null);
   useEffect(() => {
     avisosAgendados().then(setAgendados);
@@ -29,8 +30,8 @@ export default function Diagnostico() {
   const testar = (tipo: 'servico' | 'pouso') => {
     const em = Date.now() + 10_000;
     testarSinal(tipo, 10)
-      .then(() => {
-        setTeste(t('dev.testeAgendado', { hora: new Date(em).toLocaleTimeString('pt-BR') }));
+      .then((modo) => {
+        setTeste(`${t('dev.testeAgendado', { hora: new Date(em).toLocaleTimeString('pt-BR') })} (${modo})`);
         avisosAgendados().then(setAgendados);
       })
       .catch((e: unknown) => setTeste(String(e)));
@@ -42,6 +43,8 @@ export default function Diagnostico() {
     erro ? `${hora(erro.quando)} fatal=${erro.fatal}\n${erro.mensagem}\n${erro.pilha}` : t('dev.diagnosticoSemErro'),
     `\n== Som dos avisos`,
     audio,
+    `\n== Sinais tocados pelo app`,
+    sinais || 'nenhum',
     `\n== Avisos agendados`,
     agendados.length ? agendados.map((a) => `${horaCurta(a.quando)} [${a.canal ?? 'sem canal'}] ${a.titulo}`).join('\n') : 'nenhum',
     `\n== Avisos recebidos (com o app vivo)`,

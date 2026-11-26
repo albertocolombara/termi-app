@@ -7,5 +7,9 @@
       android:name="expo.modules.screenstate.FlightSoundService"
       android:exported="false"
       android:foregroundServiceType="mediaPlayback" />
+    <!-- Sinal de cintos e aviso de pouso tocados pelo app na hora do alarme (SinalDeBordo.kt). -->
+    <receiver
+      android:name="expo.modules.screenstate.SinalDeBordo$Receptor"
+      android:exported="false" />
   </application>
 </manifest>

@@ -117,3 +117,12 @@ export function audioDosAvisos(): string {
     return 'indisponível (build sem a função nativa)';
   }
 }
+
+/** Últimos sinais que o app tocou (ou não, com o motivo). */
+export function sinaisTocados(): string {
+  try {
+    return ScreenState.sinaisTocados();
+  } catch {
+    return 'indisponível (build sem a função nativa)';
+  }
+}
