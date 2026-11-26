@@ -25,7 +25,7 @@ Se um documento contradiz outro, **pare e pergunte**. Não escolha sozinho.
 4. **Sair do app não tem consequência.** Não existe turbulência nem detecção de saída.
 5. **Nunca recuperar voo** pagando ou de outra forma.
 6. **Honestidade comercial:** preço, período grátis e data do lembrete visíveis antes do botão; sem contador de urgência; sem selo sem dado real.
-7. **Companhias só pela bandeira do país.** Nunca logo ou pintura real.
+7. **Companhias só pela bandeira do país.** Nunca logo ou pintura real desenhados pelo app. Exceção em teste (Alberto, 26/11/2026): a foto do avião real do Planespotters.net em "Sobre este voo", grátis para todos, com o crédito do fotógrafo e o link para a foto, seguindo os termos da API (sem cache em disco, sem servidor intermediário). Se não melhorar a imersão, sai.
 8. **Conta nunca obrigatória.**
 
 ## 3. Stack e convenções técnicas
@@ -145,7 +145,7 @@ npm test
 
 - Anúncios; paywall, banner ou lembrete de assinatura que abre sozinho durante o voo; contador de urgência; selos sem dado real.
 - Penalizar saída do app; turbulência; recuperação de voo.
-- Logos ou pinturas de companhias aéreas; logo da NASA ou sugestão de apoio da NASA.
+- Logos ou pinturas de companhias aéreas desenhados pelo app (a foto creditada do Planespotters é a exceção em teste, regra 7); logo da NASA ou sugestão de apoio da NASA.
 - Consulta por usuário ao adsb.lol; segredos no app.
 - Editar `android/` ou `ios/` à mão.
 - Fixar o número de países da coleção.
