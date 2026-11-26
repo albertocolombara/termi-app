@@ -19,6 +19,7 @@ const CREDITOS: [ChaveDeTexto, ChaveDeTexto][] = [
   ['sobre.paisagem', 'sobre.paisagemFonte'],
   ['sobre.lugares', 'sobre.lugaresFonte'],
   ['sobre.sons', 'sobre.sonsFonte'],
+  ['sobre.fotos', 'sobre.fotosFonte'],
 ];
 
 export function TelaSobre() {

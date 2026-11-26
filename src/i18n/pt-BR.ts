@@ -734,6 +734,8 @@ export const ptBR = {
     lugaresFonte: 'GeoNames · CC BY 4.0 · contornos do globo: Natural Earth (domínio público)',
     sons: 'Sons de bordo',
     sonsFonte: 'Freesound (flood-mix, triadtravelogues, BonnyOrbit, kinoton) e o álbum "Lo-fi And Chill", de HoliznaCC0 · CC0',
+    fotos: 'Fotos dos aviões',
+    fotosFonte: 'Planespotters.net · cada foto mostra o crédito do fotógrafo e leva à página dela',
     nasa: "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     esa: '© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium.',
     semApoio: 'O uso de dados da NASA não significa apoio da NASA ao Termi.',
