@@ -7,7 +7,8 @@
  * - a tela "Diagnóstico" (Ferramentas de desenvolvimento) mostra os dois e compartilha o texto.
  * Nada de dados pessoais: só mensagens de erro, hora e memória.
  *
- * Também guarda a chave da vitrine 3D (Filament), desligada por padrão enquanto ela fecha o app.
+ * Também guarda a chave da vitrine 3D (Filament): ligada por padrão desde a correção do
+ * InteractionManager (build-75); desligar mostra o render 2D da medalha.
  */
 import { Storage } from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
@@ -70,11 +71,11 @@ export function ultimoCrashJava(): string {
 }
 
 function lerVitrine3d(): boolean {
-  if (!mostrarFerramentasDev) return false;
+  if (!mostrarFerramentasDev) return true;
   try {
-    return Storage.getItemSync(CHAVE_3D) === '1';
+    return Storage.getItemSync(CHAVE_3D) !== '0';
   } catch {
-    return false;
+    return true;
   }
 }
 

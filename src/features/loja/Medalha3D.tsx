@@ -26,7 +26,7 @@ export function urlDoModelo(souvenir: Souvenir): string | null {
 
 export function Medalha3D({ souvenir, tamanho }: { souvenir: Souvenir; tamanho: number }) {
   const ligada = useVitrine3d();
-  // Vitrine 3D desligada (padrão enquanto o Filament fecha o app, build-72): só o render 2D.
+  // Vitrine 3D desligada em Ferramentas de desenvolvimento: só o render 2D.
   const url = ligada ? urlDoModelo(souvenir) : null;
   const [pronto, setPronto] = useState(false);
   return (
