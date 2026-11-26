@@ -29,6 +29,7 @@ export default function FerramentasDev() {
         <ActionRow icon="windowView" title={t('dev.janela')} description={t('dev.janelaDescricao')} onPress={() => router.push('/dev/janela')} />
         <ActionRow icon="globe" title={t('dev.globo')} description={t('dev.globoDescricao')} onPress={() => router.push('/dev/globo')} />
         <ActionRow icon="crewServiceTile" title={t('dev.avisos')} description={t('dev.avisosDescricao')} onPress={() => router.push('/dev/avisos')} />
+        <ActionRow icon="help" title={t('dev.onboarding')} description={t('dev.onboardingDescricao')} onPress={() => router.push('/onboarding')} />
         <ActionRow icon="plane" title={t('dev.voos')} description={t('dev.voosDescricao')} onPress={() => router.push('/dev/voos')} />
       </View>
     </ScrollView>

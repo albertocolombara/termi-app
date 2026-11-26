@@ -41,26 +41,34 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Fluxo principal**
 
-1. O Sistema mostra a Abertura ("Embarque num voo de verdade").
-2. O Sistema mostra Como funciona (tempo, voo real, serviço de bordo, rendimentos).
-3. O Sistema mostra Avisos da tripulação e explica as notificações de pouso e serviço de bordo.
-4. O Viajante aceita; o Sistema pede a permissão de notificações e, no Android 14+, a de "Alarmes e lembretes".
-5. O Sistema mostra Voos perto de você e explica o uso da localização aproximada.
-6. O Viajante aceita; o Sistema pede a localização aproximada.
-7. O Sistema mostra a Oferta de boas-vindas (ver UC-13, variante boas-vindas).
-8. O Viajante toca em "Continuar na econômica".
-9. O Sistema leva ao dial, no plano grátis.
+Telas do Figma "Onboarding · v3" (fluxo decidido pelo Alberto em 26/11/2026).
+
+1. O Sistema mostra OB1: quantos aviões estão no ar agora (do cache) e o globo com eles.
+2. O Sistema mostra OB2 (o voo é de verdade).
+3. O Viajante escolhe no que precisa focar (OB3; uma ou mais categorias, guardadas).
+4. O Viajante escolhe por quanto tempo foca (OB4); o Sistema guarda o tempo em que o dial abre e o intervalo do serviço de bordo.
+5. O Viajante escolhe a meta diária (OB5); o Sistema mostra voos reais dessa duração e as milhas por dia.
+6. O Sistema monta o plano de voo (OB6, animação do Termi) e avança sozinho.
+7. O Sistema mostra a projeção de 30 dias (OB7) e como o Termi ajuda a focar (OB8).
+8. O Sistema mostra Avisos da tripulação (OB9) e explica as notificações de pouso e serviço de bordo.
+9. O Viajante toca em "Ativar avisos"; o Sistema pede a permissão de notificações e, se faltar, abre "Alarmes e lembretes" do Android.
+10. O Sistema mostra a janela ao vivo de um voo real (OB10).
+11. O Sistema mostra o paywall comum (P1, UC-13).
+12. O Viajante toca em "Continuar na econômica" ou fecha; o Sistema leva ao Início, no plano grátis. O dial abre no tempo escolhido no passo 4.
 
 **Fluxos alternativos**
 
-- **A1 — Recusa de permissão (passos 4 e 6):** o Sistema segue o onboarding. Sem notificações, o Início mostra o aviso de ativação (RF-48). Sem localização, a região padrão do painel é "Qualquer lugar".
-- **A2 — Assina na oferta (passo 7):** segue UC-13 e, ao concluir, vai ao dial na primeira classe.
+- **A1 — Recusa de permissão ou "Agora não" (passo 9):** o Sistema segue o onboarding. Sem notificações, o Início mostra o aviso de ativação (RF-48).
+- **A2 — Assina no paywall (passo 11):** segue UC-13 e, ao concluir, vai ao Início no Plus.
+- **A3 — "Já conheço o Termi" (passo 1):** o Sistema marca o onboarding como visto e abre o dial.
+- **A4 — Sem dados de voo:** OB1 mostra o título sem contador, OB5 avisa que não há voos dessa duração agora e OB10 mostra a mensagem sem voo. Nada impede seguir.
+- **A5 — Quem já voou (app atualizado):** com histórico ou voo em andamento, o onboarding não aparece.
 
 **Exceções e erros**
 
 - **E1 — Compra falha ou é cancelada:** o Sistema volta à oferta sem mudar o preço nem o desconto.
 
-**Pós-condições:** onboarding marcado como concluído; permissões registradas; Viajante no dial.
+**Pós-condições:** onboarding marcado como concluído; respostas guardadas; Viajante no Início.
 
 **Regras relacionadas:** RN-19, RN-20, RN-21. Requisitos: RF-01 a RF-04.
 
@@ -489,7 +497,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Fluxos alternativos**
 
-- **A1 — Variante boas-vindas:** no fim do onboarding e depois do 3º voo, o anual mostra R$ 59,90 no 1º ano, com o preço cheio riscado e "−33%".
+- **A1 — Variante boas-vindas:** depois do 3º voo (no fim do onboarding abre o paywall comum desde 26/11/2026), o anual mostra R$ 59,90 no 1º ano, com o preço cheio riscado e "−33%".
 - **A2 — Continuar na econômica:** o Sistema fecha o paywall sem perda.
 - **A3 — Restaurar compras:** o Sistema consulta a loja e reativa a primeira classe se houver compra.
 

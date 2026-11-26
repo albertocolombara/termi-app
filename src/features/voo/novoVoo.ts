@@ -1,6 +1,7 @@
 /** Estado do fluxo de novo voo (dial → partidas → cartão de embarque). Só memória: nada é conquista. */
 import { create } from 'zustand';
 
+import { tempoInicialDoDial } from '@/data/preferencias/onboarding';
 import { MOTIVO_VAZIO, normalizarMotivo, type MotivoDaViagem } from '@/domain/sessao/motivo';
 
 type NovoVoo = {
@@ -14,7 +15,8 @@ type NovoVoo = {
 };
 
 export const useNovoVoo = create<NovoVoo>((set) => ({
-  tempoMin: 50,
+  // O dial abre no tempo respondido no onboarding (OB4); sem resposta, em 50 min.
+  tempoMin: tempoInicialDoDial(50),
   vooHex: null,
   motivo: MOTIVO_VAZIO,
   setTempo: (tempoMin) => set({ tempoMin }),

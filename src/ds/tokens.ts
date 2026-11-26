@@ -171,6 +171,19 @@ export const color = {
     cartao: '#201D25',
     sombraDoCartao: 'rgba(0,0,0,0.53)',
   },
+  /** Onboarding (Figma "Onboarding · v3"; cores locais das telas, sem variável no Figma). */
+  onboarding: {
+    /** Fundo da opção marcada no OB4: amarelo a 4%. */
+    opcaoMarcada: 'rgba(255,198,41,0.04)',
+    /** Brilho de "de verdade." no OB2: sombra de 24 em amarelo a 45%. */
+    brilhoDoDestaque: 'rgba(255,217,77,0.45)',
+    /** Fim do degradê do contador do OB1. */
+    fimDoContador: '#414141',
+    /** Cartão das notificações de exemplo do OB9 (como no Android). */
+    notificacao: '#1A211F',
+    /** Borda da etiqueta "Vista do Plus" do OB10. */
+    vistaDoPlus: '#D4B061',
+  },
   border: {
     subtle: p['white/a10'],
     default: p['white/a15'],

@@ -1,7 +1,8 @@
 /**
  * O Termi em Rive (ADR-12; DESIGN.md §14). Arquivo exportado do editor ("Termi Animações", artboard "Termi")
  * para assets/rive/termi.riv. A state machine é controlada pelo view model "Termi":
- *   pensando (booleano) · esteira (booleano) · novoVoo (gatilho) · embarcou (gatilho)
+ *   pensando (booleano) · esteira (booleano) · planejando (booleano) · novoVoo (gatilho) · embarcou (gatilho)
+ *   planejando: o Termi olha o papel, faz as contas e fecha a mala (onboarding, OB6).
  *   olharX, olharY (números, em unidades do artboard): deslocam o grupo "Olhar" que envolve os olhos.
  * As animações que se encadeiam começam na mesma pose, então trocar de estado não dá salto.
  */
@@ -18,6 +19,7 @@ export const DURACAO_EMBARCOU_MS = 2600;
 export function TermiAnimado({
   esteira = false,
   pensando = false,
+  planejando = false,
   embarcou = false,
   olhar,
   tamanho,
@@ -26,6 +28,8 @@ export function TermiAnimado({
 }: {
   esteira?: boolean;
   pensando?: boolean;
+  /** Montando o plano de voo (OB6). */
+  planejando?: boolean;
   /** Ao virar `true`, dispara uma vez o gatilho "embarcou". */
   embarcou?: boolean;
   /** Para onde os olhos olham, em unidades do artboard (400 × 400). Ex.: até ±14 na horizontal. */
@@ -37,6 +41,7 @@ export function TermiAnimado({
   const [setRef, rive] = useRive();
   const [, setEsteira] = useRiveBoolean(rive, 'esteira');
   const [, setPensando] = useRiveBoolean(rive, 'pensando');
+  const [, setPlanejando] = useRiveBoolean(rive, 'planejando');
   const dispararEmbarcou = useRiveTrigger(rive, 'embarcou');
   const [, setOlharX] = useRiveNumber(rive, 'olharX');
   const [, setOlharY] = useRiveNumber(rive, 'olharY');
@@ -49,6 +54,10 @@ export function TermiAnimado({
   useEffect(() => {
     if (rive) setPensando(pensando);
   }, [rive, pensando, setPensando]);
+
+  useEffect(() => {
+    if (rive) setPlanejando(planejando);
+  }, [rive, planejando, setPlanejando]);
 
   const ox = olhar?.x ?? 0;
   const oy = olhar?.y ?? 0;

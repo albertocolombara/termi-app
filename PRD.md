@@ -80,7 +80,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 | Domínio | Funcionalidades | Status |
 |---|---|---|
-| Onboarding | 5 telas sem cadastro, permissões explicadas, oferta de boas-vindas | Desenhado no Figma |
+| Onboarding | 10 telas sem cadastro (Figma "Onboarding · v3"), permissões explicadas, paywall P1 no fim | Desenhado no Figma |
 | Início e navegação | Início com Termi, menu lateral, perfil | Desenhado no Figma |
 | Escolher e embarcar | Dial, painel de partidas, cartão de embarque, caminho rápido, tela de embarque | Desenhado no Figma |
 | Em voo | Janela ao vivo, globo, sons, serviço de bordo, Pousar antes, estados | Janela, serviço de bordo, avisos e bateria validados no protótipo |
@@ -97,9 +97,9 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 #### Onboarding
 
 - **RF-01** O app deve permitir começar sem cadastro, login ou telefone.
-- **RF-02** O onboarding deve ter 5 telas: Abertura; Como funciona; Avisos da tripulação; Voos perto de você; Oferta de boas-vindas.
+- **RF-02** O onboarding segue o Figma "Onboarding · v3" (decidido pelo Alberto em 26/11/2026; antes eram 5 telas com "Voos perto de você" e a oferta de boas-vindas). São 10 telas: OB1 Aviões no ar agora (contador e globo com aviões reais do cache; "Já conheço o Termi" pula para o dial); OB2 Voo de verdade; OB3 No que você precisa focar (categorias, só guardadas); OB4 Por quanto tempo você foca (define o tempo em que o dial abre e o intervalo do serviço de bordo); OB5 Meta diária (com voos reais dessa duração; a meta só é usada no onboarding); OB6 Montando seu plano de voo (animação do Termi, avança sozinha e pode ser pulada); OB7 Onde você chega em 30 dias (milhas projetadas a ~540 milhas por hora); OB8 Como o Termi te ajuda a focar; OB9 Avisos da tripulação; OB10 Sua janela agora (janela ao vivo de um voo real). Depois vêm o paywall comum (P1) e o Início. Não há tela de localização.
 - **RF-03** Cada pedido de permissão do sistema (notificações, "Alarmes e lembretes" no Android 14+, localização aproximada) deve ser precedido de uma tela que explica o motivo. Recusar não bloqueia o uso.
-- **RF-04** A oferta de boas-vindas deve ter "Continuar na econômica" sempre à vista, que leva ao dial no plano grátis.
+- **RF-04** O paywall do fim do onboarding (P1) deve ter "Continuar na econômica" sempre à vista; ele e o fechar levam ao Início no plano grátis (Figma "Fluxo · depois do OB10", 26/11/2026).
 
 #### Início e navegação
 
@@ -242,7 +242,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 - **RN-19 — Planos (Brasil, lançamento):** Mensal R$ 14,90; Anual R$ 89,90 (7 dias grátis, "Economize 50%"); Vitalício R$ 179,90 (compra única). Oferta de boas-vindas: 1º ano do anual por R$ 59,90 (−33%), com os 7 dias grátis. O período grátis existe só no anual.
 - **RN-20 — Quando o paywall abre:**
   - **Regra geral (decidida em 19/11/2026): na econômica, tocar em qualquer recurso da primeira classe abre o paywall, a qualquer momento, inclusive durante o voo.** Exemplos: comprar o 3º souvenir, comprar pela tela "Lojas" fora do pouso, uma vista da janela ou um som exclusivo, mês ou ano nas estatísticas, o Termi Premium no Início, o item "Primeira classe" do menu e "Conhecer a primeira classe" na mala.
-  - Oferta de boas-vindas: no fim do onboarding e depois do 3º voo (mesma oferta, sem contador), sempre fora do voo.
+  - Oferta de boas-vindas: depois do 3º voo (sem contador), sempre fora do voo. No fim do onboarding abre o paywall comum (P1), não a oferta (Figma "Onboarding · v3", decidido pelo Alberto em 26/11/2026).
   - **Entre o embarque e o pouso, nenhum paywall, banner ou lembrete de assinatura abre sozinho.** Só o toque do usuário abre.
   - **Exceção: o dial.** A faixa acima de 3 h aparece visualmente como conteúdo da primeira classe, mas não abre o paywall, para não atrapalhar a escolha do tempo (RF-09; decidido em 19/11/2026).
 - **RN-21 — Honestidade comercial.** O desconto não muda ao tentar fechar a tela; sem contador de urgência; sem selos como "mais escolhido" ou "melhor valor" sem dado real; lembrete antes da primeira cobrança.
@@ -275,10 +275,11 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 ```mermaid
 flowchart LR
-  A[Primeira abertura] --> B[Onboarding 5 telas]
-  B --> C{Oferta de boas-vindas}
-  C -- Continuar na econômica --> D[Dial de tempo]
-  C -- Assinar --> D
+  A[Primeira abertura] --> B[Onboarding 10 telas]
+  B --> C{Paywall P1}
+  C -- Continuar na econômica --> I
+  C -- Assinar --> I
+  B -- Já conheço o Termi --> D
   I[Início] -- Novo voo --> D
   D -- Escolhe tempo --> E[Painel de partidas]
   D -- Embarcar no voo mais próximo --> G[Tela de embarque]
