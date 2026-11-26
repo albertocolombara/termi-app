@@ -188,7 +188,7 @@ Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge 
 - [ ] Vistas da janela por plano; sons premium — sons premium (motores, cabine, chuva, lofi) e vistas com cadeado no PR #36 e #43; vistas do lançamento (Janela, Asa e Sem moldura) com as renders v3 na build-53, ainda não conferidas no aparelho; "Com asa" e "Asa e motor" saíram (24/11/2026)
 - [ ] Backup do progresso e conta opcional
 - [ ] Ajustes (M5), Sobre o Termi (M6), Ajuda e sugestões (M7) — Ajustes parcial no PR #31 (serviço de bordo e intervalo, som de fundo, aviso de pouso, economia de bateria, qualidade da janela, classe de teste) e janela a 30 fps no PR #42, aberto por uma engrenagem no Início até o menu lateral existir; créditos do M6 atualizados no Figma com ESA WorldCover e OpenStreetMap (21/11/2026), tela ainda não feita no app; faltam os itens que dependem de recursos ainda não feitos
-- [ ] Exportar e apagar dados
+- [ ] Exportar e apagar dados — Ajustes › Privacidade (UC-16): JSON salvo numa pasta escolhida pelo usuário e apagar com segunda confirmação, numa transação. Implementado em `feat/exportar-apagar-dados`; falta testar no aparelho; apagar no servidor entra com a conta (UC-15)
 - [ ] Estados vazios e aviso de avisos desligados no Início
 
 ---
