@@ -4,6 +4,8 @@ import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, u
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+
+import { t } from '@/i18n';
 import { motion } from './motion';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
@@ -44,7 +46,7 @@ export function TopBar({ title, onBack, time, step, saldo, saldoAcessivel }: Top
   return (
     <View style={styles.topBar}>
       <View style={styles.topRow}>
-        <Pressable accessibilityRole="button" accessibilityLabel={`Voltar para ${title}`} hitSlop={hitSlop} onPress={onBack} style={styles.back}>
+        <Pressable accessibilityRole="button" accessibilityLabel={title === t('comum.voltar') ? title : t('comum.voltarDaTela', { tela: title })} hitSlop={hitSlop} onPress={onBack} style={styles.back}>
           <Icon name="arrowLeft" />
           <Text variant="Nav/Title 20">{title}</Text>
         </Pressable>
@@ -143,7 +145,7 @@ export function BottomSheet({ visible, onClose, title, icone, subtitle, children
       {/* O teclado empurra a sheet para cima; o conteúdo rola se não couber. */}
       <KeyboardAvoidingView behavior="padding" style={styles.sheetRoot}>
         <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
-          <Pressable accessibilityLabel="Fechar" style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
+          <Pressable accessibilityLabel={t('comum.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
         </Animated.View>
         <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }, alturaMaxima !== undefined && { maxHeight: alturaMaxima }, estiloDaSheet]}>
           <View style={styles.sheetAbaixo} />

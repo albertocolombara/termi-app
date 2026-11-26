@@ -96,6 +96,8 @@ export const color = {
     tracejado: 'rgba(20,18,24,0.45)',
     cabecalho: p['white/a05'],
     bordaDoCabecalho: p['white/a65'],
+    /** Sombra da fenda da impressora sobre o bilhete sendo impresso. */
+    sombraDaFenda: 'rgba(0,0,0,0.35)',
   },
   /** Painel de partidas (Figma: "Painel de voos/Linha", Fundo=Base/Alternado). */
   painel: {
