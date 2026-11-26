@@ -172,7 +172,7 @@ Concluídos em 25/11/2026 (conferidos pelo Alberto na build-61): testes e merge 
 - **Prioridade:** P0/P1.
 - **Critérios de conclusão:** fluxo completo do onboarding ao souvenir na mala; compra de teste na Play com restauração; progresso restaurado após reinstalar.
 
-- [ ] Onboarding (5 telas) com permissões explicadas e "Alarmes e lembretes"
+- [ ] Onboarding (10 telas do Figma "Onboarding · v3", decidido em 26/11/2026) com permissões explicadas e "Alarmes e lembretes" — telas, regras (`src/domain/onboarding`, com testes) e navegação no PR do onboarding; falta a animação nova do Termi no Rive (OB6) e conferir no aparelho
 - [ ] Início com o Termi em Rive (`pensando`, `novoVoo`) e transição da mala — **trocado pelo Início v3** (Figma, 24/11/2026): globo de rotas, resumo do diário, último voo com "Repetir" e a marca Plus no PR "Telas v3" (falta testar no aparelho)
 - [ ] Menu lateral e Perfil — menu lateral v3 (Econômica e Plus) com o status de viajante no PR "Telas v3" (falta testar no aparelho; "Criar conta" ainda mostra "em breve")
 - [x] Catálogo da coleção remoto e versionado (13 países; novos sem nova versão do app) — aprovado pelo Alberto em 25/11/2026; publicado no R2 pelo coletor (PR #17 do voo-ao-vivo-teste) e lido pelo app com cópia embutida (PR "Catálogo remoto"); a mala já usa
