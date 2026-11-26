@@ -71,8 +71,6 @@ export const ptBR = {
     fechar: 'Fechar detalhes da rota',
   },
   dev: {
-    vitrine3d: 'Vitrine 3D das medalhas',
-    vitrine3dDescricao: 'Filament na loja e na mala. Desligada mostra a imagem 2D.',
     diagnostico: 'Diagnóstico',
     diagnosticoDescricao: 'Últimos fechamentos do app e o último erro, para enviar',
     diagnosticoErroJs: 'Último erro de JavaScript',
