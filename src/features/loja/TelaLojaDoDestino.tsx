@@ -25,7 +25,7 @@ import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
 import { FolhaMalaCheia } from './FolhaMalaCheia';
-import { MedalhaGiratoria } from './MedalhaGiratoria';
+import { VitrineMedalha } from './VitrineMedalha';
 import { Toldo } from './Toldo';
 
 const ALTURA_DA_VITRINE = 240;
@@ -100,7 +100,7 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
             </View>
 
             <Vitrine>
-              <MedalhaGiratoria souvenir={souvenir} tamanho={168} />
+              <VitrineMedalha souvenir={souvenir} tamanho={168} />
               <View style={styles.etiqueta} accessible accessibilityLabel={t('loja.preco', { valor: preco })}>
                 <Text variant="Label/Strong 14" tone="onAccent">
                   {t('loja.preco', { valor: preco })}
