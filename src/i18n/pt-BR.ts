@@ -29,6 +29,8 @@ export const ptBR = {
     dicaTexto: 'Cada pouso completo registra a rota no globo.',
     avisosDesligadosTitulo: 'Avisos de pouso desligados',
     avisosDesligadosTexto: 'Você não fica sabendo quando o voo pousa com o app fechado.',
+    avisosAtrasadosTitulo: 'Avisos podem atrasar',
+    avisosAtrasadosTexto: 'Permita "Alarmes e lembretes" para o pouso e o serviço de bordo tocarem na hora.',
     ativar: 'Ativar',
   },
   menu: {
