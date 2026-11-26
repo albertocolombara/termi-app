@@ -235,7 +235,6 @@ export const ptBR = {
     radarForaDaArea: 'Estimada desde as {hora}: fora da área coberta pelo radar',
     comoFunciona: 'A posição é a última leitura do radar, atualizada a cada 20 min nas áreas que ele cobre, seguida pela rota até o destino. Seu foco não depende dela.',
     fonte: 'Dados de voo: adsb.lol (ODbL)',
-    fechar: 'Fechar',
   },
   emVoo: {
     nenhuma: 'Nenhum voo em andamento.',
@@ -247,6 +246,7 @@ export const ptBR = {
     altitude: 'Altitude',
     velocidade: 'Velocidade',
     horaLocal: 'Hora local',
+    horaLocalComFuso: 'Hora local · {fuso}',
     avisoOrigem: 'Termi • agora',
     boasVindasTitulo: 'Bem-vindo(a) a bordo do {voo}',
     boasVindasTexto: 'De {origem} para {destino}. Pode sair do app à vontade; só não ligue o modo avião, para o voo ao vivo e os avisos continuarem.',

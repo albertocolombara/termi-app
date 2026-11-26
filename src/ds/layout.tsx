@@ -1,6 +1,6 @@
 /** Navegação e estrutura (Figma: seção 09). */
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -93,6 +93,8 @@ export type BottomSheetProps = {
   children?: React.ReactNode;
   /** Ação fixa no rodapé (normalmente um <Button size="medium" />). */
   footer?: React.ReactNode;
+  /** Altura máxima da sheet (padrão 94% da tela). Mais curta deixa scrim à vista para fechar tocando fora. */
+  alturaMaxima?: DimensionValue;
 };
 
 /**
@@ -102,7 +104,7 @@ export type BottomSheetProps = {
  * continua montado até a sheet terminar de descer, então a saída aparece inteira. O fundo da sheet
  * continua abaixo da borda da tela, para nunca aparecer um vão embaixo dela.
  */
-export function BottomSheet({ visible, onClose, title, icone, subtitle, children, footer }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, icone, subtitle, children, footer, alturaMaxima }: BottomSheetProps) {
   // A barra de navegação do Android (gestos ou 3 botões) fica por cima da sheet: o rodapé sobe a altura dela.
   const insets = useSafeAreaInsets();
   const { height: alturaDaTela } = useWindowDimensions();
@@ -143,7 +145,7 @@ export function BottomSheet({ visible, onClose, title, icone, subtitle, children
         <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
           <Pressable accessibilityLabel="Fechar" style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
         </Animated.View>
-        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }, estiloDaSheet]}>
+        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }, alturaMaxima !== undefined && { maxHeight: alturaMaxima }, estiloDaSheet]}>
           <View style={styles.sheetAbaixo} />
           <View style={styles.handle} />
           <View style={{ gap: space[4] }}>

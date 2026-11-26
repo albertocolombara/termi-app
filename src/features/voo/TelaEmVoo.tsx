@@ -34,6 +34,7 @@ import { minutosAte, pausaEmAndamento, pausaRecemTerminada, proximaPausa, relogi
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import type { Voo } from '@/domain/voos/tipos';
+import { fusoDaPosicao, horaNoFuso } from '@/domain/voos/horaLocal';
 import { progressoNaRota, type Amostra } from '@/domain/voos/trilha';
 import { BottomSheet, Button, color, EmVooRota, Icon, IconButton, InfoBanner, radius, screenGutter, SegmentedControl, space, Text, type IconName } from '@/ds';
 import { Globo, type ModoGlobo } from '@/globo/Globo';
@@ -56,6 +57,9 @@ import { useRelogio } from './useRelogio';
 import { useSomLiberado } from './somLiberado';
 
 type Vista = 'janela' | 'globo';
+
+/** IconButton de 48 dp: o espaço reservado embaixo do horário do pouso. */
+const TAMANHO_DO_BOTAO = 48;
 
 export function TelaEmVoo() {
   const insets = useSafeAreaInsets();
@@ -126,6 +130,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   // baixa da posição atual em diante e a janela refaz o mosaico quando os blocos chegam.
   useBlocosDoVoo(voo, ativo && vista === 'janela');
   const pos = projetar(voo, agora);
+  const fusoDoVoo = useMemo(() => fusoDaPosicao(Math.round(pos.lat), Math.round(pos.lon)), [pos.lat, pos.lon]);
+  const horaDoVoo = horaNoFuso(agora, fusoDoVoo);
   const posicao = useMemo(() => ({ lat: pos.lat, lon: pos.lon, rumo: pos.rumo }), [pos.lat, pos.lon, pos.rumo]);
   // Onde o avião estará daqui a 1 s: a janela interpola o caminho entre as leituras do relógio.
   const seguinte = projetar(voo, agora + 1000);
@@ -218,7 +224,9 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             height={alturaDaPaisagem}
             aviao={posicao}
             trilha={trilha}
-            topoDosControles={alturaDoTopo + space[16]}
+            // "Centralizar" no lugar do botão de vistas da janela, embaixo do horário do pouso: o painel
+            // superior reserva esse espaço nas duas vistas (build-77: o botão tinha descido).
+            topoDosControles={alturaDoTopo - TAMANHO_DO_BOTAO}
             origem={{ lat: voo.origem.lat, lon: voo.origem.lon, nome: origem }}
             destino={{ lat: voo.destino.lat, lon: voo.destino.lon, nome: destino }}
             modo={modoGlobo}
@@ -288,8 +296,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               />
             ) : (
               // Mesmo espaço do botão de vistas no globo: os avisos ficam no mesmo lugar nas duas
-              // vistas (Alberto, 25/11/2026).
-              <View style={{ width: 48, height: 48, marginTop: space[10] }} />
+              // vistas (Alberto, 25/11/2026). O "Centralizar" do globo é desenhado aqui por cima.
+              <View style={{ width: TAMANHO_DO_BOTAO, height: TAMANHO_DO_BOTAO, marginTop: space[10] }} />
             )}
           </View>
         </View>
@@ -385,7 +393,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         <View style={styles.linha}>
           <Dado rotulo={t('emVoo.altitude')} valor={metros(pos.altitudePes) ?? '—'} />
           <Dado rotulo={t('emVoo.velocidade')} valor={kmh(pos.noSolo ? 0 : voo.velocidadeNos)} />
-          <Dado rotulo={t('emVoo.horaLocal')} valor={horaLocal(agora)} />
+          {/* Hora de onde o avião está, com o fuso (Alberto, 26/11/2026). */}
+          <Dado rotulo={horaDoVoo.fuso ? t('emVoo.horaLocalComFuso', { fuso: horaDoVoo.fuso }) : t('emVoo.horaLocal')} valor={horaDoVoo.hora} />
         </View>
         <View style={[styles.linha, { minHeight: 48 }]}>
           <Button

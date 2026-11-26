@@ -11,7 +11,7 @@ import type { PosicaoProjetada } from '@/domain/voos/projecao';
 import { distanciaKm } from '@/domain/voos/geo';
 import { minutosDesde, nomeDaAeronave, pontoCardeal } from '@/domain/voos/infoDoVoo';
 import type { Voo } from '@/domain/voos/tipos';
-import { BottomSheet, Button, Cauda, color, radius, space, Text } from '@/ds';
+import { BottomSheet, Cauda, color, radius, space, Text } from '@/ds';
 import { t } from '@/i18n';
 import { useFotoDoAviao } from '@/services/fotos';
 
@@ -55,7 +55,8 @@ export function FolhaInfoDoVoo({
       title={voo.callsign}
       subtitle={voo.companhiaNome ?? undefined}
       icone={<Cauda pais={voo.companhiaPais} tamanho={36} />}
-      footer={<Button size="medium" variant="secondary" icon={null} label={t('infoDoVoo.fechar')} onPress={onFechar} />}
+      // Sem botão "Fechar": a folha fica mais curta e fecha tocando fora ou em "voltar" (Alberto, 26/11/2026).
+      alturaMaxima="78%"
     >
       <View style={{ gap: space[16], paddingTop: space[4] }}>
         <FotoDoAviao hex={voo.hex} ativo={visivel} />
