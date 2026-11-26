@@ -92,6 +92,23 @@ npx expo run:android      # gera o projeto nativo e instala o development build 
 
 **APK de teste sem ambiente local:** em GitHub → Actions → "APK Android" → "Run workflow". O APK sai em Releases. O workflow também roda a cada junção na `main`. Como o repositório é privado, cada build gasta minutos do plano (2.000/mês no grátis); a checagem de tipos, lint e testes roda a cada push e é rápida.
 
+### Testar sem build (build de desenvolvimento)
+
+Para mudanças em telas, textos e regras, não precisa esperar o APK: o app de desenvolvimento carrega o código do computador pelo Wi-Fi e atualiza a cada arquivo salvo.
+
+**Uma vez:**
+1. GitHub → Actions → "APK de desenvolvimento" → "Run workflow". Em ~20 min o APK sai em Releases (`desenvolvimento-N`). Instale no celular: aparece como **Termi (desenv.)**, ao lado do app de teste, com dados separados.
+2. No computador, na pasta `termi-app`: `git pull` e `npm ci`.
+3. Crie o arquivo `.env` (copie o `.env.example`) com os mesmos endereços públicos do workflow `apk.yml`: `EXPO_PUBLIC_FLIGHT_CACHE_URL`, `EXPO_PUBLIC_TILES_BASE_URL`, `EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_KEY`.
+
+**Cada vez:**
+1. Computador e celular na mesma rede Wi-Fi.
+2. No computador: `npx expo start` (na primeira vez, o Windows pode pedir para liberar o Node no firewall: libere em redes privadas).
+3. No celular, abra **Termi (desenv.)** e escolha o servidor que aparece na lista (ou leia o QR code do terminal com a câmera).
+4. Cada arquivo salvo atualiza o app em segundos. Erros aparecem na tela do celular e no terminal. Para recarregar, aperte `r` no terminal.
+
+Só gere um APK de desenvolvimento novo quando entrar algo nativo: biblioteca nativa nova, módulo em `modules/`, permissão, ícone ou mudança no `app.config.ts`. Som em segundo plano, tela bloqueada, notificações e desempenho continuam sendo testados no APK de teste ("APK Android"), que se comporta como o app de verdade.
+
 **Ferramentas de desenvolvimento** (só fora de produção, no Início): catálogo do design system, janela de teste e teste de avisos e notificação fixa.
 
 ## Variáveis de ambiente

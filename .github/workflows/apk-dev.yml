@@ -1,0 +1,86 @@
+name: APK de desenvolvimento
+
+# Repositório privado: o runner tem 2 vCPU e 8 GB, e os minutos são limitados (2.000/mês no plano grátis).
+# Por isso o APK só é gerado sob demanda (botão "Run workflow" em Actions) ou ao juntar algo na main.
+# Gera a build de desenvolvimento (expo-dev-client): o app que carrega o código do computador do
+# Alberto pelo Wi-Fi (`npx expo start`). Só precisa rodar de novo quando entra algo nativo
+# (biblioteca nativa nova, módulo Kotlin, permissão, ícone, app.config). Rodar à mão.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      APP_ENV: development
+      # Valores públicos por definição (vão dentro do APK). A chave secreta do Supabase nunca entra aqui.
+      # Dados públicos do R2 (endereço r2.dev de desenvolvimento até termos domínio próprio)
+      EXPO_PUBLIC_FLIGHT_CACHE_URL: https://pub-10aaf652e29a4aa99f9726219b1a3995.r2.dev
+      EXPO_PUBLIC_TILES_BASE_URL: https://pub-10aaf652e29a4aa99f9726219b1a3995.r2.dev
+      EXPO_PUBLIC_SUPABASE_URL: https://eavuayeisrnzzpdbpugt.supabase.co
+      EXPO_PUBLIC_SUPABASE_KEY: sb_publishable_LWkoWcQreAFqWhdXD1ZCog_PNZcsnGK
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Liberar espaço e memória
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          sudo fallocate -l 6G /mnt/swap2 && sudo chmod 600 /mnt/swap2 && sudo mkswap /mnt/swap2 && sudo swapon /mnt/swap2
+          free -h; df -h /
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar projeto Android
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Limitar memória do Gradle e do Kotlin
+        working-directory: android
+        run: |
+          sed -i '/org.gradle.jvmargs/d;/org.gradle.parallel/d' gradle.properties
+          printf '\norg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m\norg.gradle.parallel=false\nkotlin.daemon.jvmargs=-Xmx1536m\n' >> gradle.properties
+          tail -5 gradle.properties
+
+      - name: Compilar APK
+        working-directory: android
+        run: |
+          ( while true; do echo "[mem] $(free -m | awk '/Mem:/{print "usada "$3" MB livre "$7" MB"} /Swap:/{print "swap "$3" MB"}' | tr '\n' ' ')"; sleep 30; done ) &
+          ./gradlew assembleDebug --no-daemon --max-workers=1 -PreactNativeArchitectures=arm64-v8a
+        env:
+          CMAKE_BUILD_PARALLEL_LEVEL: 2
+
+      - name: Memória ao falhar
+        if: failure()
+        run: free -h; sudo dmesg | tail -20 || true
+
+      - name: Publicar APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desenvolvimento-${{ github.run_number }}
+          name: Termi desenvolvimento ${{ github.run_number }} (${{ github.ref_name }})
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          body: |
+            Build de desenvolvimento (${{ github.ref_name }}, ${{ github.sha }}).
+            Instale no Android e conecte ao `npx expo start` do computador (ver README, "Testar sem build").
+          files: android/app/build/outputs/apk/debug/app-debug.apk
