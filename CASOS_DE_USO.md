@@ -587,7 +587,7 @@ Ações simples que já acontecem dentro dos fluxos (ver o passaporte, mudar um 
 
 **Fluxo principal**
 
-1. O Viajante toca em "Exportar dados"; o Sistema gera um arquivo com voos, motivos, carimbos, souvenirs e estatísticas e abre o compartilhamento.
+1. O Viajante toca em "Exportar dados"; o Sistema gera um arquivo JSON com voos, motivos, carimbos, souvenirs e saldo e o salva numa pasta que o Viajante escolhe (seletor do Android, sem permissão nova).
 2. Ou o Viajante toca em "Apagar dados"; o Sistema explica o que será apagado (incluindo a conta, se houver) e pede confirmação.
 3. O Sistema apaga os dados locais e no servidor.
 

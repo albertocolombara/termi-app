@@ -2,7 +2,7 @@
  * M5 · Ajustes. PRD: RF-44, RN-07 (intervalo do serviço de bordo), RN-18.
  * Só os ajustes que já fazem efeito no app. Os que dependem de recursos ainda não feitos
  * (avisos do comandante, lembrete de voo, manter tela ligada, reduzir movimento do app,
- * conta, restaurar compras, voos perto de você, exportar e apagar dados) entram junto com eles.
+ * conta, restaurar compras, voos perto de você) entram junto com eles. Exportar e apagar dados: FolhaDados (UC-16).
  */
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -19,6 +19,7 @@ import { FolhaSons } from '@/features/voo/FolhaSons';
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 
+import { FolhaDados } from './FolhaDados';
 import { LinhaComInterruptor, LinhaComValor, Secao } from './Grupo';
 import { MedidorDeDados } from './MedidorDeDados';
 
@@ -28,7 +29,7 @@ const QUALIDADES: { valor: QualidadeDaJanela; nome: ChaveDeTexto; descricao: Cha
   { valor: 'economica', nome: 'ajustes.qualidade.economica', descricao: 'ajustes.qualidade.economicaDescricao' },
 ];
 
-type Folha = 'intervalo' | 'som' | 'qualidade' | null;
+type Folha = 'intervalo' | 'som' | 'qualidade' | null | 'dados';
 
 export function TelaAjustes() {
   const insets = useSafeAreaInsets();
@@ -113,8 +114,14 @@ export function TelaAjustes() {
           />
         </Secao>
 
+        <Secao titulo={t('ajustes.privacidade')}>
+          <LinhaComValor titulo={t('ajustes.seusDados')} onPress={() => setFolha('dados')} />
+        </Secao>
+
         {mostrarFerramentasDev ? <MedidorDeDados /> : null}
       </ScrollView>
+
+      <FolhaDados visivel={folha === 'dados'} onFechar={() => setFolha(null)} />
 
       <BottomSheet visible={folha === 'intervalo'} onClose={() => setFolha(null)} title={t('ajustes.intervalo')} subtitle={t('ajustes.intervaloSubtitulo')}>
         {([25, 50] as const).map((min) => (
