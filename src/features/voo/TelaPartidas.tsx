@@ -137,7 +137,7 @@ export function TelaPartidas() {
       {/* Degradê: a lista continua por baixo (Figma: "Degradê · continuidade da lista") */}
       <View
         pointerEvents="none"
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 160, backgroundImage: `linear-gradient(180deg, rgba(20,18,24,0) 0%, ${color.bg.app} 100%)` }}
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 160, backgroundImage: `linear-gradient(180deg, transparent 0%, ${color.bg.app} 100%)` }}
       />
     </View>
   );

@@ -7,6 +7,7 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSequence, withTiming } from 'react-native-reanimated';
+import { color } from '@/ds';
 
 const TRANCOS = 7;
 const DURACAO_TRANCO = 190;
@@ -45,7 +46,7 @@ export function ImpressaoDoBilhete({ children, dica }: { children: ReactNode; di
         {children}
       </Animated.View>
       {/* Fenda da impressora: sombra fina logo abaixo do cabeçalho */}
-      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 10, backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 100%)' }} />
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 10, backgroundImage: `linear-gradient(180deg, ${color.cartao.sombraDaFenda} 0%, transparent 100%)` }} />
     </Pressable>
   );
 }
