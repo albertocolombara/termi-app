@@ -33,6 +33,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
   const isMini = size === 'mini';
   const isOutline = (variant === 'secondary' && size === 'small') || isMini;
   const fg = isPrimary ? C.text.onAccent : C.text.primary;
+  const comIcone = size === 'large' && !isLink && !isOutline && !!icon;
 
   return (
     <Pressable
@@ -50,10 +51,10 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       ]}
       {...rest}
     >
-      <Text variant={rotulo(size)} style={{ color: fg }} numberOfLines={1}>
+      <Text variant={isPrimary && comIcone ? 'Button/Label Strong 16' : rotulo(size)} style={{ color: fg }} numberOfLines={1}>
         {label}
       </Text>
-      {size === 'large' && !isLink && !isOutline && icon ? (
+      {comIcone ? (
         <View accessibilityElementsHidden importantForAccessibility="no">
           <Icon name={icon} color={fg} />
         </View>
@@ -64,7 +65,8 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
 
 /**
  * Estilo do rótulo pelo tamanho do botão, como no Material 3 Expressive (Alberto, 26/11/2026):
- * grande e médio (54–56 dp, o "médio" do M3E) usam "Button/Label 16" (Title Medium); o pequeno,
+ * grande e médio (54–56 dp, o "médio" do M3E) usam "Button/Label 16" (Title Medium) e, no primário
+ * com seta, "Button/Label Strong 16" (peso 600, para combinar com a seta; Alberto, 26/11/2026); o pequeno,
  * "Button/Label 14" (Label Large); o mini, de contorno, segue com 12. O link não tem sublinhado (Figma v3).
  */
 function rotulo(size: ButtonSize) {
