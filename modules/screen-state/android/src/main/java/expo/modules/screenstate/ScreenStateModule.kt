@@ -154,6 +154,41 @@ class ScreenStateModule : Module() {
       }
     }
 
+    // Diagnóstico dos sinais: volumes, modo do toque, "Não perturbe" e como cada canal ficou gravado
+    // no aparelho (o Android não deixa o app mudar o som de um canal depois de criado).
+    Function("audioDosAvisos") { canais: List<String> ->
+      val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      fun volume(stream: Int) = "${am.getStreamVolume(stream)}/${am.getStreamMaxVolume(stream)}"
+      val linhas = mutableListOf(
+        "volume alarme=${volume(AudioManager.STREAM_ALARM)} midia=${volume(AudioManager.STREAM_MUSIC)} notificacao=${volume(AudioManager.STREAM_NOTIFICATION)} toque=${volume(AudioManager.STREAM_RING)}",
+        "modo do toque=" + when (am.ringerMode) {
+          AudioManager.RINGER_MODE_SILENT -> "silencioso"
+          AudioManager.RINGER_MODE_VIBRATE -> "vibrar"
+          else -> "normal"
+        },
+        "nao perturbe=" + when (nm.currentInterruptionFilter) {
+          NotificationManager.INTERRUPTION_FILTER_ALL -> "desligado"
+          NotificationManager.INTERRUPTION_FILTER_PRIORITY -> "so prioridade"
+          NotificationManager.INTERRUPTION_FILTER_ALARMS -> "so alarmes"
+          NotificationManager.INTERRUPTION_FILTER_NONE -> "silencio total"
+          else -> "?"
+        },
+        "notificacoes do app=" + (if (nm.areNotificationsEnabled()) "ligadas" else "desligadas"),
+      )
+      if (Build.VERSION.SDK_INT >= 26) {
+        for (id in canais) {
+          val c = nm.getNotificationChannel(id)
+          linhas += if (c == null) {
+            "canal $id: nao existe"
+          } else {
+            "canal $id: importancia=${c.importance} som=${c.sound ?: "nenhum"} uso=${c.audioAttributes?.usage ?: "-"} ignoraNaoPerturbe=${c.canBypassDnd()}"
+          }
+        }
+      }
+      linhas.joinToString("\n")
+    }
+
     Function("stopFlightSound") {
       FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }

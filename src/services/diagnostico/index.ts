@@ -13,6 +13,7 @@ import * as Notifications from 'expo-notifications';
 import { Storage } from 'expo-sqlite/kv-store';
 
 import { ScreenState, type SaidaDoApp } from '../../../modules/screen-state/src';
+import { CANAIS_DOS_AVISOS } from '../avisos';
 
 const CHAVE_ERRO = 'diagnostico.ultimoErroJs';
 const CHAVE_AVISOS = 'diagnostico.avisosRecebidos';
@@ -106,4 +107,13 @@ export async function avisosAgendados(): Promise<AvisoAgendado[]> {
       return { quando: tr?.value ?? tr?.date ?? null, titulo: n.content.title ?? '', canal: tr?.channelId ?? null };
     })
     .sort((a, b) => (a.quando ?? 0) - (b.quando ?? 0));
+}
+
+/** Volumes, modo do toque, "Não perturbe" e como os canais dos avisos ficaram gravados no aparelho. */
+export function audioDosAvisos(): string {
+  try {
+    return ScreenState.audioDosAvisos(CANAIS_DOS_AVISOS) || 'indisponível';
+  } catch {
+    return 'indisponível (build sem a função nativa)';
+  }
 }
