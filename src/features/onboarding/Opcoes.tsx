@@ -49,10 +49,10 @@ export function OpcaoUnica({ titulo, descricao, marcada, onPress }: { titulo: st
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={`${titulo}. ${descricao}`}
       onPress={onPress}
-      style={({ pressed }) => [styles.linha, { minHeight: 88 }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
+      style={({ pressed }) => [styles.linha, { minHeight: 88, paddingVertical: space[16] }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
       <View style={{ flex: 1, gap: space[6] }}>
-        <Text variant="Body/Large Medium 16" style={styles.rotulo}>
+        <Text variant="Body/Large Medium 16" style={styles.titulo}>
           {titulo}
         </Text>
         <Text variant="Body/Medium 14" tone="secondary">
@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
   fundoMarcado: { backgroundColor: color.onboarding.opcaoMarcada },
   // Figma: 18 SemiBold (sem estilo de texto próprio no arquivo).
   rotulo: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '600' },
+  titulo: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
   caixa: { width: 26, height: 26, borderRadius: radius.md, borderWidth: 1.6, alignItems: 'center', justifyContent: 'center' },
   radio: { width: 23, height: 23, borderRadius: 12, borderWidth: 1.6, alignItems: 'center', justifyContent: 'center' },
   mioloDoRadio: { width: 11, height: 11, borderRadius: 6, backgroundColor: color.accent.default },
