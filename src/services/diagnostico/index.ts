@@ -8,11 +8,14 @@
  * Nada de dados pessoais: só mensagens de erro, hora e memória.
 
  */
+import { AppState } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { Storage } from 'expo-sqlite/kv-store';
 
 import { ScreenState, type SaidaDoApp } from '../../../modules/screen-state/src';
 
 const CHAVE_ERRO = 'diagnostico.ultimoErroJs';
+const CHAVE_AVISOS = 'diagnostico.avisosRecebidos';
 
 export type ErroJs = { quando: number; mensagem: string; pilha: string; fatal: boolean };
 
@@ -62,4 +65,45 @@ export function ultimoCrashJava(): string {
   } catch {
     return '';
   }
+}
+
+export type AvisoRecebido = { quando: number; titulo: string; canal: string | null; app: string };
+
+/**
+ * Guarda os últimos 15 avisos que o app viu chegar (hora, título, canal e se o app estava aberto),
+ * para investigar sinal que não tocou (26/11/2026). Só com o app vivo: com ele fechado, o Android
+ * entrega o aviso sem passar por aqui.
+ */
+export function registrarAvisosRecebidos() {
+  Notifications.addNotificationReceivedListener((n) => {
+    try {
+      const lista = avisosRecebidos();
+      const trigger = n.request.trigger as { channelId?: string } | null;
+      lista.unshift({ quando: Date.now(), titulo: n.request.content.title ?? '', canal: trigger?.channelId ?? null, app: String(AppState.currentState) });
+      Storage.setItemSync(CHAVE_AVISOS, JSON.stringify(lista.slice(0, 15)));
+    } catch {
+      // diagnóstico nunca atrapalha o aviso
+    }
+  });
+}
+
+export function avisosRecebidos(): AvisoRecebido[] {
+  try {
+    return JSON.parse(Storage.getItemSync(CHAVE_AVISOS) ?? '[]') as AvisoRecebido[];
+  } catch {
+    return [];
+  }
+}
+
+export type AvisoAgendado = { quando: number | null; titulo: string; canal: string | null };
+
+/** Avisos agendados agora, com o canal (o canal decide se o aviso toca som). */
+export async function avisosAgendados(): Promise<AvisoAgendado[]> {
+  const lista = await Notifications.getAllScheduledNotificationsAsync().catch(() => []);
+  return lista
+    .map((n) => {
+      const tr = n.trigger as { value?: number; date?: number; channelId?: string } | null;
+      return { quando: tr?.value ?? tr?.date ?? null, titulo: n.content.title ?? '', canal: tr?.channelId ?? null };
+    })
+    .sort((a, b) => (a.quando ?? 0) - (b.quando ?? 0));
 }
