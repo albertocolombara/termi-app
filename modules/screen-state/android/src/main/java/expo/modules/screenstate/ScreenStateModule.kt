@@ -35,6 +35,7 @@ class ScreenStateModule : Module() {
 
     OnCreate {
       val ctx = appContext.reactContext ?: return@OnCreate
+      instalarRegistroDeCrash(ctx)
       val r = object : BroadcastReceiver() {
         override fun onReceive(c: Context?, intent: Intent?) {
           val now = System.currentTimeMillis().toDouble()
@@ -144,6 +145,15 @@ class ScreenStateModule : Module() {
       am.getHistoricalProcessExitReasons(context.packageName, 0, 5).map { info -> saidaParaMapa(info) }
     }
 
+    // Pilha do último crash de Java/Kotlin (qualquer thread), gravada antes de o app fechar.
+    Function("lastJavaCrash") {
+      try {
+        java.io.File(context.filesDir, ARQUIVO_DO_CRASH).takeIf { it.exists() }?.readText() ?: ""
+      } catch (_: Exception) {
+        ""
+      }
+    }
+
     Function("stopFlightSound") {
       FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }
@@ -196,5 +206,32 @@ class ScreenStateModule : Module() {
     }
     if (atual.length >= 4) partes.add(atual.toString())
     return partes.joinToString("\n").take(12_000)
+  }
+
+  companion object {
+    private const val ARQUIVO_DO_CRASH = "ultimo-crash-java.txt"
+    @Volatile private var registroInstalado = false
+
+    /**
+     * Guarda a pilha de qualquer exceção não tratada (thread, mensagem, causas) num arquivo e passa
+     * adiante para o tratamento padrão, que fecha o app como antes. Só diagnóstico: sem dados pessoais.
+     */
+    fun instalarRegistroDeCrash(ctx: Context) {
+      if (registroInstalado) return
+      registroInstalado = true
+      val pasta = ctx.applicationContext.filesDir
+      val anterior = Thread.getDefaultUncaughtExceptionHandler()
+      Thread.setDefaultUncaughtExceptionHandler { thread, erro ->
+        try {
+          val texto = java.io.StringWriter()
+          erro.printStackTrace(java.io.PrintWriter(texto))
+          java.io.File(pasta, ARQUIVO_DO_CRASH).writeText(
+            "${java.util.Date()} thread=${thread.name}\n" + texto.toString().take(20_000),
+          )
+        } catch (_: Throwable) {
+        }
+        anterior?.uncaughtException(thread, erro)
+      }
+    }
   }
 }
