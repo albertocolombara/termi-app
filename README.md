@@ -146,7 +146,7 @@ Nenhum segredo vai para o app. A chave do adsb.lol e as credenciais de escrita d
 | [CASOS_DE_USO.md](CASOS_DE_USO.md) | Interações usuário–sistema com fluxos, exceções e critérios de aceitação |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Arquitetura, modelo de dados, integrações, riscos e decisões |
 | [DESIGN.md](DESIGN.md) | Design system, tokens, componentes, acessibilidade, animações |
-| [CLAUDE.md](CLAUDE.md) | Instruções para agentes de IA que trabalham no repositório |
+| [AGENTS.md](AGENTS.md) e [CLAUDE.md](CLAUDE.md) | Instruções para agentes de IA que trabalham no repositório (as mesmas regras nos dois) |
 | [ROADMAP.md](ROADMAP.md) | Fases de desenvolvimento com checklists |
 
 Referências externas: Figma "Termi: Focus Flights" (https://www.figma.com/design/JfjmulB7Itgc59PGQBJvr5) e os docs do projeto no Claude ("visao-do-produto.md", "prototipo-tecnico.md", "infra-e-politicas.md", "validacao-dados-voos.md").

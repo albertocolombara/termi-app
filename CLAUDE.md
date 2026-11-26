@@ -4,6 +4,8 @@ Você está no repositório do app de produção **Termi: Focus Flights**: um ap
 
 O dono do produto (Alberto) é designer e front-end, não dev mobile: o código é escrito principalmente por agentes. Escreva código que ele consiga ler e revisar, e explique decisões em português.
 
+O [AGENTS.md](AGENTS.md) tem as mesmas regras para outros agentes. **Os dois precisam ficar iguais:** mudou uma regra num, mude no outro no mesmo PR.
+
 ## 1. Leia antes de mexer
 
 | Antes de… | Leia |
@@ -162,3 +164,17 @@ npm test
 - [ ] Acessibilidade básica (rótulos, reduzir movimento, área de toque).
 - [ ] Testado no aparelho quando envolve sessão, avisos, áudio, janela ou bateria.
 - [ ] Documentos atualizados se alguma decisão mudou; ROADMAP marcado com evidência.
+
+## 16. Fluxo de trabalho (lições do projeto)
+
+- **Merge só com a checagem verde.** Abra o PR, espere todas as checagens do GitHub terminarem com sucesso e só então faça o merge. Já houve merge com a checagem vermelha; não repita.
+- **A checagem do PR não compila o Android.** Ela roda tipos, lint e testes. Mudou algo em `modules/*`, em `app.config.ts`, em config plugins ou adicionou dependência nativa? Rode o workflow `apk-dev.yml` (manual, `workflow_dispatch`) na sua branch e só faça o merge se ele passar.
+- **Como o Alberto testa:**
+  - App de desenvolvimento ("Termi (desenv.)", pacote `com.albertocolombara.termiapp.desenvolvimento`), instalado pelo APK da release `desenvolvimento-N` gerada pelo `apk-dev.yml`.
+  - O JavaScript vem do Metro no computador dele (`git pull`, `npm ci`, `npx expo start -c`). Mudança só de JS não precisa de APK novo; mudança nativa precisa.
+  - Ao entregar, diga qual dos dois ele precisa: puxar o código e reiniciar o Metro, ou instalar um APK novo (e qual).
+- **Diagnóstico** (Ajustes › Diagnóstico, só no app de desenvolvimento): último erro de JS, último crash de Java/Kotlin, fechamentos registrados pelo Android, avisos agendados e recebidos, som dos avisos e sinais tocados. Use antes de chutar uma causa, e acrescente o que faltar para descobrir a próxima.
+- **Bug que só aparece no aparelho:** não diga que está corrigido. Diga o que mudou, por que deve resolver e o que ele precisa testar.
+- **Avisos com som no Android:** o som do canal da notificação não tocou no Samsung M35. O sinal de cintos e o aviso de pouso são tocados pelo próprio app (`modules/screen-state/.../SinalDeBordo.kt`), com a notificação sem som. Não volte a depender do som do canal.
+- **Bibliotecas nativas e RN 0.88:** antes de adotar uma, confira se funciona no RN 0.88 com a nova arquitetura. O `react-native-filament` fechou o app (ADR-12) e foi trocado por uma WebView.
+- **Documentos e Figma mandam.** Se o pedido do Alberto contradiz um documento, siga o pedido e atualize o documento no mesmo PR, citando a data. Se dois documentos se contradizem, pergunte.
