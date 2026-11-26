@@ -36,7 +36,7 @@
 | **Termi Premium** (substituído pelo Plus) | Termi em ouro com reflexo. Variante Grande (≥ ~36 px) com etiqueta de bagagem prioritária creme e estrela dourada; variante Pequena (16–24 px) sem etiqueta. Só marca status; nunca substitui o Termi laranja das telas | Decidido |
 | **Dourado** | Reservado à primeira classe (selo, Termi Premium, anel do avatar) | Decidido |
 | **Souvenirs** | Medalhas cunhadas em metal realista: países em níquel/prata, cidades em cobre, raras em latão; nome do país na forma nativa, em arco, fonte Bahnschrift (日本 em Yu Gothic Bold) | Decidido |
-| **Companhias** | Cauda pintada com a bandeira do país; nunca logo ou pintura real | Decidido |
+| **Companhias** | Cauda pintada com a bandeira do país; nunca logo ou pintura real desenhados pelo app. Em teste (26/11/2026): foto creditada do Planespotters em "Sobre este voo" | Decidido (foto em teste) |
 | Nome | "Termi: Focus Flights" | Provisório |
 
 **Papéis das cores de destaque (decidido em 19/11/2026):**

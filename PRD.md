@@ -251,7 +251,7 @@ Fonte: análise de 4.495 reclamações e sugestões em 9 apps (Forest, Opal, Flo
 
 ### Marca e dados
 
-- **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real.
+- **RN-24 — Companhias aéreas.** Identificadas só pela bandeira do país, nunca por logo ou pintura real desenhados pelo app. Exceção em teste (Alberto, 26/11/2026): a foto do avião real do Planespotters.net em "Sobre este voo", grátis para todos, com o crédito do fotógrafo e o link para a foto, seguindo os termos da API (sem cache em disco, sem servidor intermediário). Se não melhorar a imersão, sai.
 - **RN-25 — Créditos.** Os dados de terceiros (adsb.lol/ODbL, OpenFlights/ODbL, NASA, ESA WorldCover/CC BY 4.0, OpenStreetMap/ODbL, GeoNames; desde 21/11/2026 o ESA WorldCover substitui o Landsat WELD e o GMIS) são creditados em Sobre o Termi; não usar o logo da NASA nem sugerir apoio da NASA. Os sons de fundo são CC0 (domínio público, sem crédito obrigatório) ou gerados pelo próprio Termi (voo de cruzeiro e ruído branco); o Termi credita os autores mesmo assim: Freesound (flood-mix, triadtravelogues, BonnyOrbit) e o lofi (álbum "Lo-fi And Chill", HoliznaCC0). Som com licença não comercial (CC BY-NC) não entra (20/11/2026).
 
 ### Comparativo de planos

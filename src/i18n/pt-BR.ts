@@ -214,6 +214,9 @@ export const ptBR = {
     tentarBaixar: 'Tentar baixar de novo',
   },
   infoDoVoo: {
+    fotoCredito: 'Foto: {fotografo} · Planespotters.net',
+    fotoAcessivel: 'Foto do avião por {fotografo}, no Planespotters.net. Abre a página da foto.',
+    fotoCarregando: 'Carregando a foto do avião',
     abrir: 'Ver informações do voo {voo}',
     titulo: 'Sobre este voo',
     rota: 'Rota',
