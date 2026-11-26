@@ -2,14 +2,14 @@
  * Diagnóstico (ferramenta de desenvolvimento): o último erro de JS guardado e os últimos fechamentos
  * que o Android registrou, com um botão para compartilhar o texto (WhatsApp, e-mail…).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, Share, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, color, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
-import { fechamentosRecentes, ultimoCrashJava, ultimoErroJs } from '@/services/diagnostico';
+import { avisosAgendados, avisosRecebidos, fechamentosRecentes, ultimoCrashJava, ultimoErroJs, type AvisoAgendado } from '@/services/diagnostico';
 
 const hora = (ms: number) => new Date(ms).toLocaleString('pt-BR');
 
@@ -18,10 +18,20 @@ export default function Diagnostico() {
   const [erro] = useState(ultimoErroJs);
   const [saidas] = useState(fechamentosRecentes);
   const [java] = useState(ultimoCrashJava);
+  const [recebidos] = useState(avisosRecebidos);
+  const [agendados, setAgendados] = useState<AvisoAgendado[]>([]);
+  useEffect(() => {
+    avisosAgendados().then(setAgendados);
+  }, []);
+  const horaCurta = (ms: number | null) => (ms ? new Date(ms).toLocaleTimeString('pt-BR') : '?');
 
   const texto = [
     `== ${t('dev.diagnosticoErroJs')}`,
     erro ? `${hora(erro.quando)} fatal=${erro.fatal}\n${erro.mensagem}\n${erro.pilha}` : t('dev.diagnosticoSemErro'),
+    `\n== Avisos agendados`,
+    agendados.length ? agendados.map((a) => `${horaCurta(a.quando)} [${a.canal ?? 'sem canal'}] ${a.titulo}`).join('\n') : 'nenhum',
+    `\n== Avisos recebidos (com o app vivo)`,
+    recebidos.length ? recebidos.map((a) => `${horaCurta(a.quando)} [${a.canal ?? 'sem canal'}] app=${a.app} ${a.titulo}`).join('\n') : 'nenhum',
     `\n== ${t('dev.diagnosticoCrashJava')}`,
     java || t('dev.diagnosticoSemCrashJava'),
     `\n== ${t('dev.diagnosticoFechamentos')}`,
