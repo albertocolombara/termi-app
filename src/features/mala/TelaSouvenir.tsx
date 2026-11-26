@@ -15,7 +15,7 @@ import { useSouvenirDaMala } from '@/data/colecao/useLoja';
 import { useContagens } from '@/data/historico/useHistorico';
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { color, InfoBanner, loja, screenGutter, space, Text, TopBar } from '@/ds';
-import { Medalha3D } from '@/features/loja/Medalha3D';
+import { MedalhaGiratoria } from '@/features/loja/MedalhaGiratoria';
 import { nomeDoLugar } from '@/features/voo/formato';
 import { t } from '@/i18n';
 
@@ -63,7 +63,7 @@ export function TelaSouvenir({ souvenirId }: { souvenirId: string }) {
       {topo}
 
       <Destaque>
-        <Medalha3D souvenir={souvenir} tamanho={TAMANHO} />
+        <MedalhaGiratoria souvenir={souvenir} tamanho={TAMANHO} />
       </Destaque>
 
       <View style={{ alignItems: 'center', gap: space[4] }}>

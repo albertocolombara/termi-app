@@ -31,11 +31,26 @@ export type Souvenir = {
   /** Caminhos no R2 (relativos à base), baixados sob demanda. */
   imagem2d: string | null;
   modelo3d: string | null;
+  /** Giro pré-renderizado (quadros da medalha girando, numa grade): ver `GIRO`. null = só a imagem 2D. */
+  giro: string | null;
   /** ms; null = disponível. */
   disponivelDesde: number | null;
 };
 
 export type Catalogo = { versao: number; atualizadoEm: number; souvenirs: Souvenir[] };
+
+/**
+ * Formato do giro (`giro`): uma imagem WebP com 25 quadros numa grade 5 × 5, da esquerda para a
+ * direita e de cima para baixo. O quadro i mostra a medalha virada `-90 + 7,5 × i` graus (o 12 é
+ * de frente). Renderizados no Blender com a mesma luz de estúdio do render 2D.
+ */
+export const GIRO = { colunas: 5, quadros: 25, passoEmGraus: 7.5, anguloMaximo: 90 } as const;
+
+/** Quadro do giro para um ângulo (graus, limitado a ±90). */
+export function quadroDoGiro(angulo: number): number {
+  const a = Math.max(-GIRO.anguloMaximo, Math.min(GIRO.anguloMaximo, angulo));
+  return Math.round((a + GIRO.anguloMaximo) / GIRO.passoEmGraus);
+}
 
 /** Versão do formato que este app entende. Campo novo não muda a versão; mudar o sentido de um campo muda. */
 export const VERSAO_DO_FORMATO = 1;
@@ -68,6 +83,7 @@ function lerSouvenir(e: unknown): Souvenir | null {
     motivo: texto(o.motivo),
     imagem2d: texto(o.imagem2d),
     modelo3d: texto(o.modelo3d),
+    giro: texto(o.giro),
     disponivelDesde: Number.isFinite(desde) ? desde : null,
   };
 }
