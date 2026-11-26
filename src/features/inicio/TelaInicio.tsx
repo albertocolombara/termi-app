@@ -135,7 +135,7 @@ export function TelaInicio() {
           </View>
         ) : null}
 
-        {avisos.desligados ? <AvisosDesligados onAtivar={avisos.ativar} /> : null}
+        {avisos.desligados || avisos.atrasados ? <AvisosDesligados atrasados={avisos.atrasados} onAtivar={avisos.ativar} /> : null}
 
         {ultimo && !sessao.data ? (
           <UltimoVoo voo={ultimo} agora={agora} procurando={procurando} onRepetir={() => repetir(ultimo.tempoEscolhidoMin)} />
@@ -232,17 +232,20 @@ function UltimoVoo({ voo, agora, procurando, onRepetir }: { voo: VooDoDiario; ag
   );
 }
 
-/** X8 · Aviso de avisos de pouso desligados (Figma: "Aviso · avisos desligados"). */
-function AvisosDesligados({ onAtivar }: { onAtivar: () => void }) {
+/**
+ * X8 · Aviso de avisos de pouso desligados (Figma: "Aviso · avisos desligados"). O mesmo aviso, com
+ * outro texto, aparece sem a permissão "Alarmes e lembretes" (avisos chegam atrasados).
+ */
+function AvisosDesligados({ atrasados, onAtivar }: { atrasados?: boolean; onAtivar: () => void }) {
   return (
     <View style={styles.aviso}>
       <Icon name="avisosDesligados" />
       <View style={{ flex: 1, gap: space[2] }}>
         <Text variant="Label/Strong 14" style={{ color: color.status.warning }}>
-          {t('inicio.avisosDesligadosTitulo')}
+          {atrasados ? t('inicio.avisosAtrasadosTitulo') : t('inicio.avisosDesligadosTitulo')}
         </Text>
         <Text variant="Body/Small 13" tone="secondary">
-          {t('inicio.avisosDesligadosTexto')}
+          {atrasados ? t('inicio.avisosAtrasadosTexto') : t('inicio.avisosDesligadosTexto')}
         </Text>
       </View>
       <Pressable accessibilityRole="button" hitSlop={12} onPress={onAtivar} style={({ pressed }) => pressed && { opacity: 0.7 }}>
