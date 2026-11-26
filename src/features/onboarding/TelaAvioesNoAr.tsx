@@ -15,10 +15,16 @@ import { useDestaque, useVoosDoOnboarding } from './useVoosDoOnboarding';
 
 export function TelaAvioesNoAr() {
   const { width } = useWindowDimensions();
-  const { voos, aoVivo, agora, ativo, consultadoEm } = useVoosDoOnboarding();
+  const atual = useVoosDoOnboarding(60_000);
+  // Uma foto da primeira consulta: o número e os aviões não mudam enquanto a tela está aberta.
+  const [foto, setFoto] = useState<{ voos: typeof atual.voos; aoVivo: boolean; consultadoEm: number } | null>(null);
+  if (!foto && atual.voos.length) setFoto({ voos: atual.voos, aoVivo: atual.aoVivo, consultadoEm: atual.consultadoEm });
+  const { voos, aoVivo, consultadoEm } = foto ?? atual;
+  const ativo = atual.ativo;
+  const agora = consultadoEm;
   const mudar = useOnboarding((s) => s.mudar);
   const destaque = useDestaque(voos, consultadoEm, agora);
-  const avioes = useMemo(() => avioesParaOGlobo(voos, agora), [voos, agora]);
+  const avioes = useMemo(() => avioesParaOGlobo(voos, consultadoEm), [voos, consultadoEm]);
   const total = aoVivo ? avioesNoAr(voos, agora) : 0;
   const [lado, setLado] = useState(0);
 
@@ -58,7 +64,7 @@ export function TelaAvioesNoAr() {
                 {t('onboarding.atualizadoAgora')}
               </Text>
             </View>
-            <ContadorPixel valor={total.toLocaleString('pt-BR')} rotuloAcessivel={t('onboarding.avioesNoArAcessivel', { n: total.toLocaleString('pt-BR') })} />
+            <ContadorPixel valor={total} rotuloAcessivel={t('onboarding.avioesNoArAcessivel', { n: total.toLocaleString('pt-BR') })} />
             <Text variant="Heading/Screen 32" style={styles.centro} accessibilityRole="header">
               {t('onboarding.avioesNoAr')}
             </Text>

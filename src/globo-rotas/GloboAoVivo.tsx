@@ -7,7 +7,8 @@
  * - `rotas`: rotas que "passam": cada arco se desenha da origem ao destino e some, em ciclos
  *   defasados, enquanto o globo gira (OB7).
  *
- * Gira devagar sozinho; com "reduzir movimento", fica parado e as rotas aparecem inteiras.
+ * Gira devagar sozinho (também com o destaque: a etiqueta acompanha o avião e some atrás do globo);
+ * com "reduzir movimento", fica parado e as rotas aparecem inteiras.
  * Fora de foco (`ativo` falso) o quadro para.
  */
 import React, { useEffect, useMemo } from 'react';
@@ -65,6 +66,25 @@ function aFrente(lat: number, lon: number, rumo: number, d: number): Vec3 {
   return vetor(la2 / RAD, lo2 / RAD);
 }
 
+/**
+ * Posição do avião em destaque sobre a rota desenhada (o arco origem → destino). A posição real
+ * nem sempre cai em cima do círculo máximo (rotas reais desviam), e o avião parecia fora da linha.
+ * Devolve o ponto mais perto na rota e um ponto um pouco à frente, para o rumo na tela.
+ */
+function naRota(a: Vec3, b: Vec3, p: Vec3): { pos: Vec3; frente: Vec3 } {
+  'worklet';
+  const n: Vec3 = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const nn = Math.hypot(n[0], n[1], n[2]) || 1;
+  const k = (p[0] * n[0] + p[1] * n[1] + p[2] * n[2]) / (nn * nn);
+  const q: Vec3 = [p[0] - k * n[0], p[1] - k * n[1], p[2] - k * n[2]];
+  const qn = Math.hypot(q[0], q[1], q[2]) || 1;
+  const ang = (x: Vec3, y: Vec3) => Math.acos(Math.max(-1, Math.min(1, x[0] * y[0] + x[1] * y[1] + x[2] * y[2])));
+  const qu: Vec3 = [q[0] / qn, q[1] / qn, q[2] / qn];
+  const total = ang(a, b) || 1;
+  const u = Math.max(0, Math.min(1, ang(a, qu) / total));
+  return { pos: slerp(a, b, u), frente: slerp(a, b, Math.min(1, u + 0.02)) };
+}
+
 export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rotas = [], centro, raioRelativo = 0.42, ativo = true, rotuloAcessivel }: GloboAoVivoProps) {
   const mascara = useImage(require('../../assets/globo/terra-mascara.png'));
   const reduzir = useReducedMotion();
@@ -100,8 +120,7 @@ export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rot
     rotasSV.set(rotas.map((r) => ({ a: vetor(r.origem.lat, r.origem.lon), b: vetor(r.destino.lat, r.destino.lon) })));
   }, [rotas, rotasSV]);
 
-  // Com destaque o globo fica parado nele (a etiqueta precisa ficar legível); sem, gira devagar.
-  const gira = !destaque && !reduzir;
+  const gira = !reduzir;
   const quadro = useFrameCallback((info) => {
     'worklet';
     const dt = Math.min(0.05, (info.timeSincePreviousFrame ?? 16) / 1000);
@@ -139,10 +158,10 @@ export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rot
       const tinta = Skia.Paint();
       tinta.setAntiAlias(true);
 
-      const desenharAviao = (a: AviaoNoGlobo, cor: string, tamanho: number) => {
-        const p = projetar(vetor(a.lat, a.lon), 1, y, tl, cx, cy, raio);
+      const desenharAviao = (pos: Vec3, frente: Vec3, cor: string, tamanho: number) => {
+        const p = projetar(pos, 1, y, tl, cx, cy, raio);
         if (p.z < 0.08) return;
-        const q = projetar(aFrente(a.lat, a.lon, a.rumo, 1.5), 1, y, tl, cx, cy, raio);
+        const q = projetar(frente, 1, y, tl, cx, cy, raio);
         const ang = Math.atan2(q.y - p.y, q.x - p.x);
         tinta.setColor(Skia.Color(cor));
         tinta.setAlphaf(Math.min(1, p.z * 3));
@@ -180,7 +199,10 @@ export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rot
       }
 
       // Aviões no ar agora (OB1).
-      for (let i = 0; i < lista.length; i++) desenharAviao(lista[i], color.text.primary, 11);
+      for (let i = 0; i < lista.length; i++) {
+        const av = lista[i];
+        desenharAviao(vetor(av.lat, av.lon), aFrente(av.lat, av.lon, av.rumo, 1.5), color.text.primary, 11);
+      }
 
       // Voo em destaque: rota amarela, pontas e avião amarelo.
       if (d) {
@@ -204,7 +226,8 @@ export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rot
           tinta.setAlphaf(1);
           canvas.drawCircle(ponta.x, ponta.y, 2.6, tinta);
         }
-        desenharAviao(d.aviao, color.accent.default, 17);
+        const r = naRota(a, b, vetor(d.aviao.lat, d.aviao.lon));
+        desenharAviao(r.pos, r.frente, color.accent.default, 17);
       }
     });
   });
@@ -213,7 +236,8 @@ export function GloboAoVivo({ largura, altura, avioes = [], destaque = null, rot
   const estiloDaEtiqueta = useAnimatedStyle(() => {
     const d = destaqueSV.get();
     if (!d) return { opacity: 0 };
-    const p = projetar(vetor(d.aviao.lat, d.aviao.lon), 1, yaw.get(), tilt.get(), cx, cy, raio);
+    const r = naRota(vetor(d.origem.lat, d.origem.lon), vetor(d.destino.lat, d.destino.lon), vetor(d.aviao.lat, d.aviao.lon));
+    const p = projetar(r.pos, 1, yaw.get(), tilt.get(), cx, cy, raio);
     if (p.z < 0.1) return { opacity: 0 };
     return { opacity: 1, transform: [{ translateX: Math.max(4, p.x - 168) }, { translateY: p.y - 34 }] };
   });

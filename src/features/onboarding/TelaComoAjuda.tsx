@@ -2,7 +2,7 @@
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 
-import { color, effects, Icon, radius, space, Text, type IconName } from '@/ds';
+import { color, effects, Icon, space, Text, type IconName } from '@/ds';
 import { t } from '@/i18n';
 
 import { Cabecalho, TelaDoOnboarding } from './TelaDoOnboarding';
@@ -16,7 +16,7 @@ const CIRCULO = 55;
 
 export function TelaComoAjuda() {
   return (
-    <TelaDoOnboarding rolar cta={{ label: t('onboarding.continuar'), onPress: () => router.push('/onboarding/avisos') }}>
+    <TelaDoOnboarding cta={{ label: t('onboarding.continuar'), onPress: () => router.push('/onboarding/avisos') }}>
       <View style={{ gap: space[40], paddingBottom: space[24] }}>
         <Cabecalho titulo={t('onboarding.ajudaTitulo')} />
         <View>
@@ -36,12 +36,6 @@ export function TelaComoAjuda() {
               </View>
             </View>
           ))}
-        </View>
-        <View style={styles.destaque} accessible>
-          <Text variant="Body/Large Medium 16">{t('onboarding.sairDoApp')}</Text>
-          <Text variant="Body/Medium 14" tone="secondary">
-            {t('onboarding.sairDoAppTexto')}
-          </Text>
         </View>
       </View>
     </TelaDoOnboarding>
@@ -71,12 +65,4 @@ const styles = StyleSheet.create({
     backgroundImage: `linear-gradient(180deg, transparent 0%, ${color.text.primary} 52%, transparent 100%)`,
   },
   texto: { flex: 1, gap: space[2], paddingTop: space[4], paddingBottom: space[24] },
-  destaque: {
-    gap: space[2],
-    padding: space[16],
-    borderRadius: radius['2xl'],
-    borderWidth: 1,
-    borderColor: color.border.default,
-    backgroundColor: color.surface.subtle,
-  },
 });

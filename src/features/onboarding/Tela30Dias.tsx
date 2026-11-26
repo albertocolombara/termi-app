@@ -2,10 +2,9 @@
  * OB7 · Onde você chega em 30 dias (Figma 579:9017). Projeção pela meta do OB5: horas × ~540 milhas
  * por hora. O número cresce até o total; atrás, o globo gira com rotas reais passando.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useOnboarding } from '@/data/preferencias/onboarding';
@@ -16,9 +15,8 @@ import { GloboAoVivo } from '@/globo-rotas/GloboAoVivo';
 import { t } from '@/i18n';
 
 import { TelaDoOnboarding } from './TelaDoOnboarding';
+import { useContagem } from './useContagem';
 import { useVoosDoOnboarding } from './useVoosDoOnboarding';
-
-const CRESCER_MS = 1600;
 
 export function Tela30Dias() {
   const { width } = useWindowDimensions();
@@ -28,7 +26,7 @@ export function Tela30Dias() {
   const rotas = useMemo(() => rotasDeExemplo(voos, 10), [voos]);
   const p = projecao(meta);
   const mundo = comparacaoComOMundo(p.voltas);
-  const milhas = useContagem(p.milhas);
+  const milhas = useContagem(p.milhas, 10);
   const lado = width * 1.08;
 
   return (
@@ -93,27 +91,6 @@ function Item({ emoji, titulo, texto }: { emoji: string; titulo: string; texto: 
       </View>
     </View>
   );
-}
-
-/** Número que cresce de 0 até `alvo` (ease-out). Com "reduzir movimento", aparece direto. */
-function useContagem(alvo: number) {
-  const reduzir = useReducedMotion();
-  const [valor, setValor] = useState(reduzir ? alvo : 0);
-  useEffect(() => {
-    if (reduzir) return;
-    const inicio = Date.now();
-    let id = 0;
-    const passo = () => {
-      const u = Math.min(1, (Date.now() - inicio) / CRESCER_MS);
-      const e = 1 - (1 - u) ** 3;
-      setValor(Math.round((alvo * e) / 10) * 10);
-      if (u < 1) id = requestAnimationFrame(passo);
-      else setValor(alvo);
-    };
-    id = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(id);
-  }, [alvo, reduzir]);
-  return reduzir ? alvo : valor;
 }
 
 const styles = StyleSheet.create({

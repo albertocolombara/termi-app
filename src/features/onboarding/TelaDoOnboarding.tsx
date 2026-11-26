@@ -46,7 +46,7 @@ export function TelaDoOnboarding({
       {cta ? (
         <View style={[styles.rodape, { paddingBottom: insets.bottom + space[16] }]}>
           <Button label={cta.label} onPress={cta.onPress} disabled={cta.disabled} />
-          <View style={styles.link}>{link ? <Button variant="link" size="medium" label={link.label} onPress={link.onPress} /> : null}</View>
+          <View style={styles.link}>{link ? <Button variant="link" size="small" label={link.label} onPress={link.onPress} style={{ alignSelf: 'center' }} /> : null}</View>
         </View>
       ) : null}
     </View>
