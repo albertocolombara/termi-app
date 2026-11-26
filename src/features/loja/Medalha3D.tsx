@@ -9,7 +9,7 @@
  * Os GLBs vêm do Blender com a face para cima (+Y no glTF): girar 90° em X deixa a face para a câmera.
  * As rotações do Filament são aplicadas na ordem X, Y, Z (no mundo), então Y gira em torno da vertical.
  */
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { env } from '@/config/env';
@@ -29,6 +29,8 @@ export function Medalha3D({ souvenir, tamanho }: { souvenir: Souvenir; tamanho: 
   // Vitrine 3D desligada em Ferramentas de desenvolvimento: só o render 2D.
   const url = ligada ? urlDoModelo(souvenir) : null;
   const [pronto, setPronto] = useState(false);
+  // Estável: a cena 3D não re-renderiza quando a imagem 2D some.
+  const aoFicarPronto = useCallback(() => setPronto(true), []);
   return (
     <View
       style={{ width: tamanho, height: tamanho }}
@@ -40,7 +42,7 @@ export function Medalha3D({ souvenir, tamanho }: { souvenir: Souvenir; tamanho: 
       {pronto ? null : <Medalha souvenir={souvenir} tamanho={tamanho} />}
       {url ? (
         <View style={StyleSheet.absoluteFill}>
-          <CenaCarregada url={url} onPronto={() => setPronto(true)} />
+          <CenaCarregada url={url} onPronto={aoFicarPronto} />
         </View>
       ) : null}
     </View>
@@ -51,8 +53,8 @@ export function Medalha3D({ souvenir, tamanho }: { souvenir: Souvenir; tamanho: 
  * O Filament só é carregado quando a vitrine 3D está ligada: desligada, nenhum código dele roda
  * (nem na importação), para isolar o fechamento da build-71/72.
  */
-function CenaCarregada(props: { url: string; onPronto: () => void }) {
+const CenaCarregada = memo(function CenaCarregada(props: { url: string; onPronto: () => void }) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { CenaFilament } = require('./CenaFilament') as typeof import('./CenaFilament');
   return <CenaFilament {...props} />;
-}
+});
