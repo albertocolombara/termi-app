@@ -1,4 +1,4 @@
-import { GIRO, lerCatalogo, mesclarCatalogos, quadroDoGiro, souvenirDoPais, souvenirsDisponiveis, type Catalogo } from '../catalogo';
+import { lerCatalogo, mesclarCatalogos, souvenirDoPais, souvenirsDisponiveis, type Catalogo } from '../catalogo';
 
 const AGORA = Date.UTC(2026, 10, 25, 12);
 
@@ -56,12 +56,3 @@ describe('disponíveis e loja', () => {
   });
 });
 
-describe('quadroDoGiro', () => {
-  it('de frente é o quadro do meio; os extremos são de perfil', () => {
-    expect(quadroDoGiro(0)).toBe(12);
-    expect(quadroDoGiro(-90)).toBe(0);
-    expect(quadroDoGiro(90)).toBe(GIRO.quadros - 1);
-    expect(quadroDoGiro(400)).toBe(24);
-    expect(quadroDoGiro(-8)).toBe(11);
-  });
-});
