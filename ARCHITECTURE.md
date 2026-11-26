@@ -71,7 +71,7 @@ flowchart LR
 | Janela | **@shopify/react-native-skia** (shader SkSL) | [Decidido] | Céu, terra, nuvens, asa e moldura |
 | Animação de UI | **react-native-reanimated** 4 + worklets | [Decidido] | Animações e, a seguir, o ritmo da janela na thread de interface |
 | Mascote | **Rive** (`.riv`, view model "Termi") | [Decidido] | Animações do Termi |
-| Souvenirs 3D | **react-native-filament** | [Proposta] | Vitrine 3D com gesto de girar |
+| Souvenirs 3D | Cena three.js numa **react-native-webview** (ADR-12) | [Decidido] | Vitrine 3D com gesto de girar |
 | Avisos | **expo-notifications** com gatilho de alarme exato (`setAlarmClock`) | [Decidido] | Pouso, início e fim do serviço de bordo. Sons: sinal de apertar cintos (`assets/sons/aviso_cinto.ogg`) e aviso da comissária no pouso (`aviso_pouso.ogg`: sinal, voz gerada no ElevenLabs e som da cabine). **Com o som de fundo tocando**, quem toca os dois é o próprio app (FlightSoundService): o som de fundo baixa para 20% com fade 1 s antes, o sinal toca no volume de mídia (Ajustes > Volume do sinal) e o som volta; no pouso, depois do aviso, o som de fundo sai. As notificações desses momentos vêm sem som (`servico-sem-som`, `pouso-sem-som`). **Sem som de fundo** (Silêncio), o som vem da notificação, no volume de alarme (`servico-alarme`, `pouso-comissaria`). Os avisos são reagendados quando isso muda no meio do voo (SomDoVoo). Decidido pelo Alberto em 25/11/2026, depois de o som pelo canal de notificação não tocar na build-58 |
 | Sons de fundo | Serviço nativo próprio (`FlightSoundService`, ExoPlayer) no Android; **expo-audio** no iOS. Loops AAC em `assets/sons`; lofi em streaming do R2 | [Decidido] (20/11/2026) | Voo de cruzeiro e ruído branco (grátis); motores, cabine, chuva e lofi (primeira classe). Seção 10 |
 | Notificação fixa | Módulo nativo próprio em Kotlin (`modules/screen-state`, Expo Modules API, do protótipo) | [Decidido] | Contagem regressiva até o pouso |
@@ -83,6 +83,7 @@ flowchart LR
 | Estado de UI | **Zustand** | [Decidido] | Sessão ativa e estado global leve |
 | Dados remotos | **TanStack Query** | [Decidido] | Cache, idade e retentativa dos JSON de voos |
 | Mapa/globo | Globo em Skia (SkSL) com blocos da NASA GIBS | [Decidido] | Ver ADR-11 e `src/globo` |
+| Fuso horário | `@photostructure/tz-lookup` (JS puro, CC0, ~90 KB, sem rede) | [Decidido] | "Hora local" no voo: fuso da posição do avião (`src/domain/voos/horaLocal.ts`), pedido do Alberto em 26/11/2026 |
 | Fontes | expo-font (Geist 400/500/600, Geist Pixel Grid) | [Decidido] | Tipografia do design system |
 | Desfoque | expo-blur | [Proposta] | Efeito "Glass/Blur 12" |
 | i18n | expo-localization + biblioteca de mensagens | [Proposta] | pt-BR no lançamento, en depois |
