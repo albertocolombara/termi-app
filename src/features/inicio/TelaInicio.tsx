@@ -16,6 +16,7 @@ import { useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
 import { resumoDoDiario, rotasVoadas, dataRelativa, type VooDoDiario } from '@/domain/historico/historico';
 import { Avatar, Button, Cauda, color, Icon, Plus, radius, screenGutter, space, Text } from '@/ds';
 import { GloboDeRotas } from '@/globo-rotas/GloboDeRotas';
+import { statusDeViajante } from '@/domain/status/niveis';
 import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
@@ -64,7 +65,7 @@ export function TelaInicio() {
                 {saudacao(agora)}
               </Text>
               <Text variant="Body/Large 16" tone="secondary" style={{ letterSpacing: 0, lineHeight: 24 }}>
-                {t('inicio.viajante')}
+                {statusDeViajante(resumo.milhas).atual.nome}
               </Text>
             </View>
           </Pressable>

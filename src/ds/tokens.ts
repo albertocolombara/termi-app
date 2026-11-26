@@ -187,6 +187,9 @@ export const color = {
 export const loja = {
   luzDaVitrine: 'rgba(255,204,64,0.05)', // bem leve (Alberto, build-70)
   reflexo: 'rgba(255,255,255,0.05)',
+  /** Luz fria atrás da medalha em destaque na mala (Figma M1b: "Luz de vitrine"). */
+  luzDaMala: 'rgba(219,227,240,0.13)',
+  sombraDaMala: 'rgba(0,0,0,1)',
   sombra: 'rgba(0,0,0,0.45)',
   metal: {
     niquel: { claro: '#EDEDF0', escuro: '#8E8E96', texto: '#3A3A40' },

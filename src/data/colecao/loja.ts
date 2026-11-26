@@ -71,3 +71,14 @@ export async function comprarSouvenir(db: BancoDaLoja, p: PedidoDeCompra): Promi
 export async function pousosCompletos(db: Leitura): Promise<PousoCompleto[]> {
   return db.getAllAsync<PousoCompleto>('SELECT pais, cidade, aeroporto, data FROM carimbos WHERE sessao_id IS NOT NULL ORDER BY data DESC');
 }
+
+export type SouvenirDaMala = { souvenirId: string; compradoEm: number; sessaoId: string | null; preco: number };
+
+/** Um souvenir comprado (M1b: onde, em qual voo e por quanto). null se não está na mala. */
+export async function souvenirDaMala(db: Leitura, souvenirId: string): Promise<SouvenirDaMala | null> {
+  const r = await db.getFirstAsync<{ souvenir_id: string; comprado_em: number; sessao_id: string | null; preco: number }>(
+    'SELECT souvenir_id, comprado_em, sessao_id, preco FROM souvenirs_na_mala WHERE souvenir_id = ?',
+    souvenirId,
+  );
+  return r ? { souvenirId: r.souvenir_id, compradoEm: r.comprado_em, sessaoId: r.sessao_id, preco: r.preco } : null;
+}
