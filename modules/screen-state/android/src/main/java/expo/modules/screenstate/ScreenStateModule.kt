@@ -1,5 +1,7 @@
 package expo.modules.screenstate
 
+import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -133,6 +135,15 @@ class ScreenStateModule : Module() {
     }
 
     /** Para o som; a notificação do voo fica (com a contagem) se o voo continua. */
+    // Diagnóstico (ferramenta de desenvolvimento): os últimos fechamentos do app, como o Android
+    // registrou (Android 11+). Em erro de Java/JS vem a mensagem; em erro nativo, os nomes legíveis
+    // da pilha (o tombstone é binário). Nada de dados pessoais: só motivo, hora e pilha.
+    Function("recentExits") {
+      if (Build.VERSION.SDK_INT < 30) return@Function emptyList<Map<String, Any>>()
+      val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+      am.getHistoricalProcessExitReasons(context.packageName, 0, 5).map { info -> saidaParaMapa(info) }
+    }
+
     Function("stopFlightSound") {
       FlightSoundService.parar(removerNotificacao = false)
       main.post { FlightSoundService.instance?.finish(removeNotification = false) }
@@ -141,4 +152,49 @@ class ScreenStateModule : Module() {
 
   private val main = Handler(Looper.getMainLooper())
 
+
+  private fun saidaParaMapa(info: ApplicationExitInfo): Map<String, Any> {
+    val motivo = when (info.reason) {
+      ApplicationExitInfo.REASON_CRASH -> "crash"
+      ApplicationExitInfo.REASON_CRASH_NATIVE -> "crash_nativo"
+      ApplicationExitInfo.REASON_ANR -> "anr"
+      ApplicationExitInfo.REASON_LOW_MEMORY -> "memoria"
+      ApplicationExitInfo.REASON_USER_REQUESTED -> "usuario"
+      ApplicationExitInfo.REASON_EXIT_SELF -> "saiu"
+      ApplicationExitInfo.REASON_SIGNALED -> "sinal"
+      else -> "outro_${info.reason}"
+    }
+    var pilha = ""
+    try {
+      info.traceInputStream?.use { entrada ->
+        val bytes = entrada.readBytes().let { if (it.size > 512_000) it.copyOf(512_000) else it }
+        pilha = if (info.reason == ApplicationExitInfo.REASON_CRASH_NATIVE) textoLegivel(bytes) else String(bytes).take(12_000)
+      }
+    } catch (_: Exception) {
+    }
+    return mapOf(
+      "motivo" to motivo,
+      "quando" to info.timestamp.toDouble(),
+      "descricao" to (info.description ?: ""),
+      "pss" to info.pss.toDouble(),
+      "pilha" to pilha,
+    )
+  }
+
+  /** Trechos de texto (4+ caracteres legíveis) de um tombstone binário: nomes de bibliotecas e funções. */
+  private fun textoLegivel(bytes: ByteArray): String {
+    val partes = ArrayList<String>()
+    val atual = StringBuilder()
+    for (b in bytes) {
+      val c = b.toInt() and 0xff
+      if (c in 32..126) {
+        atual.append(c.toChar())
+      } else {
+        if (atual.length >= 4) partes.add(atual.toString())
+        atual.setLength(0)
+      }
+    }
+    if (atual.length >= 4) partes.add(atual.toString())
+    return partes.joinToString("\n").take(12_000)
+  }
 }

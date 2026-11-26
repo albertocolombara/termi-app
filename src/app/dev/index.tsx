@@ -5,12 +5,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActionRow, color, screenGutter, space, ToggleRow, TopBar } from '@/ds';
 import { t } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
+import { useTrocarVitrine3d, useVitrine3d } from '@/services/diagnostico';
 
 /** Ferramentas de desenvolvimento (só em builds de teste). Saíram do Início com o Início v3. */
 export default function FerramentasDev() {
   const insets = useSafeAreaInsets();
   const classe = useClasse();
   const trocarClasse = useTrocarClasseDeTeste();
+  const vitrine3d = useVitrine3d();
+  const trocarVitrine3d = useTrocarVitrine3d();
   return (
     <ScrollView
       style={{ backgroundColor: color.bg.app }}
@@ -24,6 +27,8 @@ export default function FerramentasDev() {
           value={classe === 'primeira'}
           onChange={(v) => trocarClasse(v ? 'primeira' : 'economica')}
         />
+        <ToggleRow title={t('dev.vitrine3d')} description={t('dev.vitrine3dDescricao')} value={vitrine3d} onChange={trocarVitrine3d} />
+        <ActionRow icon="settings" title={t('dev.diagnostico')} description={t('dev.diagnosticoDescricao')} onPress={() => router.push('/dev/diagnostico')} />
         <ActionRow icon="settings" title={t('dev.designSystem')} description={t('dev.designSystemDescricao')} onPress={() => router.push('/dev/design-system')} />
         <ActionRow icon="windowView" title={t('dev.janela')} description={t('dev.janelaDescricao')} onPress={() => router.push('/dev/janela')} />
         <ActionRow icon="globe" title={t('dev.globo')} description={t('dev.globoDescricao')} onPress={() => router.push('/dev/globo')} />
