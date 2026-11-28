@@ -330,7 +330,7 @@ function useTecladoAberto() {
 
 const styles = StyleSheet.create({
   cabecalhoDasTarefas: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  divisor: { height: 1, backgroundColor: color.border.subtle },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[10], minHeight: 48 },
   marcar: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[10], minHeight: 48 },
   feita: { textDecorationLine: 'line-through' },
@@ -343,11 +343,11 @@ const styles = StyleSheet.create({
     color: color.text.primary,
     borderWidth: 1,
     borderColor: color.border.accent,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: color.bg.system,
   },
   adicionar: { alignSelf: 'flex-start', paddingVertical: space[12] },
   acoesDaTarefa: { flexDirection: 'row', alignItems: 'center', gap: space[16] },
   acao: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
-  objetivo: { gap: space[6], padding: space[16], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  objetivo: { gap: space[6], padding: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
 });

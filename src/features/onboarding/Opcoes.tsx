@@ -96,8 +96,8 @@ function Radio({ marcada }: { marcada: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  cartao: { borderRadius: radius['2xl'], borderWidth: 1, borderColor: color.border.default, backgroundColor: color.surface.default, overflow: 'hidden' },
-  divisor: { height: 1, backgroundColor: color.border.default },
+  cartao: { borderRadius: radius.card, backgroundColor: color.surface.card, overflow: 'hidden' },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[20], paddingHorizontal: space[20] },
   pressionada: { opacity: 0.8 },
   fundoMarcado: { backgroundColor: color.onboarding.opcaoMarcada },

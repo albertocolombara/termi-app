@@ -62,9 +62,11 @@ export function FolhaInfoDoVoo({
         <FotoDoAviao hex={voo.hex} ativo={visivel} />
         <View style={styles.rota} accessible accessibilityLabel={`${t('infoDoVoo.rota')}: ${nomeDoLugar(voo.origem)} → ${nomeDoLugar(voo.destino)}`}>
           <Lugar codigo={codigoDoLugar(voo.origem)} cidade={nomeDoLugar(voo.origem)} />
-          <Text variant="Body/Medium 14" tone="tertiary">
-            →
-          </Text>
+          <View style={styles.rotaLinha} pointerEvents="none">
+            <View style={styles.rotaPonto} />
+            <View style={styles.rotaTraco} />
+            <View style={styles.rotaPonto} />
+          </View>
           <Lugar codigo={codigoDoLugar(voo.destino)} cidade={nomeDoLugar(voo.destino)} direita />
         </View>
 
@@ -142,16 +144,19 @@ function Bloco({ rotulo, valor, largo }: { rotulo: string; valor: string; largo?
 }
 
 const styles = StyleSheet.create({
-  foto: { width: '100%', borderRadius: radius.xl, overflow: 'hidden', backgroundColor: color.surface.default },
+  foto: { width: '100%', borderRadius: radius.card, overflow: 'hidden', backgroundColor: color.surface.card },
   rota: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
+  rotaLinha: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[4] },
+  rotaPonto: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: color.accent.default },
+  rotaTraco: { flex: 1, height: 1.5, backgroundColor: color.border.default },
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
   bloco: {
     flexBasis: '48%',
     flexGrow: 1,
     gap: space[4],
     padding: space[12],
-    borderRadius: radius.md,
-    backgroundColor: color.surface.strong,
+    borderRadius: radius.lg,
+    backgroundColor: color.surface.card,
   },
   blocoLargo: { flexBasis: '100%' },
 });

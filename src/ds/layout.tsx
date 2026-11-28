@@ -60,7 +60,7 @@ export function TopBar({ title, onBack, time, step, saldo, saldoAcessivel }: Top
         ) : null}
         {saldo ? (
           <View style={styles.saldo} accessible accessibilityLabel={saldoAcessivel ?? saldo}>
-            <Text variant="Label/Strong 14">{saldo}</Text>
+            <Text variant="Label/Strong 14" tone="accent">{saldo}</Text>
           </View>
         ) : null}
       </View>
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   back: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
   time: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
-  saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, borderWidth: 1, borderColor: C.border.subtle },
+  saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: C.accent.badge },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,8 +195,10 @@ const styles = StyleSheet.create({
   sheetRoot: { flex: 1, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: C.bg.sheet,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: C.border.subtle,
     paddingTop: space[12],
     paddingHorizontal: space[16],
     gap: space[16],
@@ -206,5 +208,5 @@ const styles = StyleSheet.create({
   // Continuação do fundo abaixo da borda inferior da tela.
   sheetAbaixo: { position: 'absolute', top: '100%', left: 0, right: 0, height: 400, backgroundColor: C.bg.sheet },
   // Alça centralizada no topo, como no Material Design 3.
-  handle: { width: 40, height: 4, borderRadius: radius.xs, backgroundColor: C.surface.track, alignSelf: 'center' },
+  handle: { width: 36, height: 4, borderRadius: radius.full, backgroundColor: C.surface.track, alignSelf: 'center' },
 });

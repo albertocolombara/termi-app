@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
   conteudo: { flex: 1, paddingHorizontal: screenGutter },
   progresso: { flexDirection: 'row', gap: space[8], paddingHorizontal: screenGutter },
-  traco: { flex: 1, height: 4, borderRadius: radius.xs },
+  traco: { flex: 1, height: 3, borderRadius: radius.full },
   rodape: { paddingHorizontal: screenGutter, paddingTop: space[16] },
   // Área do link "Já conheço o Termi" / "Agora não" (48 dp de toque), reservada mesmo sem link.
   link: { height: 48, marginTop: space[4], alignItems: 'center', justifyContent: 'center' },
