@@ -7,9 +7,10 @@
  * - das "Lojas" (L2), só com o país: no Plus compra a qualquer hora; na econômica o botão leva ao Plus.
  * A compra é uma transação só (`data/colecao/loja`), que confere as regras de novo antes de gravar.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import Animated, { FadeIn, ReduceMotion, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, Ellipse, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -20,6 +21,7 @@ import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
 import { pousouNoPais, precoNaLoja, situacaoDaCompra } from '@/domain/colecao/loja';
 import { Button, color, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
+import { motion } from '@/ds/motion';
 import { nomeDoLugar } from '@/features/voo/formato';
 import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
@@ -28,11 +30,14 @@ import { FolhaMalaCheia } from './FolhaMalaCheia';
 import { VitrineMedalha } from './VitrineMedalha';
 
 const ALTURA_DA_VITRINE = 232;
+const COMPRA_ENTER = FadeIn.duration(200).reduceMotion(ReduceMotion.System);
 
 export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?: string }) {
   const insets = useSafeAreaInsets();
   const [agora] = useState(() => Date.now());
   const [malaCheiaAberta, setMalaCheiaAberta] = useState(false);
+  const escalaMedalha = useSharedValue(1);
+  const jaTinhaNaMala = useRef<boolean | null>(null);
   const catalogo = useCatalogo();
   const classe = useClasse();
   const sessao = useSessaoEncerrada(sessaoId);
@@ -59,9 +64,25 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
     />
   );
 
+  const origem = doPouso ? 'pouso' : 'lojas';
+  const situacao = souvenir ? situacaoDaCompra({ souvenir, naMala: mala.data ?? [], saldo, classe, origem }) : null;
+  const naMalaAgora = situacao?.tipo === 'na_mala';
+  useEffect(() => {
+    if (jaTinhaNaMala.current === false && naMalaAgora) {
+      escalaMedalha.set(
+        withSequence(
+          withTiming(1.06, { duration: 140, easing: motion.easing.easeOut, reduceMotion: ReduceMotion.System }),
+          withSpring(1, motion.spring.settle),
+        ),
+      );
+    }
+    if (situacao) jaTinhaNaMala.current = naMalaAgora;
+  }, [naMalaAgora, situacao, escalaMedalha]);
+  const estiloMedalha = useAnimatedStyle(() => ({ transform: [{ scale: escalaMedalha.get() }] }));
+
   const carregando = mala.isPending || contagens.isPending || pousos.isPending || (!!sessaoId && sessao.isPending);
   const aviso = carregando ? t('loja.carregando') : !souvenir ? t('loja.semSouvenir') : !doPouso && !pousouNoPais(pousos.data ?? [], pais) ? t('loja.semPouso') : null;
-  if (aviso || !souvenir) {
+  if (aviso || !souvenir || !situacao) {
     return (
       <View style={[styles.tela, { paddingTop: insets.top + space[6], paddingHorizontal: screenGutter, gap: space[24] }]}>
         {topo}
@@ -70,9 +91,7 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
     );
   }
 
-  const origem = doPouso ? 'pouso' : 'lojas';
   const preco = precoNaLoja(souvenir, origem);
-  const situacao = situacaoDaCompra({ souvenir, naMala: mala.data ?? [], saldo, classe, origem });
   const comprar = () => {
     if (situacao.tipo === 'mala_cheia') return setMalaCheiaAberta(true);
     compra.mutate(
@@ -98,7 +117,9 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
             </View>
 
             <Vitrine>
-              <VitrineMedalha souvenir={souvenir} tamanho={176} />
+              <Animated.View style={estiloMedalha}>
+                <VitrineMedalha souvenir={souvenir} tamanho={176} />
+              </Animated.View>
             </Vitrine>
 
             <View style={styles.ficha}>
@@ -155,12 +176,12 @@ function Acoes({
   switch (situacao.tipo) {
     case 'na_mala':
       return (
-        <View style={styles.acoes}>
+        <Animated.View entering={COMPRA_ENTER} style={styles.acoes}>
           <Text variant="Label/Medium 14" tone="secondary" style={{ textAlign: 'center' }}>
             {`✓ ${t('loja.naMala')}`}
           </Text>
           <Button variant="secondary" icon={null} label={t('loja.verNaMala')} onPress={() => router.push('/mala')} />
-        </View>
+        </Animated.View>
       );
     case 'falta_saldo':
       return (

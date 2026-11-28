@@ -6,12 +6,22 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import Animated, { cubicBezier, FadeIn, LinearTransition, ReduceMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomSheet, Button, color, Icon, screenGutter, space, Text, TopBar } from '@/ds';
+import { motion } from '@/ds/motion';
 import { t, type ChaveDeTexto } from '@/i18n';
 
 import { LinhaComValor, Secao } from '../ajustes/Grupo';
+
+const FAQ_LAYOUT = LinearTransition.duration(200).easing(motion.easing.easeOut).reduceMotion(ReduceMotion.System);
+const FAQ_ENTER = FadeIn.duration(180).reduceMotion(ReduceMotion.System);
+const CHEVRON_TRANSITION = {
+  transitionProperty: 'transform',
+  transitionDuration: 180,
+  transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+} as const;
 
 const PERGUNTAS: [ChaveDeTexto, ChaveDeTexto][] = [
   ['ajuda.sairDoApp', 'ajuda.sairDoAppResposta'],
@@ -35,7 +45,7 @@ export function TelaAjuda() {
             {PERGUNTAS.map(([pergunta, resposta], i) => {
               const aqui = aberta === i;
               return (
-                <View key={pergunta} style={{ gap: space[8], paddingVertical: space[14] }}>
+                <Animated.View key={pergunta} layout={FAQ_LAYOUT} style={{ gap: space[8], paddingVertical: space[14] }}>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityState={{ expanded: aqui }}
@@ -46,16 +56,18 @@ export function TelaAjuda() {
                     <Text variant="Label/Medium 14" style={{ flex: 1 }}>
                       {t(pergunta)}
                     </Text>
-                    <View style={{ transform: [{ rotate: aqui ? '-90deg' : '90deg' }] }}>
+                    <Animated.View style={[CHEVRON_TRANSITION, { transform: [{ rotate: aqui ? '-90deg' : '90deg' }] }]}>
                       <Icon name="chevronRight" color={aqui ? color.accent.default : color.text.muted} />
-                    </View>
+                    </Animated.View>
                   </Pressable>
                   {aqui ? (
-                    <Text variant="Body/Small 13" tone="secondary">
-                      {t(resposta)}
-                    </Text>
+                    <Animated.View entering={FAQ_ENTER}>
+                      <Text variant="Body/Small 13" tone="secondary">
+                        {t(resposta)}
+                      </Text>
+                    </Animated.View>
                   ) : null}
-                </View>
+                </Animated.View>
               );
             })}
           </Secao>

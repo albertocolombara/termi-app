@@ -1,13 +1,20 @@
 /** Conteúdo e ações compactas (Figma: seções 06 · Ações e 08 · Conteúdo). */
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { interpolateColor, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { cubicBezier, interpolateColor, useAnimatedStyle, useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { Icon, Suitcase, type IconName } from './Icon';
 import { Radio } from './controls';
 import { useStateProgress } from './motion';
 import { Text } from './Text';
 import { color as C, fontFamily, gold, radius, space } from './tokens';
+
+const ICON_PRESS_TRANSITION = {
+  transform: [{ scale: 1 }],
+  transitionProperty: 'transform',
+  transitionDuration: 120,
+  transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+} as const;
 
 // ───────── Superfícies douradas (selos de 1ª classe) ─────────
 // Gradiente nativo do React Native (CSS `linear-gradient`), da esquerda para a direita como no Figma.
@@ -148,15 +155,22 @@ export type IconButtonProps = {
 export const ICON_BUTTON_SIZE = 44;
 
 export function IconButton({ icon, accessibilityLabel, onPress, indicator, style }: IconButtonProps) {
+  const [pressed, setPressed] = useState(false);
+  const reduced = useReducedMotion();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      pressRetentionOffset={16}
       onPress={onPress}
-      style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.8 }, style]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={style}
     >
-      <Icon name={icon} />
-      {indicator ? <View style={styles.indicator} /> : null}
+      <Animated.View style={[styles.iconButton, ICON_PRESS_TRANSITION, !reduced && pressed && styles.iconButtonPressed, pressed && { opacity: 0.85 }]}>
+        <Icon name={icon} />
+        {indicator ? <View style={styles.indicator} /> : null}
+      </Animated.View>
     </Pressable>
   );
 }
@@ -337,6 +351,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconButtonPressed: { transform: [{ scale: 0.96 }] },
   indicator: {
     position: 'absolute',
     top: -4,

@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { router } from 'expo-router';
+import Animated, { cubicBezier } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCarimbos, useVoosEncerrados } from '@/data/historico/useHistorico';
@@ -15,6 +16,11 @@ import { t } from '@/i18n';
 import { CarimboDoPassaporte, dataDoCarimbo } from './CarimboDoPassaporte';
 
 const POR_PAGINA = 9;
+const DOT_TRANSITION = {
+  transitionProperty: 'all',
+  transitionDuration: 200,
+  transitionTimingFunction: cubicBezier(0.77, 0, 0.175, 1),
+} as const;
 /** Giro de cada posição da página (Figma M2), para os carimbos parecerem batidos à mão. */
 const GIROS = [-8, 6, -4, -10, 7, -6, 4, 9, -3];
 
@@ -92,7 +98,7 @@ export function TelaPassaporte() {
         {paginas.length > 1 ? (
           <View style={styles.paginas}>
             {paginas.map((_, i) => (
-              <View key={i} style={[styles.indicador, i === pagina && styles.indicadorAtivo]} />
+              <Animated.View key={i} style={[styles.indicador, DOT_TRANSITION, i === pagina && styles.indicadorAtivo]} />
             ))}
           </View>
         ) : null}

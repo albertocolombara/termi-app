@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router, useIsFocused } from 'expo-router';
+import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useContagens, useVoosEncerrados } from '@/data/historico/useHistorico';
@@ -28,8 +29,17 @@ import { MenuLateral } from './MenuLateral';
 import { useAvisosDePouso } from './useAvisosDePouso';
 import { useRepetirVoo } from './useRepetirVoo';
 
+const RAPIDO_PRESS_TRANSITION = {
+  transform: [{ scale: 1 }],
+  transitionProperty: 'transform',
+  transitionDuration: 120,
+  transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+} as const;
+
 export function TelaInicio() {
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
+  const [rapidoPressionado, setRapidoPressionado] = useState(false);
   const { width } = useWindowDimensions();
   const focada = useIsFocused();
   const classe = useClasse();
@@ -181,19 +191,30 @@ export function TelaInicio() {
               accessibilityRole="button"
               accessibilityLabel={t('inicio.repetirAcessivel', { duracao: duracao(ultimo.tempoEscolhidoMin) })}
               accessibilityState={{ busy: procurando, disabled: procurando }}
+              pressRetentionOffset={16}
               disabled={procurando}
               onPress={() => repetir(ultimo.tempoEscolhidoMin)}
-              style={({ pressed }) => [styles.botaoRapido, (pressed || procurando) && { opacity: 0.75 }]}
+              onPressIn={() => setRapidoPressionado(true)}
+              onPressOut={() => setRapidoPressionado(false)}
             >
-              <Icon name="departures" size={18} color={color.accent.default} />
-              <View>
-                <Text variant="Label/Medium 14" numberOfLines={1}>
-                  {duracao(ultimo.tempoEscolhidoMin)}
-                </Text>
-                <Text variant="Caption/Regular 12" tone="tertiary" style={{ fontSize: 11, lineHeight: 14 }}>
-                  Rápido
-                </Text>
-              </View>
+              <Animated.View
+                style={[
+                  styles.botaoRapido,
+                  RAPIDO_PRESS_TRANSITION,
+                  !reduced && rapidoPressionado && !procurando && { transform: [{ scale: 0.96 }] },
+                  (rapidoPressionado || procurando) && { opacity: 0.8 },
+                ]}
+              >
+                <Icon name="departures" size={18} color={color.accent.default} />
+                <View>
+                  <Text variant="Label/Medium 14" numberOfLines={1}>
+                    {duracao(ultimo.tempoEscolhidoMin)}
+                  </Text>
+                  <Text variant="Caption/Regular 12" tone="tertiary" style={{ fontSize: 11, lineHeight: 14 }}>
+                    Rápido
+                  </Text>
+                </View>
+              </Animated.View>
             </Pressable>
             <Button label={t('inicio.novoVoo')} onPress={() => router.push('/voo')} style={{ flex: 1 }} />
           </View>

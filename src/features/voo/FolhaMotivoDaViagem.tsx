@@ -10,6 +10,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition, ReduceMotion } from 'react-native-reanimated';
 
 import {
   adicionarTarefa,
@@ -23,7 +24,12 @@ import {
   type Tarefa,
 } from '@/domain/sessao/motivo';
 import { BottomSheet, Button, CategoriaFiltro, CategoriaTag, Checkbox, color, Icon, radius, space, Text, TextField, typography, type IconName } from '@/ds';
+import { motion } from '@/ds/motion';
 import { t } from '@/i18n';
+
+const TAREFA_LAYOUT = LinearTransition.duration(200).easing(motion.easing.easeOut).reduceMotion(ReduceMotion.System);
+const TAREFA_ENTER = FadeIn.duration(160).reduceMotion(ReduceMotion.System);
+const TAREFA_EXIT = FadeOut.duration(140).reduceMotion(ReduceMotion.System);
 
 const ICONE: Record<Categoria, IconName> = {
   estudo: 'categoriaEstudo',
@@ -124,7 +130,7 @@ export function FolhaMotivoDaViagem({
         </View>
         <View>
           {motivo.tarefas.map((tarefa, i) => (
-            <View key={`${i}-${tarefa.texto}`}>
+            <Animated.View key={`${i}-${tarefa.texto}`} layout={TAREFA_LAYOUT} entering={TAREFA_ENTER} exiting={TAREFA_EXIT}>
               {i > 0 ? <View style={styles.divisor} /> : null}
               {editando?.indice === i ? (
                 <LinhaEmEdicao
@@ -143,10 +149,10 @@ export function FolhaMotivoDaViagem({
                   }}
                 />
               )}
-            </View>
+            </Animated.View>
           ))}
           {editando?.indice === -1 ? (
-            <View>
+            <Animated.View layout={TAREFA_LAYOUT} entering={TAREFA_ENTER} exiting={TAREFA_EXIT}>
               {n > 0 ? <View style={styles.divisor} /> : null}
               <LinhaEmEdicao
                 texto={editando.texto}
@@ -155,7 +161,7 @@ export function FolhaMotivoDaViagem({
                 onConfirmar={confirmar}
                 onExcluir={() => excluir(-1)}
               />
-            </View>
+            </Animated.View>
           ) : null}
         </View>
       </View>
