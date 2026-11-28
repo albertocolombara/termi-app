@@ -11,12 +11,19 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
-import Animated, { interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { cubicBezier, interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { Icon, type IconName } from './Icon';
 import { motion, timing, useStateProgress } from './motion';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space, typography } from './tokens';
+
+const CHIP_PRESS_TRANSITION = {
+  transform: [{ scale: 1 }],
+  transitionProperty: 'transform',
+  transitionDuration: 120,
+  transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+} as const;
 
 // ───────── Chip ─────────
 export type ChipProps = {
@@ -48,7 +55,7 @@ export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
       onPressOut={() => setPressed(false)}
       style={styles.chipHit}
     >
-      <Animated.View style={[styles.chip, styles.chipPressable, !reduced && pressed && styles.chipPressed, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
+      <Animated.View style={[styles.chip, CHIP_PRESS_TRANSITION, !reduced && pressed && styles.chipPressed, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
         <Animated.Text style={[typography[selected ? 'Label/Strong 14' : 'Label/Medium 14'], texto]}>{label}</Animated.Text>
       </Animated.View>
     </Pressable>
@@ -393,12 +400,6 @@ const styles = StyleSheet.create({
   categoriaPadrao: { borderColor: C.border.pillOutline },
   categoriaSelecionada: { borderColor: C.border.accent, backgroundColor: C.accent.container },
   chip: { borderRadius: radius.full },
-  chipPressable: {
-    transform: [{ scale: 1 }],
-    transitionProperty: 'transform',
-    transitionDuration: '120ms',
-    transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-  },
   chipPressed: { transform: [{ scale: 0.97 }] },
   chipLarge: { paddingVertical: 9, paddingHorizontal: space[14] },
   chipSmall: { paddingVertical: 7, paddingHorizontal: space[12] },

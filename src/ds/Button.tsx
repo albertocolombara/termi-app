@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
+
+const PRESS_TRANSITION = {
+  transform: [{ scale: 1 }],
+  transitionProperty: 'transform',
+  transitionDuration: 120,
+  transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+} as const;
 
 export type ButtonVariant = 'primary' | 'secondary' | 'link';
 export type ButtonSize = 'large' | 'medium' | 'small' | 'mini';
@@ -62,7 +69,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       <Animated.View
         style={[
           styles.base,
-          !isLink && styles.pressable,
+          !isLink && PRESS_TRANSITION,
           !reduced && !isLink && pressed && !isDisabled && styles.pressedScale,
           isLink
             ? [styles.link, pressed && styles.linkPressed]
@@ -100,12 +107,6 @@ function rotulo(size: ButtonSize) {
 
 const styles = StyleSheet.create({
   base: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
-  pressable: {
-    transform: [{ scale: 1 }],
-    transitionProperty: 'transform',
-    transitionDuration: '120ms',
-    transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
-  },
   pressedScale: {
     transform: [{ scale: 0.97 }],
   },
