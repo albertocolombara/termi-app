@@ -20,7 +20,7 @@ import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico'
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
 import { pousouNoPais, precoNaLoja, situacaoDaCompra } from '@/domain/colecao/loja';
-import { Button, color, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
+import { Button, color, Icon, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { motion } from '@/ds/motion';
 import { nomeDoLugar } from '@/features/voo/formato';
 import { t } from '@/i18n';
@@ -177,9 +177,12 @@ function Acoes({
     case 'na_mala':
       return (
         <Animated.View entering={COMPRA_ENTER} style={styles.acoes}>
-          <Text variant="Label/Medium 14" tone="secondary" style={{ textAlign: 'center' }}>
-            {`✓ ${t('loja.naMala')}`}
-          </Text>
+          <View style={styles.naMalaLinha}>
+            <Icon name="confirmacao" size={16} color={color.text.secondary} />
+            <Text variant="Label/Medium 14" tone="secondary">
+              {t('loja.naMala')}
+            </Text>
+          </View>
           <Button variant="secondary" icon={null} label={t('loja.verNaMala')} onPress={() => router.push('/mala')} />
         </Animated.View>
       );
@@ -274,4 +277,5 @@ const styles = StyleSheet.create({
     backgroundColor: color.accent.badge,
   },
   acoes: { gap: space[8] },
+  naMalaLinha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[6] },
 });

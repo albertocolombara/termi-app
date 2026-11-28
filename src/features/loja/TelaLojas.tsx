@@ -17,7 +17,7 @@ import { useCatalogo } from '@/data/colecao/catalogo';
 import { usePousosCompletos } from '@/data/colecao/useLoja';
 import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico';
 import { emPaginas, lojasDosPousos, precoNaLoja, type LojaDoPouso } from '@/domain/colecao/loja';
-import { Button, color, IndicadorDePaginas, InfoBanner, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
+import { Button, color, Icon, IndicadorDePaginas, InfoBanner, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
@@ -120,7 +120,12 @@ function Cartao({ loja, naMala, plus, agora, largura }: { loja: LojaDoPouso; naM
         </Text>
       </View>
       {naMala ? (
-        <Text variant="Label/Medium 14" tone="secondary">{`✓ ${t('loja.naMalaCartao')}`}</Text>
+        <View style={styles.naMalaLinha}>
+          <Icon name="confirmacao" size={14} color={color.text.secondary} />
+          <Text variant="Label/Medium 14" tone="secondary">
+            {t('loja.naMalaCartao')}
+          </Text>
+        </View>
       ) : plus ? (
         <View style={styles.preco}>
           <Text variant="Label/Strong 14" tone="accent">
@@ -169,4 +174,5 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface.card,
   },
   preco: { paddingVertical: space[4], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: color.accent.badge },
+  naMalaLinha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[4] },
 });

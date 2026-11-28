@@ -16,7 +16,7 @@ import { codigoDoLugar, km, nomeDoLugar } from './formato';
 import { useSomLiberado } from './somLiberado';
 import { useEmbarque, type EtapaDoEmbarque } from './useEmbarque';
 
-type Estado = 'feita' | 'atual' | 'pendente';
+export type EstadoDaEtapa = 'feita' | 'atual' | 'pendente';
 
 export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
   const insets = useSafeAreaInsets();
@@ -119,11 +119,13 @@ export function TelaEmbarque({ caminhoRapido }: { caminhoRapido: boolean }) {
       </View>
 
       <View style={{ gap: space[16] }}>
-        <View style={styles.etapas} accessibilityLiveRegion="polite">
-          <Etapa estado={estadoDa(etapa, 0)} texto={textoDaEtapa(etapa, 0)} />
-          <Etapa estado={estadoDa(etapa, 1)} texto={textoDaEtapa(etapa, 1)} />
-          <Etapa estado={estadoDa(etapa, 2)} texto={textoDaEtapa(etapa, 2)} />
-        </View>
+        <CartaoDeEtapas
+          etapas={[
+            { estado: estadoDa(etapa, 0), texto: textoDaEtapa(etapa, 0) },
+            { estado: estadoDa(etapa, 1), texto: textoDaEtapa(etapa, 1) },
+            { estado: estadoDa(etapa, 2), texto: textoDaEtapa(etapa, 2) },
+          ]}
+        />
         <View
           style={styles.trilho}
           accessible
@@ -177,7 +179,7 @@ function ordemDa(e: EtapaDoEmbarque): number {
   }
 }
 
-function estadoDa(e: EtapaDoEmbarque, i: number): Estado {
+function estadoDa(e: EtapaDoEmbarque, i: number): EstadoDaEtapa {
   const atual = ordemDa(e);
   return i < atual ? 'feita' : i === atual ? 'atual' : 'pendente';
 }
@@ -219,9 +221,20 @@ const SOM_ANTES_DO_FIM_MS = 700;
 const TERMI_MAX = 300;
 const TERMI_MIN = 140;
 
-const ICONE: Record<Estado, IconName> = { feita: 'checkStep', atual: 'loadingStep', pendente: 'pendingStep' };
+const ICONE: Record<EstadoDaEtapa, IconName> = { feita: 'checkStep', atual: 'loadingStep', pendente: 'pendingStep' };
 
-function Etapa({ estado, texto }: { estado: Estado; texto: string }) {
+/** Cartão de etapas de carregamento (05 · Embarcando e OB6 · Plano de voo), com ícones do DS (`checkStep`, `loadingStep` girando, `pendingStep`). */
+export function CartaoDeEtapas({ etapas }: { etapas: readonly { estado: EstadoDaEtapa; texto: string }[] }) {
+  return (
+    <View style={styles.etapas} accessibilityLiveRegion="polite">
+      {etapas.map((etapa, i) => (
+        <Etapa key={i} estado={etapa.estado} texto={etapa.texto} />
+      ))}
+    </View>
+  );
+}
+
+function Etapa({ estado, texto }: { estado: EstadoDaEtapa; texto: string }) {
   return (
     <View style={styles.etapa} accessible accessibilityLabel={texto} accessibilityState={{ busy: estado === 'atual', disabled: estado === 'pendente' }}>
       {estado === 'atual' ? <Girando /> : <Icon name={ICONE[estado]} />}

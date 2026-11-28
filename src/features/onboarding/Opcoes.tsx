@@ -27,7 +27,7 @@ export function OpcaoMarcavel({ icone, rotulo, marcada, onPress }: { icone: Icon
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={rotulo}
       onPress={onPress}
-      style={({ pressed }) => [styles.linha, { minHeight: 62 }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
+      style={({ pressed }) => [styles.linha, { minHeight: 58 }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
       <Icon name={icone} size={22} />
       <Text variant="Body/Large Medium 16" style={styles.rotulo}>

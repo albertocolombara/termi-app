@@ -24,7 +24,7 @@ export function TelaFoco() {
   const mudar = useOnboarding((s) => s.mudar);
   return (
     <TelaDoOnboarding etapa={1} rolar cta={{ label: t('onboarding.continuar'), onPress: () => router.push('/onboarding/tempo') }}>
-      <View style={{ gap: space[40] + space[24], paddingBottom: space[24] }}>
+      <View style={{ gap: space[24], paddingBottom: space[8] }}>
         <Cabecalho titulo={t('onboarding.focarTitulo')} texto={t('onboarding.focarTexto')} />
         <CartaoDeOpcoes>
           {CATEGORIAS.map((c) => (
