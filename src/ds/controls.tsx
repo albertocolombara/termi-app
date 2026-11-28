@@ -321,10 +321,12 @@ export type SliderProps = {
   format?: (v: number) => string;
   /** Cor da borda do controle; deve ser a cor do fundo onde o slider está (padrão: bg/sheet). */
   surface?: string;
+  /** Estado silenciado/inativo: usa preenchimento neutro em vez do destaque âmbar. */
+  muted?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Slider({ label, value, onChange, format = (v) => `${Math.round(v * 100)}%`, style }: SliderProps) {
+export function Slider({ label, value, onChange, format = (v) => `${Math.round(v * 100)}%`, muted, style }: SliderProps) {
   const [width, setWidth] = useState(0);
 
   // Recriado quando a largura ou o callback mudam; o sistema de toque usa sempre os handlers atuais.
@@ -361,11 +363,11 @@ export function Slider({ label, value, onChange, format = (v) => `${Math.round(v
         accessibilityValue={{ min: 0, max: 100, now: Math.round(v * 100) }}
         {...pan.panHandlers}
       >
-        <View pointerEvents="none" style={[styles.fill, { width: preenchido }]}>
-          {preenchido >= 18 ? <View style={styles.thumb} /> : null}
+        <View pointerEvents="none" style={[styles.fill, (muted || v === 0) && styles.fillMuted, { width: preenchido }]}>
+          {preenchido >= 18 ? <View style={[styles.thumb, (muted || v === 0) && styles.thumbMuted]} /> : null}
         </View>
         <View pointerEvents="none" style={styles.sliderPct}>
-          <Text variant="Caption/Medium 12" tone="secondary">
+          <Text variant="Caption/Medium 12" tone={muted || v === 0 ? 'tertiary' : 'primary'}>
             {format(v)}
           </Text>
         </View>
@@ -472,16 +474,22 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: 'rgba(255, 198, 41, 0.24)',
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingRight: 8,
+  },
+  fillMuted: {
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   thumb: {
     width: 3,
     height: 18,
     borderRadius: 2,
-    backgroundColor: C.text.primary,
+    backgroundColor: C.accent.default,
+  },
+  thumbMuted: {
+    backgroundColor: C.text.muted,
   },
   sliderPct: {
     position: 'absolute',

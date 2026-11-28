@@ -124,7 +124,7 @@ export function FolhaSons({
         </Text>
       ) : null}
       <View style={{ paddingTop: space[12] }}>
-        <Slider label={t('sons.volume')} value={volume} onChange={onVolume} />
+        <Slider label={t('sons.volume')} value={volume} onChange={onVolume} muted={mudo} />
       </View>
     </BottomSheet>
   );
