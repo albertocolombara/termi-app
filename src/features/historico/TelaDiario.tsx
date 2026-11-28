@@ -60,10 +60,10 @@ export function TelaDiario() {
                   <Text variant="Caption/Regular 12" tone="onPaper" style={{ opacity: 0.6 }}>
                     Tempo em foco este mês
                   </Text>
-                  {statsMes.sequencia > 0 ? (
+                  {statsMes.sequencia >= 2 ? (
                     <View style={styles.streakBadge}>
                       <Text variant="Caption/Medium 12" style={{ fontSize: 11 }}>
-                        {`${statsMes.sequencia >= 3 ? '🔥 ' : ''}${statsMes.sequencia}d ${statsMes.sequencia === 1 ? 'seguido' : 'seguidos'}`}
+                        {`${statsMes.sequencia >= 3 ? '🔥 ' : ''}${statsMes.sequencia}d seguidos`}
                       </Text>
                     </View>
                   ) : null}

@@ -111,13 +111,13 @@ export function TelaInicio() {
                 <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>{duracaoTotal(resumo.minutos)}</Text>
                 <Text variant="Caption/Regular 12" tone="tertiary">foco</Text>
               </View>
-              {hojeStats.sequencia > 0 ? (
+              {hojeStats.sequencia >= 2 ? (
                 <View style={styles.resumoPar}>
                   <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>
                     {`${hojeStats.sequencia >= 3 ? '🔥 ' : ''}${hojeStats.sequencia}d`}
                   </Text>
                   <Text variant="Caption/Regular 12" tone="tertiary">
-                    {hojeStats.sequencia === 1 ? 'seguido' : 'seguidos'}
+                    seguidos
                   </Text>
                 </View>
               ) : null}
