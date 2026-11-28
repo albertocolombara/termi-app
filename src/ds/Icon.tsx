@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import Svg, { Circle, ClipPath, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import { ICONES_V2 } from './iconesV2';
 import { color as C, gold } from './tokens';
 
 type Draw = (c: string) => React.ReactNode;
@@ -588,13 +589,26 @@ export const iconNames = Object.keys(ICONS) as IconName[];
 
 export type IconProps = { name: IconName; size?: number; color?: string };
 
-/** Ícone do sistema. `size` padrão = tamanho original do Figma. */
+/** Ícone do sistema (Design System v2 · 04 Iconography 24×24 quando disponível). */
 export function Icon({ name, size, color }: IconProps) {
   const def: IconDef = ICONS[name];
   const s = size ?? def.size ?? def.box;
+  const fg = color ?? def.color;
+  const v2 = name === 'arrowLeft' ? ICONES_V2.arrowRight : ICONES_V2[name];
+  if (v2 && v2.length > 0) {
+    return (
+      <Svg width={s} height={s} viewBox="0 0 24 24">
+        <G transform={name === 'arrowLeft' ? 'matrix(-1 0 0 1 24 0)' : undefined}>
+          {v2.map((d, i) => (
+            <Path key={i} d={d} fill={fg} fillRule="evenodd" clipRule="evenodd" />
+          ))}
+        </G>
+      </Svg>
+    );
+  }
   return (
     <Svg width={s} height={s} viewBox={`0 0 ${def.box} ${def.box}`}>
-      <G>{def.draw(color ?? def.color)}</G>
+      <G>{def.draw(fg)}</G>
     </Svg>
   );
 }

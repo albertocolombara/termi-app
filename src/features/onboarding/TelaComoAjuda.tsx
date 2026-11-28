@@ -2,7 +2,7 @@
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 
-import { color, Icon, space, Text, type IconName } from '@/ds';
+import { color, Icon, radius, space, Text, type IconName } from '@/ds';
 import { t } from '@/i18n';
 
 import { Cabecalho, TelaDoOnboarding } from './TelaDoOnboarding';
@@ -34,6 +34,12 @@ export function TelaComoAjuda() {
             </View>
           ))}
         </View>
+        <View style={styles.destaque}>
+          <Text variant="Label/Strong 14">{t('onboarding.ajudaDestaqueTitulo')}</Text>
+          <Text variant="Body/Small 13" tone="tertiary">
+            {t('onboarding.ajudaDestaqueTexto')}
+          </Text>
+        </View>
       </View>
     </TelaDoOnboarding>
   );
@@ -50,4 +56,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   texto: { flex: 1, gap: space[4] },
+  destaque: {
+    gap: space[6],
+    padding: space[16],
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
+  },
 });

@@ -843,6 +843,8 @@ export const ptBR = {
     ajuda2Texto: 'O serviço de bordo é o Pomodoro: até 5 min de pausa, e o voo segue no horário.',
     ajuda3: 'Progresso que você vê',
     ajuda3Texto: 'Milhas reais, carimbos e souvenirs dos lugares onde você pousou.',
+    ajudaDestaqueTitulo: 'Precisa do PDF ou da calculadora?',
+    ajudaDestaqueTexto: 'Saia do app à vontade. Seu voo continua e nenhum minuto se perde.',
     avisosTitulo: 'Te avisamos quando pousar.',
     avisosTexto: 'E quando o serviço de bordo começar, mesmo com o app fechado. Nada além disso.',
     ativarAvisos: 'Ativar avisos',

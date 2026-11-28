@@ -241,31 +241,30 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         <View pointerEvents="none" style={[styles.degradeBase, { height: Math.min(220, alturaDaPaisagem * 0.3) }]} />
       </View>
 
-      {/* Painel superior */}
+      {/* Painel superior (1:1 Figma 04A/04B · Cabine Limpa) */}
       <View
-        style={{ paddingTop: insets.top + space[24], paddingHorizontal: screenGutter }}
+        style={{ paddingTop: insets.top + space[16], paddingHorizontal: screenGutter }}
         pointerEvents="box-none"
         onLayout={(e) => setAlturaDoTopo(e.nativeEvent.layout.height)}
       >
         <View style={styles.linhaTopo} pointerEvents="box-none">
-          <View style={{ gap: space[16] }} pointerEvents="box-none">
-            {/* Toque no código do voo: "Sobre este voo" (pedido do Alberto, 24/11/2026). */}
+          <View style={{ gap: space[12], flex: 1, paddingRight: space[12] }} pointerEvents="box-none">
             <Pressable
               onPress={() => setVendoInfo(true)}
               accessibilityRole="button"
               accessibilityLabel={t('infoDoVoo.abrir', { voo: voo.callsign })}
               hitSlop={8}
-              style={({ pressed }) => [{ gap: space[6], alignSelf: 'flex-start' }, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: space[4], alignSelf: 'flex-start' }, pressed && { opacity: 0.7 }]}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
-                <Text variant="Body/Medium 14">{voo.callsign}</Text>
-                <Icon name="chevronRight" color={color.text.tertiary} />
-              </View>
-              {voo.companhiaNome ? (
-                <Text variant="Body/Medium 14" tone="tertiary">
-                  {voo.companhiaNome}
-                </Text>
-              ) : null}
+              <Text variant="Label/Medium 14" numberOfLines={1} style={{ flexShrink: 1 }}>
+                {voo.callsign}
+                {voo.companhiaNome ? (
+                  <Text variant="Body/Small 13" tone="tertiary">
+                    {` · ${voo.companhiaNome}`}
+                  </Text>
+                ) : null}
+              </Text>
+              <Icon name="chevronRight" size={14} color={color.text.tertiary} />
             </Pressable>
             <View style={{ alignSelf: 'flex-start' }}>
               <SegmentedControl
@@ -278,30 +277,14 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
               />
             </View>
           </View>
-          <View style={{ alignItems: 'flex-end', gap: space[6] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoMostrado, agora)), hora: horaLocal(pousoMostrado) })}>
-            <Text variant="Body/Medium 14" tone="secondary">
-              {t('emVoo.pousaEm')}
-            </Text>
+          <View style={{ alignItems: 'flex-end', gap: space[2] }} accessible accessibilityLabel={t('emVoo.pousaEmAcessivel', { duracao: duracaoPorExtenso(minutosAte(pousoMostrado, agora)), hora: horaLocal(pousoMostrado) })}>
             <Text variant="Heading/Screen 32" style={{ fontWeight: '500', letterSpacing: -1 }}>
               {prefixo}
               {duracao(minutosAte(pousoMostrado, agora))}
             </Text>
-            <Text variant="Body/Medium 14" tone="secondary">
-              {horaLocal(pousoMostrado)}
+            <Text variant="Caption/Regular 12" tone="tertiary">
+              {`pouso às ${horaLocal(pousoMostrado)}`}
             </Text>
-            {vista === 'janela' ? (
-              <IconButton
-                icon="windowView"
-                accessibilityLabel={t('vista.botao')}
-                onPress={() => setEscolhendoVista(true)}
-                indicator={classe !== 'primeira'}
-                style={{ marginTop: space[10] }}
-              />
-            ) : (
-              // Mesmo espaço do botão de vistas no globo: os avisos ficam no mesmo lugar nas duas
-              // vistas (Alberto, 25/11/2026). O "Centralizar" do globo é desenhado aqui por cima.
-              <View style={{ width: TAMANHO_DO_BOTAO, height: TAMANHO_DO_BOTAO, marginTop: space[10] }} />
-            )}
           </View>
         </View>
       </View>
@@ -372,34 +355,37 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             <ModoDoGlobo icone="planeta" rotulo={t('globo.planeta')} ativo={modoGlobo === 'planeta'} onPress={() => setModoGlobo('planeta')} />
           </View>
         ) : (
-          <View />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('vista.botao')}
+            onPress={() => setEscolhendoVista(true)}
+            style={({ pressed }) => [styles.botaoVista, pressed && { opacity: 0.8 }]}
+          >
+            <Icon name="windowView" size={16} color={color.text.primary} />
+            <Text variant="Caption/Medium 12" tone="primary">Vista</Text>
+            {classe !== 'primeira' ? <View style={styles.pontoVista} /> : null}
+          </Pressable>
         )}
-        {/* Ajustes acima do som (Alberto, build-31): o voo segue no horário com os Ajustes abertos. */}
+        {/* Barra horizontal de 3 ícones circulares (1:1 Figma 04A/04B · Cabine Limpa) */}
         <View style={styles.botoesDaDireita} pointerEvents="box-none">
           <IconButton icon="settings" accessibilityLabel={t('ajustes.abrir')} onPress={() => router.push('/ajustes')} />
-          {/* Motivo da viagem em voo (anotação do Figma v3): ver, marcar e editar as tarefas. */}
           <IconButton icon="logbook" accessibilityLabel={t('motivo.botaoEmVoo')} onPress={() => setVendoMotivo(true)} />
           <IconButton icon="speaker" accessibilityLabel={t('sons.botao')} onPress={() => setEscolhendoSom(true)} />
         </View>
       </View>
 
-      {/* Painel inferior ("Em voo / Painel inferior") */}
+      {/* Painel inferior ("Em voo / Cabine Limpa") */}
       <View
-        style={{ paddingHorizontal: screenGutter, paddingTop: space[16], paddingBottom: insets.bottom + space[24], gap: space[20] }}
+        style={{ paddingHorizontal: screenGutter, paddingTop: space[12], paddingBottom: insets.bottom + space[20], gap: space[16] }}
         onLayout={(e) => setAlturaDoPainel(e.nativeEvent.layout.height)}
       >
+        <View style={styles.alcaCabine} />
         <View style={styles.linha}>
           <Lugar cidade={origem} codigo={codigoDoLugar(voo.origem)} />
           <EmVooRota progresso={progressoDaRota} />
           <Lugar cidade={destino} codigo={codigoDoLugar(voo.destino)} direita />
         </View>
-        <View style={styles.linha}>
-          <Dado rotulo={t('emVoo.altitude')} valor={metros(pos.altitudePes) ?? '—'} />
-          <Dado rotulo={t('emVoo.velocidade')} valor={kmh(pos.noSolo ? 0 : voo.velocidadeNos)} />
-          {/* Hora de onde o avião está, com o fuso (Alberto, 26/11/2026). */}
-          <Dado rotulo={t('emVoo.horaLocal')} valor={horaDoVoo.fuso ? t('emVoo.horaComFuso', { hora: horaDoVoo.hora, fuso: horaDoVoo.fuso }) : horaDoVoo.hora} />
-        </View>
-        <View style={[styles.linha, { minHeight: 48 }]}>
+        <View style={[styles.linha, { minHeight: 40 }]}>
           <Button
             variant="secondary"
             size="mini"
@@ -590,18 +576,17 @@ function ModoDoGlobo({ icone, rotulo, ativo, onPress }: { icone: IconName; rotul
       hitSlop={6}
       style={({ pressed }) => [styles.modo, ativo && styles.modoAtivo, pressed && { opacity: 0.8 }]}
     >
-      <Icon name={icone} color={ativo ? color.accent.default : color.text.primary} />
+      <Icon name={icone} size={14} color={ativo ? color.text.primary : color.text.tertiary} />
+      <Text variant="Caption/Medium 12" tone={ativo ? 'primary' : 'tertiary'}>
+        {rotulo}
+      </Text>
     </Pressable>
   );
 }
 
-/** Quadrado do ícone do serviço de bordo (Figma v3): xícara laranja; apagado quando não há mais pausas. */
+/** Ícone do serviço de bordo (Cabine Limpa): xícara direta sem caixa pesada. */
 function IconeDoServico({ apagado }: { apagado?: boolean }) {
-  return (
-    <View style={[styles.iconeDoServico, apagado && { backgroundColor: color.bg.system }]}>
-      <Icon name="servicoDeBordo" color={apagado ? color.text.tertiary : color.status.warning} />
-    </View>
-  );
+  return <Icon name="servicoDeBordo" size={16} color={apagado ? color.text.tertiary : color.status.warning} />;
 }
 
 /** Figma v3: componente "Serviço de bordo" (próximo serviço, pausa em andamento, sem mais pausas). */
@@ -625,24 +610,11 @@ function IndicadorDoServico({ texto, rotulo, dica, apagado, onPress }: { texto: 
 
 function Lugar({ cidade, codigo, direita }: { cidade: string; codigo: string; direita?: boolean }) {
   return (
-    <View style={{ gap: space[8], alignItems: direita ? 'flex-end' : 'flex-start', maxWidth: 96 }}>
-      <Text variant="Body/Medium 14" tone="tertiary" numberOfLines={1}>
+    <View style={{ gap: space[2], alignItems: direita ? 'flex-end' : 'flex-start', maxWidth: 96 }}>
+      <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1}>
         {cidade}
       </Text>
-      <Text variant="Heading/Screen 32">{codigo}</Text>
-    </View>
-  );
-}
-
-function Dado({ rotulo, valor }: { rotulo: string; valor: string }) {
-  return (
-    <View style={{ gap: space[8] }}>
-      <Text variant="Body/Medium 14" tone="tertiary">
-        {rotulo}
-      </Text>
-      <Text variant="Label/Medium 14" tone="secondary">
-        {valor}
-      </Text>
+      <Text variant="Heading/Sheet 22">{codigo}</Text>
     </View>
   );
 }
@@ -666,16 +638,25 @@ const styles = StyleSheet.create({
   },
   linhaTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
-  linhaDosControles: { alignItems: 'flex-end' },
-  botoesDaDireita: { gap: space[8] },
-  servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 180 },
-  iconeDoServico: { width: 32, height: 32, borderRadius: radius.md, backgroundColor: color.aviso.icone, alignItems: 'center', justifyContent: 'center' },
+  linhaDosControles: { alignItems: 'center' },
+  botoesDaDireita: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  botaoVista: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[8],
+    height: 38,
+    paddingHorizontal: space[14],
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(20, 22, 28, 0.85)',
+  },
+  pontoVista: { width: 6, height: 6, borderRadius: 3, backgroundColor: color.accent.default },
+  alcaCabine: { width: 32, height: 3, borderRadius: radius.full, backgroundColor: color.surface.strong, alignSelf: 'center' },
+  servico: { flexDirection: 'row', alignItems: 'center', gap: space[8], maxWidth: 190 },
   contagem: { flexDirection: 'row', alignItems: 'baseline', gap: space[12] },
   relogio: { fontVariant: ['tabular-nums'] },
   trilhoDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.track, overflow: 'hidden' },
   barraDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
-  // Embaixo, na linha do botão de som (Figma 04A; Alberto, build-47).
-  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-end', gap: space[4], padding: space[4], borderRadius: radius.full, backgroundColor: color.surface.strong },
-  modo: { width: 40, height: 36, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
-  modoAtivo: { backgroundColor: color.surface.track },
+  modosDoGlobo: { flexDirection: 'row', alignItems: 'center', gap: space[2], padding: 3, borderRadius: radius.full, backgroundColor: 'rgba(20, 22, 28, 0.85)' },
+  modo: { flexDirection: 'row', alignItems: 'center', gap: space[6], height: 34, paddingHorizontal: space[12], borderRadius: radius.full, justifyContent: 'center' },
+  modoAtivo: { backgroundColor: color.surface.strong },
 });

@@ -130,24 +130,22 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                 accessibilityRole="button"
                 accessibilityHint={t('menu.verProgressao')}
                 onPress={() => ir('/milhas')}
-                style={({ pressed }) => [{ gap: space[8], paddingVertical: space[2] }, pressed && { opacity: 0.75 }]}
+                style={({ pressed }) => [{ gap: space[6], paddingVertical: space[2] }, pressed && { opacity: 0.75 }]}
               >
                 <View style={styles.linhaDasMilhas}>
                   <Text variant="Body/Small 13" style={{ fontWeight: '500' }}>
                     {t('menu.milhasAcumuladas', { milhas: milhas.toLocaleString('pt-BR') })}
                   </Text>
-                  <View style={styles.proximoNivel}>
-                    <Text variant="Caption/Regular 12" tone="tertiary" style={{ fontSize: 11 }}>
-                      {status.proximo
-                        ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
-                        : t('menu.nivelMaximo')}
-                    </Text>
-                    <Icon name="chevronRight" size={14} color={color.text.tertiary} />
-                  </View>
+                  <Icon name="chevronRight" size={14} color={color.text.tertiary} />
                 </View>
                 <View style={styles.trilho} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(status.progresso * 100) }}>
                   <View style={[styles.barra, { width: `${Math.round(status.progresso * 100)}%` }]} />
                 </View>
+                <Text variant="Caption/Regular 12" tone="tertiary">
+                  {status.proximo
+                    ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
+                    : t('menu.nivelMaximo')}
+                </Text>
               </Pressable>
 
               {/* Card Termi Plus no topo do drawer para econômica (Figma I1 · Menu lateral · Clean) */}

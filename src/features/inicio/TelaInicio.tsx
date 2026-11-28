@@ -75,8 +75,8 @@ export function TelaInicio() {
               </Text>
             </View>
           </Pressable>
-          {/* Pílula unificada Plus | $ saldo (Figma I1 · Opção 1) */}
-          <View style={styles.pilulaTopo}>
+          {/* Pílula unificada Plus | $ saldo (quando já é Plus, padding simétrico para centralizar o saldo) */}
+          <View style={[styles.pilulaTopo, classe === 'primeira' && styles.pilulaTopoSemPlus]}>
             {classe !== 'primeira' ? (
               <Pressable
                 accessibilityRole="button"
@@ -247,12 +247,17 @@ const styles = StyleSheet.create({
   pilulaTopo: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: space[8],
     paddingVertical: space[4],
     paddingLeft: space[6],
     paddingRight: space[12],
     borderRadius: radius.full,
     backgroundColor: color.surface.card,
+  },
+  pilulaTopoSemPlus: {
+    paddingLeft: space[12],
+    paddingRight: space[12],
   },
   saldoTexto: { paddingVertical: space[2] },
   barraResumo: {
