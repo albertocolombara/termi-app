@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.flight, paddingHorizontal: screenGutter, gap: space[16] },
   rota: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
   espacoDoTermi: { flex: 1, minHeight: TERMI_MIN, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  etapas: { backgroundColor: color.surface.subtle, borderRadius: radius.md, padding: space[16], gap: space[14] },
+  etapas: { backgroundColor: color.surface.card, borderRadius: radius.card, padding: space[16], gap: space[14] },
   etapa: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },
-  barra: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
-  cartaoGlobo: { backgroundColor: color.surface.default, borderRadius: radius.lg, padding: space[14], gap: space[6] },
+  trilho: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.default, overflow: 'hidden' },
+  barra: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
+  cartaoGlobo: { backgroundColor: color.surface.card, borderRadius: radius.card, padding: space[16], gap: space[6] },
 });

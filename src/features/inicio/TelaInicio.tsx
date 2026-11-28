@@ -82,7 +82,7 @@ export function TelaInicio() {
               </Pressable>
             ) : null}
             <View style={styles.saldo} accessible accessibilityLabel={t('inicio.saldoAcessivel', { valor: contagens.data?.saldo ?? 0 })}>
-              <Text variant="Label/Strong 14">{t('inicio.saldo', { valor: (contagens.data?.saldo ?? 0).toLocaleString('pt-BR') })}</Text>
+              <Text variant="Label/Strong 14" tone="accent">{t('inicio.saldo', { valor: (contagens.data?.saldo ?? 0).toLocaleString('pt-BR') })}</Text>
             </View>
           </View>
         </View>
@@ -264,10 +264,9 @@ const styles = StyleSheet.create({
     paddingVertical: space[6],
     paddingHorizontal: space[12],
     borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: color.border.subtle,
+    backgroundColor: color.accent.badge,
   },
-  divisor: { height: 1, marginHorizontal: space[16] + 1.5, backgroundColor: color.surface.subtle },
+  divisor: { height: StyleSheet.hairlineWidth, marginHorizontal: screenGutter, backgroundColor: color.border.subtle },
   resumo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space[8], paddingHorizontal: screenGutter },
   indicadores: { flexDirection: 'row', alignItems: 'center', gap: space[32] },
   verDiario: {
@@ -275,25 +274,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space[6],
     height: 36,
-    paddingLeft: space[12],
-    paddingRight: space[8],
-    borderRadius: radius.tile,
-    backgroundColor: color.surface.subtle,
+    paddingLeft: space[14],
+    paddingRight: space[10],
+    borderRadius: radius.full,
+    backgroundColor: color.surface.default,
   },
   areaDoGlobo: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  ultimo: { gap: space[6], padding: space[12], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle },
+  ultimo: { gap: space[8], padding: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
   linhaDoUltimo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[8] },
   vooDoUltimo: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  repetir: { flexDirection: 'row', alignItems: 'center', gap: space[4], minHeight: 36 },
+  repetir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[4],
+    minHeight: 34,
+    paddingHorizontal: space[12],
+    borderRadius: radius.full,
+    backgroundColor: color.surface.default,
+  },
   aviso: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[12],
-    paddingVertical: space[12],
-    paddingHorizontal: space[14],
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: color.aviso.borda,
+    paddingVertical: space[14],
+    paddingHorizontal: space[16],
+    borderRadius: radius.card,
     backgroundColor: color.aviso.fundo,
   },
   sombraDoBotao: { boxShadow: `0 6px 24px ${color.plus.borda}` },

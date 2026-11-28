@@ -181,7 +181,7 @@ export type ListOptionProps = {
 export function ListOption({ icon, title, description, selected, locked, onPress }: ListOptionProps) {
   const p = useStateProgress(!!selected);
   const fundo = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(p.value, [0, 1], ['transparent', C.surface.default]),
+    backgroundColor: interpolateColor(p.get(), [0, 1], ['transparent', C.surface.default]),
   }));
   return (
     <Pressable
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   iconButton: {
     width: ICON_BUTTON_SIZE,
     height: ICON_BUTTON_SIZE,
-    borderRadius: radius.xl,
+    borderRadius: radius.full,
     backgroundColor: C.surface.strong,
     alignItems: 'center',
     justifyContent: 'center',
@@ -352,12 +352,12 @@ const styles = StyleSheet.create({
     gap: space[12],
     paddingVertical: space[10],
     paddingHorizontal: space[12],
-    borderRadius: radius.lg,
+    borderRadius: radius.cta,
   },
   tile: {
     width: 40,
     height: 40,
-    borderRadius: radius.tile,
+    borderRadius: radius.lg,
     backgroundColor: C.surface.default,
     alignItems: 'center',
     justifyContent: 'center',
@@ -369,10 +369,10 @@ const styles = StyleSheet.create({
     gap: space[12],
     paddingVertical: space[14],
     paddingHorizontal: space[16],
-    borderRadius: radius.lg,
-    backgroundColor: C.surface.subtle,
+    borderRadius: radius.card,
+    backgroundColor: C.surface.card,
   },
-  banner: { flexDirection: 'row', borderRadius: radius.md, backgroundColor: C.surface.subtle },
+  banner: { flexDirection: 'row', borderRadius: radius.card, backgroundColor: C.surface.card },
   bannerMessage: { alignItems: 'center', gap: space[10], paddingVertical: space[12], paddingHorizontal: space[16] },
   bannerLive: { alignItems: 'flex-start', gap: space[12], padding: space[20] },
   liveDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: C.status.success, marginTop: 4 },

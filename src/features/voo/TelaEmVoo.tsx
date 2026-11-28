@@ -672,10 +672,10 @@ const styles = StyleSheet.create({
   iconeDoServico: { width: 32, height: 32, borderRadius: radius.md, backgroundColor: color.aviso.icone, alignItems: 'center', justifyContent: 'center' },
   contagem: { flexDirection: 'row', alignItems: 'baseline', gap: space[12] },
   relogio: { fontVariant: ['tabular-nums'] },
-  trilhoDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.surface.track, overflow: 'hidden' },
-  barraDaPausa: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
+  trilhoDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.track, overflow: 'hidden' },
+  barraDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
   // Embaixo, na linha do botão de som (Figma 04A; Alberto, build-47).
-  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-end', gap: space[4], padding: space[4], borderRadius: radius.lg, backgroundColor: color.surface.strong },
-  modo: { width: 40, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  modosDoGlobo: { flexDirection: 'row', alignSelf: 'flex-end', gap: space[4], padding: space[4], borderRadius: radius.full, backgroundColor: color.surface.strong },
+  modo: { width: 40, height: 36, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   modoAtivo: { backgroundColor: color.surface.track },
 });
