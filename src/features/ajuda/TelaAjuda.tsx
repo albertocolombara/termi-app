@@ -40,12 +40,12 @@ export function TelaAjuda() {
     <View style={styles.tela}>
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[32], paddingHorizontal: screenGutter, gap: space[24] }}>
         <TopBar title={t('ajuda.titulo')} onBack={() => router.back()} />
-        <View style={{ gap: space[16] }}>
+        <View style={{ gap: space[24] }}>
           <Secao titulo={t('ajuda.perguntas')}>
             {PERGUNTAS.map(([pergunta, resposta], i) => {
               const aqui = aberta === i;
               return (
-                <Animated.View key={pergunta} layout={FAQ_LAYOUT} style={{ gap: space[8], paddingVertical: space[14] }}>
+                <Animated.View key={pergunta} layout={FAQ_LAYOUT} style={{ gap: space[8], paddingVertical: 14 }}>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityState={{ expanded: aqui }}
@@ -53,11 +53,11 @@ export function TelaAjuda() {
                     style={styles.pergunta}
                     hitSlop={8}
                   >
-                    <Text variant="Label/Medium 14" style={{ flex: 1 }}>
+                    <Text variant="Body/Large Medium 16" style={styles.tituloPergunta}>
                       {t(pergunta)}
                     </Text>
                     <Animated.View style={[CHEVRON_TRANSITION, { transform: [{ rotate: aqui ? '-90deg' : '90deg' }] }]}>
-                      <Icon name="chevronRight" color={aqui ? color.accent.default : color.text.muted} />
+                      <Icon name="chevronRight" size={16} color={aqui ? color.accent.default : color.text.tertiary} />
                     </Animated.View>
                   </Pressable>
                   {aqui ? (
@@ -92,4 +92,5 @@ export function TelaAjuda() {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
   pergunta: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
+  tituloPergunta: { flex: 1, fontSize: 15, lineHeight: 20, fontWeight: '500' },
 });

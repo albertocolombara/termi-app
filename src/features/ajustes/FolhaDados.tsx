@@ -1,12 +1,9 @@
 /**
- * Exportar ou apagar meus dados (Ajustes › Privacidade; UC-16, RF-45, LGPD).
- * Não há tela própria no Figma: usa a folha e os botões do design system, como as outras escolhas
- * dos Ajustes. Apagar pede uma segunda confirmação, com o que será apagado e o que fica.
- *
- * Exportar grava um JSON numa pasta que o usuário escolhe (seletor do Android, sem permissão nova).
+ * Exportar ou apagar meus dados (Ajustes › Conta e privacidade; UC-16, RF-45, LGPD).
+ * Bottom sheet v4 Clean: ações em linhas limpas com ícone e divisor hairline, e confirmação dedicada.
  */
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import { Directory } from 'expo-file-system';
@@ -15,7 +12,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { apagarDados, exportarDados, nomeDoArquivo } from '@/data/privacidade/dados';
-import { BottomSheet, Button, InfoBanner, space, Text } from '@/ds';
+import { BottomSheet, Button, color, Icon, InfoBanner, radius, space, Text } from '@/ds';
 import { t } from '@/i18n';
 import { cancelarAvisos } from '@/services/avisos';
 import { useClasse } from '@/services/compras';
@@ -85,15 +82,26 @@ export function FolhaDados({ visivel, onFechar }: { visivel: boolean; onFechar: 
         subtitle={t('dados.confirmarTexto')}
         footer={
           <View style={{ gap: space[4] }}>
-            <Button variant="secondary" size="medium" icon={null} label={ocupado ? t('dados.apagando') : t('dados.apagarTudo')} disabled={ocupado} onPress={apagar} />
-            <Button variant="link" size="medium" label={t('dados.cancelar')} onPress={fechar} style={{ alignSelf: 'center' }} />
+            <Button
+              variant="secondary"
+              size="medium"
+              icon={null}
+              label={ocupado ? t('dados.apagando') : t('dados.apagarTudo')}
+              loading={ocupado}
+              disabled={ocupado}
+              onPress={apagar}
+            />
+            <Button variant="link" size="medium" label={t('dados.cancelar')} onPress={() => setEstado({ tipo: 'escolha' })} style={{ alignSelf: 'center' }} />
           </View>
         }
       >
-        <View style={{ gap: space[8] }}>
-          <Text variant="Body/Small 13" tone="secondary">
-            {t('dados.ficam')}
-          </Text>
+        <View style={{ gap: space[12] }}>
+          <View style={styles.notaCard}>
+            <Icon name="info" size={18} color={color.text.tertiary} />
+            <Text variant="Body/Small 13" tone="secondary" style={{ flex: 1 }}>
+              {t('dados.ficam')}
+            </Text>
+          </View>
           {plus ? <InfoBanner message={t('dados.assinatura')} /> : null}
         </View>
       </BottomSheet>
@@ -101,22 +109,91 @@ export function FolhaDados({ visivel, onFechar }: { visivel: boolean; onFechar: 
   }
 
   return (
-    <BottomSheet
-      visible={visivel}
-      onClose={fechar}
-      title={t('dados.titulo')}
-      subtitle={t('dados.subtitulo')}
-      footer={<Button variant="link" size="medium" label={t('dados.fechar')} onPress={fechar} style={{ alignSelf: 'center' }} />}
-    >
+    <BottomSheet visible={visivel} onClose={fechar} title={t('dados.titulo')} subtitle={t('dados.subtitulo')}>
       <View style={{ gap: space[12] }}>
         {estado.tipo === 'exportado' ? <InfoBanner message={t('dados.exportado', { arquivo: estado.arquivo })} /> : null}
         {estado.tipo === 'erro' ? <InfoBanner message={estado.mensagem} /> : null}
-        <Button variant="secondary" size="medium" icon={null} label={ocupado ? t('dados.exportando') : t('dados.exportar')} disabled={ocupado} onPress={exportar} />
-        <Text variant="Caption/Regular 12" tone="tertiary">
-          {t('dados.exportarTexto')}
-        </Text>
-        <Button variant="secondary" size="medium" icon={null} label={t('dados.apagar')} disabled={ocupado} onPress={() => setEstado({ tipo: 'confirmar' })} />
+
+        <View style={styles.cartao}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('dados.exportar')}
+            accessibilityHint={t('dados.exportarTexto')}
+            disabled={ocupado}
+            onPress={exportar}
+            style={({ pressed }) => [styles.linha, pressed && { opacity: 0.78 }]}
+          >
+            <View style={styles.iconeWrap}>
+              <Icon name="logbook" size={18} color={color.text.primary} />
+            </View>
+            <View style={{ flex: 1, gap: space[2] }}>
+              <Text variant="Body/Large Medium 16" style={styles.tituloLinha}>
+                {ocupado ? t('dados.exportando') : t('dados.exportar')}
+              </Text>
+              <Text variant="Caption/Regular 12" tone="tertiary">
+                {t('dados.exportarTexto')}
+              </Text>
+            </View>
+            {ocupado ? <ActivityIndicator size="small" color={color.text.secondary} /> : <Icon name="chevronRight" size={16} color={color.text.tertiary} />}
+          </Pressable>
+
+          <View style={styles.divisor} />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('dados.apagar')}
+            accessibilityHint={t('dados.apagarDescricao')}
+            disabled={ocupado}
+            onPress={() => setEstado({ tipo: 'confirmar' })}
+            style={({ pressed }) => [styles.linha, pressed && { opacity: 0.78 }]}
+          >
+            <View style={styles.iconeWrap}>
+              <Icon name="excluir" size={18} color={color.text.secondary} />
+            </View>
+            <View style={{ flex: 1, gap: space[2] }}>
+              <Text variant="Body/Large Medium 16" style={styles.tituloLinha}>
+                {t('dados.apagar')}
+              </Text>
+              <Text variant="Caption/Regular 12" tone="tertiary">
+                {t('dados.apagarDescricao')}
+              </Text>
+            </View>
+            <Icon name="chevronRight" size={16} color={color.text.tertiary} />
+          </Pressable>
+        </View>
       </View>
     </BottomSheet>
   );
 }
+
+const styles = StyleSheet.create({
+  cartao: {
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
+    paddingHorizontal: space[14],
+  },
+  linha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[12],
+    paddingVertical: space[14],
+  },
+  iconeWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: color.surface.sunken,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tituloLinha: { fontSize: 15, lineHeight: 20, fontWeight: '500' },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
+  notaCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space[10],
+    padding: space[14],
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
+  },
+});

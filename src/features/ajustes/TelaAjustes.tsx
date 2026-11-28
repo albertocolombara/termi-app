@@ -14,13 +14,13 @@ import { useAjustes, type QualidadeDaJanela } from '@/data/preferencias/ajustes'
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import type { IntervaloServicoDeBordo } from '@/domain/sessao/pausas';
 import { somEmUso } from '@/domain/sons/catalogo';
-import { BottomSheet, color, ListOption, screenGutter, Slider, space, TopBar } from '@/ds';
+import { BottomSheet, color, ListOption, screenGutter, space, TopBar } from '@/ds';
 import { FolhaSons } from '@/features/voo/FolhaSons';
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 
 import { FolhaDados } from './FolhaDados';
-import { LinhaComInterruptor, LinhaComValor, Secao } from './Grupo';
+import { LinhaComInterruptor, LinhaComValor, ScrubberDeVolume, Secao } from './Grupo';
 import { MedidorDeDados } from './MedidorDeDados';
 
 const QUALIDADES: { valor: QualidadeDaJanela; nome: ChaveDeTexto; descricao: ChaveDeTexto }[] = [
@@ -60,15 +60,12 @@ export function TelaAjustes() {
           ) : null}
         </Secao>
 
-        <Secao titulo={t('ajustes.som')}>
+        <Secao titulo={t('ajustes.somEAvisos')}>
           <LinhaComValor
             titulo={t('ajustes.somDeFundo')}
             valor={somAtual ? t(`sons.${somAtual}.nome` as ChaveDeTexto) : t('sons.nenhum')}
             onPress={() => setFolha('som')}
           />
-        </Secao>
-
-        <Secao titulo={t('ajustes.avisos')}>
           <LinhaComInterruptor
             titulo={t('ajustes.avisoDePouso')}
             descricao={t('ajustes.avisoDePousoDescricao')}
@@ -81,10 +78,7 @@ export function TelaAjustes() {
             valor={a.somDoServico}
             onMudar={(v) => a.mudar({ somDoServico: v })}
           />
-          {/* Volume do sinal e do aviso de pouso, sobre o som do voo (Alberto, 25/11/2026). */}
-          <View style={{ paddingVertical: space[12] }}>
-            <Slider label={t('ajustes.volumeDosAvisos')} value={a.volumeDosAvisos} onChange={(v) => a.mudar({ volumeDosAvisos: v })} surface={color.bg.app} />
-          </View>
+          <ScrubberDeVolume label={t('ajustes.volumeDosAvisos')} value={a.volumeDosAvisos} onChange={(v) => a.mudar({ volumeDosAvisos: v })} />
         </Secao>
 
         <Secao titulo={t('ajustes.telaEBateria')}>
@@ -104,7 +98,7 @@ export function TelaAjustes() {
           />
         </Secao>
 
-        <Secao titulo={t('ajustes.contaECompras')}>
+        <Secao titulo={t('ajustes.contaEPrivacidade')}>
           <LinhaComValor
             titulo={t('ajustes.primeiraClasse')}
             descricao={mostrarFerramentasDev ? t('ajustes.primeiraClasseDescricao') : undefined}
@@ -112,10 +106,7 @@ export function TelaAjustes() {
             // No app de teste, troca a classe; nos outros, abre o Plus (paywall ou gerenciar).
             onPress={() => (mostrarFerramentasDev ? trocarClasse(classe === 'primeira' ? 'economica' : 'primeira') : router.push('/primeira-classe'))}
           />
-        </Secao>
-
-        <Secao titulo={t('ajustes.privacidade')}>
-          <LinhaComValor titulo={t('ajustes.seusDados')} onPress={() => setFolha('dados')} />
+          <LinhaComValor titulo={t('ajustes.seusDadosTitulo')} valor={t('ajustes.exportarOuApagar')} onPress={() => setFolha('dados')} />
         </Secao>
 
         {mostrarFerramentasDev ? <MedidorDeDados /> : null}
