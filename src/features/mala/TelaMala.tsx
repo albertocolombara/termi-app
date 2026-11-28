@@ -15,9 +15,11 @@ import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico'
 import { color, Icon, Plus, radius, screenGutter, space, Suitcase, Text, TopBar } from '@/ds';
 import { Medalha } from '@/features/loja/Medalha';
 import { t } from '@/i18n';
+import { useClasse } from '@/services/compras';
 
 export function TelaMala() {
   const insets = useSafeAreaInsets();
+  const plus = useClasse() === 'primeira';
   const naMala = new Set(useSouvenirsNaMala().data ?? []);
   const catalogo = useCatalogo();
   const saldo = useContagens().data?.saldo ?? 0;
@@ -87,7 +89,7 @@ export function TelaMala() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${t('mala.lojas')}, Plus. ${t('mala.lojasDescricao')}`}
+            accessibilityLabel={plus ? `${t('mala.lojas')}. ${t('mala.lojasDescricao')}` : `${t('mala.lojas')}, Plus. ${t('mala.lojasDescricao')}`}
             onPress={() => router.push('/loja')}
             style={({ pressed }) => [styles.lojas, pressed && { opacity: 0.85 }]}
           >
@@ -95,7 +97,7 @@ export function TelaMala() {
             <View style={{ flex: 1, gap: space[2] }}>
               <View style={styles.tituloDasLojas}>
                 <Text variant="Body/Large Medium 16">{t('mala.lojas')}</Text>
-                <Plus tamanho="pequeno" />
+                {plus ? null : <Plus tamanho="pequeno" />}
               </View>
               <Text variant="Body/Small 13" tone="tertiary" numberOfLines={1}>
                 {t('mala.lojasDescricao')}

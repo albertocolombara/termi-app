@@ -110,10 +110,12 @@ export function FolhaSons({
     >
       <View accessibilityRole="radiogroup" style={{ gap: space[4] }}>
         {gratis.map(renderSom)}
-        <View style={styles.divisorPlus}>
-          <Plus tamanho="pequeno" />
-          <View style={styles.linhaDivisor} />
-        </View>
+        {classe !== 'primeira' ? (
+          <View style={styles.divisorPlus}>
+            <Plus tamanho="pequeno" />
+            <View style={styles.linhaDivisor} />
+          </View>
+        ) : null}
         {plusSons.map(renderSom)}
       </View>
       {aviso ? (
