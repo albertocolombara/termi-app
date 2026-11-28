@@ -26,9 +26,8 @@ import { useClasse } from '@/services/compras';
 
 import { FolhaMalaCheia } from './FolhaMalaCheia';
 import { VitrineMedalha } from './VitrineMedalha';
-import { Toldo } from './Toldo';
 
-const ALTURA_DA_VITRINE = 240;
+const ALTURA_DA_VITRINE = 232;
 
 export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?: string }) {
   const insets = useSafeAreaInsets();
@@ -85,36 +84,39 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
   return (
     <View style={styles.tela}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[16] }}>
-        <View style={{ paddingHorizontal: screenGutter, paddingBottom: space[12] }}>{topo}</View>
-        <Toldo />
+        <View style={{ paddingHorizontal: screenGutter, paddingBottom: space[8] }}>{topo}</View>
 
         <View style={[styles.corpo, { flex: 1 }]}>
-          <View style={{ gap: space[24] }}>
+          <View style={{ gap: space[20] }}>
             <View style={styles.letreiro}>
-              <Text variant="Caption/Strong 12" tone="accent" style={styles.letreiroTexto}>
-                {t('loja.letreiro', { pais: souvenir.nome.toUpperCase() })}
-              </Text>
               <Text variant="Heading/Screen 32" accessibilityRole="header" style={{ textAlign: 'center' }}>
                 {t('loja.titulo', { cidade })}
+              </Text>
+              <Text variant="Body/Small 13" tone="tertiary" style={{ textAlign: 'center' }}>
+                {souvenir.nome}
               </Text>
             </View>
 
             <Vitrine>
-              <VitrineMedalha souvenir={souvenir} tamanho={168} />
-              <View style={styles.etiqueta} accessible accessibilityLabel={t('loja.preco', { valor: preco })}>
-                <Text variant="Label/Strong 14" tone="onAccent">
-                  {t('loja.preco', { valor: preco })}
-                </Text>
-              </View>
+              <VitrineMedalha souvenir={souvenir} tamanho={176} />
             </Vitrine>
 
-            <View style={{ alignItems: 'center', gap: space[4] }}>
-              <Text variant="Heading/Data 24">{souvenir.nome}</Text>
-              <Text variant="Body/Small 13" tone="secondary">
-                {souvenir.motivo
-                  ? t('loja.tipoComMotivo', { tipo: t(`loja.metal.${souvenir.metal}`), motivo: souvenir.motivo })
-                  : t(`loja.metal.${souvenir.metal}`)}
-              </Text>
+            <View style={styles.ficha}>
+              <View style={styles.fichaLinha}>
+                <View style={{ flex: 1, gap: space[2] }}>
+                  <Text variant="Heading/Data 24">{souvenir.nome}</Text>
+                  <Text variant="Body/Small 13" tone="secondary">
+                    {souvenir.motivo
+                      ? t('loja.tipoComMotivo', { tipo: t(`loja.metal.${souvenir.metal}`), motivo: souvenir.motivo })
+                      : t(`loja.metal.${souvenir.metal}`)}
+                  </Text>
+                </View>
+                <View style={styles.etiqueta} accessible accessibilityLabel={t('loja.preco', { valor: preco })}>
+                  <Text variant="Label/Strong 14" tone="accent">
+                    {t('loja.preco', { valor: preco })}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
 
@@ -190,6 +192,7 @@ function Acoes({
           <Button
             label={comprando ? t('loja.comprando') : t('loja.comprarPor', { valor: preco })}
             icon={null}
+            loading={comprando}
             disabled={comprando}
             onPress={onComprar}
           />
@@ -199,7 +202,7 @@ function Acoes({
   }
 }
 
-/** Vitrine (Figma v3: "Vitrine"): fundo afundado com luz quente, prateleira e sombra da medalha. */
+/** Vitrine v4 Clean: palco aberto com luz radial quente e sombra de contato sob a medalha. */
 function Vitrine({ children }: { children: React.ReactNode }) {
   const [largura, setLargura] = useState(0);
   return (
@@ -207,16 +210,13 @@ function Vitrine({ children }: { children: React.ReactNode }) {
       {largura > 0 ? (
         <Svg width={largura} height={ALTURA_DA_VITRINE} style={StyleSheet.absoluteFill}>
           <Defs>
-            <RadialGradient id="luz" cx="50%" cy="55%" rx="55%" ry="60%">
-              <Stop offset="0" stopColor={loja.luzDaVitrine} />
+            <RadialGradient id="luz" cx="50%" cy="48%" rx="48%" ry="52%">
+              <Stop offset="0" stopColor={loja.luzDaVitrine} stopOpacity={0.9} />
               <Stop offset="1" stopColor={loja.luzDaVitrine} stopOpacity={0} />
             </RadialGradient>
           </Defs>
           <Rect x={0} y={0} width={largura} height={ALTURA_DA_VITRINE} fill="url(#luz)" />
-          {/* Reflexo do vidro da vitrine (Figma: faixa branca a 5%, inclinada). */}
-          <Rect x={10} y={-150} width={50} height={420} fill={loja.reflexo} transform="rotate(30 35 60)" />
-          <Rect x={0} y={ALTURA_DA_VITRINE - 26} width={largura} height={26} fill={color.surface.strong} />
-          <Ellipse cx={largura / 2} cy={ALTURA_DA_VITRINE - 26} rx={75} ry={9} fill={loja.sombra} />
+          <Ellipse cx={largura / 2} cy={ALTURA_DA_VITRINE - 18} rx={68} ry={8} fill={loja.sombra} />
         </Svg>
       ) : null}
       {children}
@@ -226,28 +226,31 @@ function Vitrine({ children }: { children: React.ReactNode }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
-  corpo: { justifyContent: 'space-between', gap: space[32], paddingHorizontal: screenGutter, paddingTop: space[16] },
+  corpo: { justifyContent: 'space-between', gap: space[28], paddingHorizontal: screenGutter, paddingTop: space[12] },
   letreiro: { alignItems: 'center', gap: space[4] },
-  letreiroTexto: { letterSpacing: 3 },
   vitrine: {
     height: ALTURA_DA_VITRINE,
-    borderRadius: radius['3xl'],
-    borderWidth: 1,
-    borderColor: color.border.default,
-    backgroundColor: color.surface.sunken,
-    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: space[16],
   },
+  ficha: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border.subtle,
+    paddingVertical: space[16],
+  },
+  fichaLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space[12],
+  },
   etiqueta: {
-    position: 'absolute',
-    top: space[20],
-    right: space[20],
     paddingVertical: space[6],
     paddingHorizontal: space[12],
-    borderRadius: radius.tile,
-    backgroundColor: color.accent.default,
+    borderRadius: radius.full,
+    backgroundColor: color.accent.badge,
   },
   acoes: { gap: space[8] },
 });

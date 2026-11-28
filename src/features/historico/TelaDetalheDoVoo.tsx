@@ -71,6 +71,11 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
         </View>
         <View style={styles.horarios}>
           <Horario rotulo={t('detalhe.embarque')} hora={horaLocal(s.embarcouEm)} onde={t('detalhe.ondeEQuando', { codigo: codigoDoLugar(voo.origem), data: dataRelativa(s.embarcouEm, agora) })} />
+          <View style={styles.rotaLinha} pointerEvents="none">
+            <View style={[styles.rotaPonto, { backgroundColor: pousou ? color.accent.default : color.text.tertiary }]} />
+            <View style={[styles.rotaTraco, { backgroundColor: pousou ? color.accent.default : color.surface.strong }]} />
+            <View style={[styles.rotaPonto, { backgroundColor: pousou ? color.accent.default : color.text.tertiary }]} />
+          </View>
           <Horario
             rotulo={pousou ? t('detalhe.pouso') : t('detalhe.fimDoVoo')}
             hora={horaLocal(s.encerrouEm)}
@@ -80,23 +85,34 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
         </View>
       </View>
 
-      <View style={styles.grade}>
+      <View style={styles.faixaMetricas}>
         <Bloco valor={duracao(s.minutosFoco)} rotulo={t('detalhe.focados')} />
+        <View style={styles.divisorMetrica} />
         <Bloco valor={s.milhas.toLocaleString('pt-BR')} rotulo={t('detalhe.milhas')} />
-        <View style={[styles.bloco, styles.blocoComCarimbo]}>
+        <View style={styles.divisorMetrica} />
+        <Bloco valor={t('detalhe.dolares', { valor: s.dolares })} rotulo={t('detalhe.paraSouvenirs')} />
+      </View>
+
+      <View style={styles.linhaCarimbo}>
+        {pousou ? (
+          <View style={styles.miniaturaPapel} pointerEvents="none">
+            <CarimboDoPassaporte cidade={nomeDoLugar(voo.destino)} codigo={destino} data={s.encerrouEm} tamanho={56} giro={-6} />
+          </View>
+        ) : (
+          <View style={styles.miniaturaVazia}>
+            <Text variant="Label/Strong 14" tone="muted">
+              —
+            </Text>
+          </View>
+        )}
+        <View style={{ flex: 1, gap: space[2] }}>
           <Text variant="Heading/Data 24" tone={pousou ? 'primary' : 'muted'}>
             {pousou ? destino : '—'}
           </Text>
           <Text variant="Caption/Regular 12" tone="tertiary">
             {pousou ? t('detalhe.carimbo') : t('detalhe.semCarimbo')}
           </Text>
-          {pousou ? (
-            <View style={styles.carimbo} pointerEvents="none">
-              <CarimboDoPassaporte cidade={nomeDoLugar(voo.destino)} codigo={destino} data={s.encerrouEm} tamanho={75} giro={-8} />
-            </View>
-          ) : null}
         </View>
-        <Bloco valor={t('detalhe.dolares', { valor: s.dolares })} rotulo={t('detalhe.paraSouvenirs')} />
       </View>
 
       {temMotivo ? (
@@ -177,17 +193,63 @@ function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  situacao: { paddingVertical: space[4], paddingHorizontal: space[8], borderRadius: radius.md },
-  situacaoPousou: { backgroundColor: color.status.successSubtle },
+  situacao: { paddingVertical: space[4], paddingHorizontal: space[10], borderRadius: radius.full },
+  situacaoPousou: { backgroundColor: color.status.successContainer },
   situacaoAntes: { backgroundColor: color.surface.default },
-  horarios: { flexDirection: 'row', justifyContent: 'space-between' },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
-  bloco: { flexBasis: '48%', flexGrow: 1, gap: space[2], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
-  blocoComCarimbo: { overflow: 'visible' },
-  carimbo: { position: 'absolute', right: space[8], top: -space[4] },
-  motivo: { gap: space[24], padding: space[16], borderRadius: radius.lg, backgroundColor: color.bg.sheet },
+  horarios: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
+  rotaLinha: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[4] },
+  rotaPonto: { width: 6, height: 6, borderRadius: 3 },
+  rotaTraco: { flex: 1, height: 2, borderRadius: 1 },
+  faixaMetricas: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border.subtle,
+    paddingVertical: space[14],
+  },
+  divisorMetrica: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: color.border.subtle },
+  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[6] },
+  linhaCarimbo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[14],
+    padding: space[14],
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
+  },
+  miniaturaPapel: {
+    width: 68,
+    height: 68,
+    borderRadius: radius.md,
+    backgroundColor: color.surface.paper,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  miniaturaVazia: {
+    width: 68,
+    height: 68,
+    borderRadius: radius.md,
+    backgroundColor: color.surface.subtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  motivo: {
+    gap: space[20],
+    paddingTop: space[16],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: color.border.subtle,
+  },
   linhaDoMotivo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[6] },
   tarefa: { flexDirection: 'row', alignItems: 'center', gap: space[10], minHeight: 48 },
-  servico: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
+  servico: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[10],
+    paddingTop: space[14],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: color.border.subtle,
+  },
   ponto: { width: 8, height: 8, borderRadius: 4, backgroundColor: color.status.success },
 });

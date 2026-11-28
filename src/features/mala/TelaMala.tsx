@@ -22,6 +22,7 @@ export function TelaMala() {
   const catalogo = useCatalogo();
   const saldo = useContagens().data?.saldo ?? 0;
   const vazia = naMala.size === 0;
+  const progresso = catalogo.length > 0 ? Math.min(1, naMala.size / catalogo.length) : 0;
 
   return (
     <ScrollView
@@ -30,13 +31,18 @@ export function TelaMala() {
     >
       <View style={{ gap: space[24] }}>
         <TopBar title={t('mala.titulo')} onBack={() => router.back()} />
-        <View style={{ gap: space[16] }}>
-          <View style={styles.linha}>
-            <Text variant="Label/Medium 14" tone="secondary">
-              {t('mala.contagem', { n: naMala.size, total: catalogo.length })}
-            </Text>
-            <View style={styles.saldo}>
-              <Text variant="Label/Strong 14">{t('mala.saldo', { valor: saldo.toLocaleString('pt-BR') })}</Text>
+        <View style={{ gap: space[20] }}>
+          <View style={{ gap: space[10] }}>
+            <View style={styles.linha}>
+              <Text variant="Label/Medium 14" tone="secondary">
+                {t('mala.contagem', { n: naMala.size, total: catalogo.length })}
+              </Text>
+              <View style={styles.saldo}>
+                <Text variant="Label/Strong 14" tone="accent">{t('mala.saldo', { valor: saldo.toLocaleString('pt-BR') })}</Text>
+              </View>
+            </View>
+            <View style={styles.trilho}>
+              <View style={[styles.trilhoPreenchido, { width: `${Math.round(progresso * 100)}%` }]} />
             </View>
           </View>
 
@@ -68,7 +74,7 @@ export function TelaMala() {
               );
             })}
             <View style={styles.espaco} accessible accessibilityLabel={t('mala.emBreve')}>
-              <View style={[styles.encaixe, styles.encaixeVazio, { backgroundColor: color.bg.sheet }]} />
+              <View style={[styles.encaixe, styles.encaixeEmBreve]} />
               <Text variant="Caption/Regular 12" tone="muted">
                 {t('mala.emBreve')}
               </Text>
@@ -116,12 +122,15 @@ const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
   conteudo: { flexGrow: 1, justifyContent: 'space-between', gap: space[24], paddingHorizontal: screenGutter },
   linha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: color.surface.default },
-  grade: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space[12] },
+  saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: color.accent.badge },
+  trilho: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.default, overflow: 'hidden' },
+  trilhoPreenchido: { height: '100%', borderRadius: radius.full, backgroundColor: color.accent.default },
+  grade: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space[16] },
   espaco: { width: '25%', alignItems: 'center', gap: space[6] },
   encaixe: { width: 64, height: 64, borderRadius: 32 },
-  encaixeVazio: { borderWidth: 1.5, borderStyle: 'dashed', borderColor: color.border.strong },
-  lojas: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 64, paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, backgroundColor: color.surface.default },
+  encaixeVazio: { backgroundColor: color.surface.subtle, borderWidth: 1, borderColor: color.border.subtle },
+  encaixeEmBreve: { backgroundColor: color.surface.cardMuted, borderWidth: 1, borderColor: color.border.subtle, opacity: 0.6 },
+  lojas: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 68, paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
   tituloDasLojas: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
-  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle },
+  aviso: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.card, backgroundColor: color.surface.cardMuted },
 });

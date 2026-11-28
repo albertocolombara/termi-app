@@ -41,26 +41,30 @@ export function TelaPassaporte() {
         <TopBar title={t('passaporte.titulo')} onBack={() => router.back()} />
       </View>
 
-      <View style={{ gap: space[16] }}>
-        <View style={[styles.resumo, { paddingHorizontal: screenGutter }]}>
-          <Bloco valor={String(carimbos.length)} rotulo={t('passaporte.carimbos')} />
-          <Bloco valor={String(paises)} rotulo={t('passaporte.paises')} />
-          <Bloco valor={milhas.toLocaleString('pt-BR')} rotulo={t('passaporte.milhas')} />
+      <View style={{ gap: space[20] }}>
+        <View style={{ paddingHorizontal: screenGutter }}>
+          <View style={styles.resumo}>
+            <Bloco valor={String(carimbos.length)} rotulo={t('passaporte.carimbos')} />
+            <View style={styles.divisor} />
+            <Bloco valor={String(paises)} rotulo={t('passaporte.paises')} />
+            <View style={styles.divisor} />
+            <Bloco valor={milhas.toLocaleString('pt-BR')} rotulo={t('passaporte.milhas')} />
+          </View>
         </View>
 
         <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={aoRolar} snapToInterval={largura} decelerationRate="fast" contentContainerStyle={{ paddingHorizontal: screenGutter }}>
           {paginas.map((lista, n) => (
             <View key={n} style={[styles.pagina, { width: largura }]}>
               <View style={styles.cabecalhoDaPagina}>
-                <Text variant="Caption/Strong 12" tone="onAccent">
+                <Text variant="Caption/Strong 12" tone="onPaper">
                   {t('passaporte.cabecalho')}
                 </Text>
-                <Text variant="Caption/Regular 12" tone="onAccent">
+                <Text variant="Caption/Regular 12" tone="onPaper" style={{ opacity: 0.55 }}>
                   {t('passaporte.pagina', { n: n + 1 })}
                 </Text>
               </View>
               {lista.length === 0 ? (
-                <Text variant="Body/Medium 14" tone="onAccent" style={{ textAlign: 'center', paddingVertical: space[40], opacity: 0.6 }}>
+                <Text variant="Body/Medium 14" tone="onPaper" style={{ textAlign: 'center', paddingVertical: space[40], opacity: 0.55 }}>
                   {t('passaporte.vazio')}
                 </Text>
               ) : (
@@ -110,19 +114,41 @@ function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
-  resumo: { flexDirection: 'row', gap: space[8] },
-  bloco: { flex: 1, gap: space[2], padding: space[12], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  resumo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border.subtle,
+    paddingVertical: space[14],
+  },
+  divisor: {
+    width: StyleSheet.hairlineWidth,
+    height: 28,
+    backgroundColor: color.border.subtle,
+  },
+  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[8] },
   pagina: {
     gap: space[14],
     paddingTop: space[16],
     paddingHorizontal: space[16],
     paddingBottom: space[20],
     minHeight: 455,
-    backgroundColor: color.carimbo.papel,
-    borderWidth: 1,
-    borderColor: color.carimbo.bordaDoPapel,
+    backgroundColor: color.surface.paper,
+    borderTopLeftRadius: radius.xs,
+    borderBottomLeftRadius: radius.xs,
+    borderTopRightRadius: radius.card,
+    borderBottomRightRadius: radius.card,
+    borderLeftWidth: 3,
+    borderLeftColor: color.carimbo.bordaDoPapel,
   },
-  cabecalhoDaPagina: { flexDirection: 'row', justifyContent: 'space-between' },
+  cabecalhoDaPagina: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: space[10],
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: color.carimbo.bordaDoPapel,
+  },
   grade: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space[14] },
   casa: { width: '33.333%', alignItems: 'center', justifyContent: 'center', minHeight: 110 },
   paginas: { flexDirection: 'row', justifyContent: 'center', gap: space[6] },
