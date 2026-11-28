@@ -1,12 +1,13 @@
 /** Navegação e estrutura (Figma: seção 09). */
 import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { t } from '@/i18n';
-import { motion } from './motion';
+import { motion, project, rubberband } from './motion';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
@@ -114,63 +115,97 @@ export function BottomSheet({ visible, onClose, title, icone, subtitle, children
   if (visible && !montada) setMontada(true);
 
   const deslocamento = useSharedValue(alturaDaTela);
-  const scrim = useSharedValue(0);
+  const contexto = useSharedValue(0);
+  const alturaDaSheet = useSharedValue(alturaDaTela * 0.6);
 
   useEffect(() => {
     if (!montada) return;
     if (visible) {
-      deslocamento.set(
-        withTiming(0, { duration: motion.duration.medium4, easing: motion.easing.emphasizedDecelerate, reduceMotion: ReduceMotion.System }),
-      );
-      scrim.set(withTiming(1, { duration: motion.duration.short4, reduceMotion: ReduceMotion.System }));
+      deslocamento.set(withSpring(0, motion.spring.sheet));
     } else {
-      scrim.set(withTiming(0, { duration: motion.duration.medium2, reduceMotion: ReduceMotion.System }));
       deslocamento.set(
-        withTiming(
-          alturaDaTela,
-          { duration: motion.duration.medium2, easing: motion.easing.emphasizedAccelerate, reduceMotion: ReduceMotion.System },
-          (terminou) => {
-            if (terminou) scheduleOnRN(setMontada, false);
-          },
-        ),
+        withSpring(alturaDaTela, motion.spring.sheetDismiss, (terminou) => {
+          if (terminou) scheduleOnRN(setMontada, false);
+        }),
       );
     }
-  }, [visible, montada, alturaDaTela, deslocamento, scrim]);
+  }, [visible, montada, alturaDaTela, deslocamento]);
+
+  const pan = usePanGesture({
+    activeOffsetY: 10,
+    onActivate: () => {
+      'worklet';
+      contexto.set(deslocamento.get());
+    },
+    onUpdate: (e) => {
+      'worklet';
+      const proximo = contexto.get() + e.translationY;
+      deslocamento.set(proximo >= 0 ? proximo : rubberband(proximo, alturaDaSheet.get()));
+    },
+    onDeactivate: (e) => {
+      'worklet';
+      const h = alturaDaSheet.get();
+      const projetado = deslocamento.get() + project(e.velocityY);
+      if (projetado > h * 0.4) {
+        deslocamento.set(
+          withSpring(alturaDaTela, { ...motion.spring.sheetDismiss, velocity: e.velocityY }, (terminou) => {
+            if (terminou) scheduleOnRN(onClose);
+          }),
+        );
+      } else {
+        deslocamento.set(withSpring(0, { ...motion.spring.sheet, velocity: e.velocityY }));
+      }
+    },
+  });
 
   const estiloDaSheet = useAnimatedStyle(() => ({ transform: [{ translateY: deslocamento.get() }] }));
-  const estiloDoScrim = useAnimatedStyle(() => ({ opacity: scrim.get() }));
+  const estiloDoScrim = useAnimatedStyle(() => ({
+    opacity: interpolate(deslocamento.get(), [0, Math.max(1, alturaDaSheet.get())], [1, 0], Extrapolation.CLAMP),
+  }));
 
   return (
     <Modal visible={montada} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onClose}>
-      {/* O teclado empurra a sheet para cima; o conteúdo rola se não couber. */}
-      <KeyboardAvoidingView behavior="padding" style={styles.sheetRoot}>
-        <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
-          <Pressable accessibilityLabel={t('comum.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
-        </Animated.View>
-        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }, alturaMaxima !== undefined && { maxHeight: alturaMaxima }, estiloDaSheet]}>
-          <View style={styles.sheetAbaixo} />
-          <View style={styles.handle} />
-          <View style={{ gap: space[4] }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
-              {icone}
-              <Text variant="Heading/Sheet 22" accessibilityRole="header" style={{ flexShrink: 1 }}>
-                {title}
-              </Text>
-            </View>
-            {subtitle ? (
-              <Text variant="Body/Medium 14" tone="tertiary">
-                {subtitle}
-              </Text>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* O teclado empurra a sheet para cima; o conteúdo rola se não couber. */}
+        <KeyboardAvoidingView behavior="padding" style={styles.sheetRoot}>
+          <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
+            <Pressable accessibilityLabel={t('comum.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: C.bg.scrim }]} onPress={onClose} />
+          </Animated.View>
+          <Animated.View
+            onLayout={(e) => {
+              const h = e.nativeEvent.layout.height;
+              if (h > 0) alturaDaSheet.set(h);
+            }}
+            style={[styles.sheet, { paddingBottom: insets.bottom + space[24] }, alturaMaxima !== undefined && { maxHeight: alturaMaxima }, estiloDaSheet]}
+          >
+            <View style={styles.sheetAbaixo} />
+            <GestureDetector gesture={pan}>
+              <View style={{ gap: space[12] }}>
+                <View style={styles.handle} />
+                <View style={{ gap: space[4] }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
+                    {icone}
+                    <Text variant="Heading/Sheet 22" accessibilityRole="header" style={{ flexShrink: 1 }}>
+                      {title}
+                    </Text>
+                  </View>
+                  {subtitle ? (
+                    <Text variant="Body/Medium 14" tone="tertiary">
+                      {subtitle}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+            </GestureDetector>
+            {children ? (
+              <ScrollView style={styles.sheetBody} contentContainerStyle={{ gap: space[4] }} keyboardShouldPersistTaps="handled" bounces={false}>
+                {children}
+              </ScrollView>
             ) : null}
-          </View>
-          {children ? (
-            <ScrollView style={styles.sheetBody} contentContainerStyle={{ gap: space[4] }} keyboardShouldPersistTaps="handled" bounces={false}>
-              {children}
-            </ScrollView>
-          ) : null}
-          {footer}
-        </Animated.View>
-      </KeyboardAvoidingView>
+            {footer}
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

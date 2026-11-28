@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider } from 'expo-sqlite';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { migrar } from '@/data/db/migracoes';
@@ -24,6 +25,8 @@ if (mostrarFerramentasDev) {
 }
 
 export default function RootLayout() {
+  const reduced = useReducedMotion();
+
   useEffect(() => {
     configurarAvisos().catch(() => {});
   }, []);
@@ -35,7 +38,13 @@ export default function RootLayout() {
           <SQLiteProvider databaseName="termi.db" onInit={(db) => migrar(db).then(() => undefined)}>
             <StatusBar style="light" />
             <SomDoVoo />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg.app } }} />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: reduced ? 'fade' : 'default',
+                contentStyle: { backgroundColor: color.bg.app },
+              }}
+            />
           </SQLiteProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

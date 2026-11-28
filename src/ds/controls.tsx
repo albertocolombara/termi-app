@@ -11,7 +11,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
-import Animated, { interpolate, interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { Icon, type IconName } from './Icon';
 import { motion, timing, useStateProgress } from './motion';
@@ -27,23 +27,28 @@ export type ChipProps = {
   onPress?: () => void;
 };
 
-/** Filtro/categoria de seleção única. Fundo e texto mudam juntos em 200 ms (MD3). */
+/** Filtro/categoria de seleção única. Fundo e texto mudam juntos em 200 ms + press scale 120 ms. */
 export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
+  const [pressed, setPressed] = useState(false);
+  const reduced = useReducedMotion();
   const p = useStateProgress(!!selected);
   const fundo = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(p.value, [0, 1], [C.surface.default, C.accent.default]),
+    backgroundColor: interpolateColor(p.get(), [0, 1], [C.surface.default, C.accent.default]),
   }));
   const texto = useAnimatedStyle(() => ({
-    color: interpolateColor(p.value, [0, 1], [C.text.secondary, C.text.onAccent]),
+    color: interpolateColor(p.get(), [0, 1], [C.text.secondary, C.text.onAccent]),
   }));
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
+      pressRetentionOffset={16}
       onPress={onPress}
-      style={({ pressed }) => [styles.chipHit, pressed && { opacity: 0.8 }]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={styles.chipHit}
     >
-      <Animated.View style={[styles.chip, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
+      <Animated.View style={[styles.chip, styles.chipPressable, !reduced && pressed && styles.chipPressed, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
         <Animated.Text style={[typography[selected ? 'Label/Strong 14' : 'Label/Medium 14'], texto]}>{label}</Animated.Text>
       </Animated.View>
     </Pressable>
@@ -104,16 +109,17 @@ export function SegmentedControl<T extends string>({
     if (!ativo) return;
     if (primeiraVez.current) {
       // Posição inicial sem animação.
-      x.value = ativo.x;
-      w.value = ativo.width;
+      x.set(ativo.x);
+      w.set(ativo.width);
       primeiraVez.current = false;
       return;
     }
-    x.value = withTiming(ativo.x, timing());
-    w.value = withTiming(ativo.width, timing());
+    const cfg = { duration: 240, easing: motion.easing.easeInOut, reduceMotion: ReduceMotion.System } as const;
+    x.set(withTiming(ativo.x, cfg));
+    w.set(withTiming(ativo.width, cfg));
   }, [ativo, x, w]);
 
-  const indicador = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }], width: w.value }));
+  const indicador = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }], width: w.get() }));
 
   return (
     <View style={styles.segmented} accessibilityRole="tablist">
@@ -387,6 +393,13 @@ const styles = StyleSheet.create({
   categoriaPadrao: { borderColor: C.border.pillOutline },
   categoriaSelecionada: { borderColor: C.border.accent, backgroundColor: C.accent.container },
   chip: { borderRadius: radius.full },
+  chipPressable: {
+    transform: [{ scale: 1 }],
+    transitionProperty: 'transform',
+    transitionDuration: '120ms',
+    transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
+  },
+  chipPressed: { transform: [{ scale: 0.97 }] },
   chipLarge: { paddingVertical: 9, paddingHorizontal: space[14] },
   chipSmall: { paddingVertical: 7, paddingHorizontal: space[12] },
   segmented: { flexDirection: 'row', alignSelf: 'flex-start', backgroundColor: C.surface.strong, borderRadius: radius.md },

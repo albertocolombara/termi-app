@@ -9,13 +9,14 @@ import React, { useEffect, useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { router, type Href } from 'expo-router';
 import Constants from 'expo-constants';
+import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { mostrarFerramentasDev } from '@/config/env';
 import { Avatar, BottomSheet, Button, color, fontFamily, Icon, Plus, radius, space, Text, type IconName } from '@/ds';
-import { motion } from '@/ds/motion';
+import { motion, project, rubberband } from '@/ds/motion';
 import { statusDeViajante } from '@/domain/status/niveis';
 import { t } from '@/i18n';
 import type { Classe } from '@/domain/sessao/duracao';
@@ -40,25 +41,50 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
   const [contaEmBreve, setContaEmBreve] = useState(false);
 
   const x = useSharedValue(-largura);
-  const scrim = useSharedValue(0);
+  const contexto = useSharedValue(0);
   useEffect(() => {
     if (!montado) return;
-    const rm = ReduceMotion.System;
     if (visivel) {
-      x.set(withTiming(0, { duration: motion.duration.medium4, easing: motion.easing.emphasizedDecelerate, reduceMotion: rm }));
-      scrim.set(withTiming(1, { duration: motion.duration.short4, reduceMotion: rm }));
+      x.set(withSpring(0, motion.spring.sheet));
     } else {
-      scrim.set(withTiming(0, { duration: motion.duration.medium2, reduceMotion: rm }));
       x.set(
-        withTiming(-largura, { duration: motion.duration.medium2, easing: motion.easing.emphasizedAccelerate, reduceMotion: rm }, (fim) => {
+        withSpring(-largura, motion.spring.sheetDismiss, (fim) => {
           if (fim) scheduleOnRN(setMontado, false);
         }),
       );
     }
-  }, [visivel, montado, largura, x, scrim]);
+  }, [visivel, montado, largura, x]);
+
+  const pan = usePanGesture({
+    activeOffsetX: [-10, 10],
+    onActivate: () => {
+      'worklet';
+      contexto.set(x.get());
+    },
+    onUpdate: (e) => {
+      'worklet';
+      const proximo = contexto.get() + e.translationX;
+      x.set(proximo <= 0 ? proximo : rubberband(proximo, largura));
+    },
+    onDeactivate: (e) => {
+      'worklet';
+      const projetado = x.get() + project(e.velocityX);
+      if (projetado < -largura * 0.35) {
+        x.set(
+          withSpring(-largura, { ...motion.spring.sheetDismiss, velocity: e.velocityX }, (fim) => {
+            if (fim) scheduleOnRN(onFechar);
+          }),
+        );
+      } else {
+        x.set(withSpring(0, { ...motion.spring.sheet, velocity: e.velocityX }));
+      }
+    },
+  });
 
   const estiloDoMenu = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
-  const estiloDoScrim = useAnimatedStyle(() => ({ opacity: scrim.get() }));
+  const estiloDoScrim = useAnimatedStyle(() => ({
+    opacity: interpolate(x.get(), [-largura, 0], [0, 1], Extrapolation.CLAMP),
+  }));
 
   const status = statusDeViajante(milhas);
   const plus = classe === 'primeira';
@@ -74,10 +100,12 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
 
   return (
     <Modal visible={montado} transparent statusBarTranslucent navigationBarTranslucent animationType="none" onRequestClose={onFechar}>
-      <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
-        <Pressable accessibilityLabel={t('menu.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: color.bg.scrim }]} onPress={onFechar} />
-      </Animated.View>
-      <Animated.View style={[styles.menu, { width: largura }, estiloDoMenu]} accessibilityViewIsModal>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Animated.View style={[StyleSheet.absoluteFill, estiloDoScrim]}>
+          <Pressable accessibilityLabel={t('menu.fechar')} style={[StyleSheet.absoluteFill, { backgroundColor: color.bg.scrim }]} onPress={onFechar} />
+        </Animated.View>
+        <GestureDetector gesture={pan}>
+          <Animated.View style={[styles.menu, { width: largura }, estiloDoMenu]} accessibilityViewIsModal>
         <ScrollView
           contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[32] }]}
           bounces={false}
@@ -173,6 +201,7 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
           </Text>
         </ScrollView>
       </Animated.View>
+        </GestureDetector>
 
       <BottomSheet
         visible={contaEmBreve}
@@ -181,6 +210,7 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
         subtitle={t('menu.contaEmBreveTexto')}
         footer={<Button size="medium" icon={null} label={t('menu.entendi')} onPress={() => setContaEmBreve(false)} />}
       />
+      </GestureHandlerRootView>
     </Modal>
   );
 }
