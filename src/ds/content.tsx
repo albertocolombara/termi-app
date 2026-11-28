@@ -218,7 +218,7 @@ export function ListOption({ icon, title, description, selected, locked, onPress
 export function ActionRow({
   title,
   description,
-  icon = 'plusTile',
+  icon = 'categoriaOutro',
   onPress,
 }: {
   title: string;
@@ -228,16 +228,18 @@ export function ActionRow({
 }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}>
-      <Icon name={icon} />
+      <View style={styles.actionIcon}>
+        <Icon name={icon} size={18} color={C.text.secondary} />
+      </View>
       <View style={styles.texts}>
-        <Text variant="Body/Large Medium 16">{title}</Text>
+        <Text variant="Label/Medium 14">{title}</Text>
         {description ? (
-          <Text variant="Body/Small 13" tone="tertiary" numberOfLines={1}>
+          <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1}>
             {description}
           </Text>
         ) : null}
       </View>
-      <Icon name="chevronRight" />
+      <Icon name="chevronRight" size={16} color={C.text.tertiary} />
     </Pressable>
   );
 }
@@ -371,6 +373,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[16],
     borderRadius: radius.card,
     backgroundColor: C.surface.card,
+  },
+  actionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: C.surface.default,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   banner: { flexDirection: 'row', borderRadius: radius.card, backgroundColor: C.surface.card },
   bannerMessage: { alignItems: 'center', gap: space[10], paddingVertical: space[12], paddingHorizontal: space[16] },

@@ -117,7 +117,7 @@ export function TelaCartao() {
                 <Dado rotulo={t('cartao.assento')} valor="23A" />
                 <Dado rotulo={t('cartao.data')} valor={hoje} />
               </View>
-              {/* Picote entre as duas partes do bilhete */}
+              {/* Picote entre as duas partes do bilhete (1:1 Figma: bilhete único com recortes semicirculares) */}
               <LinhaTracejada cor={color.cartao.tracejado} traco={5} espaco={4} style={styles.picote} />
               <View style={[styles.recorte, styles.recorteEsq]} pointerEvents="none" />
               <View style={[styles.recorte, styles.recorteDir]} pointerEvents="none" />
@@ -136,7 +136,7 @@ export function TelaCartao() {
             </ImpressaoDoBilhete>
           </View>
           {motivoVazio(motivo) ? (
-            <ActionRow title={t('cartao.adicionarMotivo')} description={t('cartao.adicionarMotivoDescricao')} onPress={() => setFolhaAberta(true)} />
+            <ActionRow icon="categoriaOutro" title={t('cartao.adicionarMotivo')} description={t('cartao.adicionarMotivoDescricao')} onPress={() => setFolhaAberta(true)} />
           ) : (
             // 03c (Figma v3): com o motivo preenchido, o bloco mostra o ícone da categoria e o objetivo.
             <Pressable
@@ -227,12 +227,12 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface.default,
   },
   papel: { backgroundColor: color.cartao.papel, paddingHorizontal: space[16], paddingVertical: space[20] },
-  papelDeCima: { gap: space[24], borderBottomLeftRadius: radius.lg, borderBottomRightRadius: radius.lg },
+  papelDeCima: { gap: space[24], zIndex: 2 },
   picote: { position: 'absolute', left: 16, right: 16, bottom: 0 },
-  recorte: { position: 'absolute', bottom: -8, width: 16, height: 16, borderRadius: 8, backgroundColor: color.bg.app },
-  recorteEsq: { left: -8 },
-  recorteDir: { right: -8 },
-  papelDeBaixo: { gap: space[16], borderRadius: radius.lg },
+  recorte: { position: 'absolute', bottom: -9, width: 18, height: 18, borderRadius: 9, backgroundColor: color.bg.app, zIndex: 3 },
+  recorteEsq: { left: -9 },
+  recorteDir: { right: -9 },
+  papelDeBaixo: { gap: space[16], borderBottomLeftRadius: radius.card, borderBottomRightRadius: radius.card },
   motivo: { flexDirection: 'row', alignItems: 'center', gap: space[12], padding: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
   iconeDoMotivo: { width: 28, height: 28, borderRadius: 14, backgroundColor: color.surface.subtle, alignItems: 'center', justifyContent: 'center' },
   linha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
