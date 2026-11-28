@@ -93,7 +93,7 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
         <View style={styles.divisorMetrica} />
         <Bloco valor={s.milhas.toLocaleString('pt-BR')} rotulo={t('detalhe.milhas')} />
         <View style={styles.divisorMetrica} />
-        <Bloco valor={`+${t('detalhe.dolares', { valor: s.dolares })}`} rotulo={t('detalhe.paraSouvenirs')} destaque />
+        <Bloco valor={t('detalhe.dolares', { valor: s.dolares })} rotulo={t('detalhe.paraSouvenirs')} destaque />
       </View>
 
       <Pressable

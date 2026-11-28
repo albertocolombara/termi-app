@@ -102,7 +102,7 @@ export function TelaPouso({ id }: { id: string | undefined }) {
             <View style={styles.divisorVerticalPapel} />
             <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
             <View style={styles.divisorVerticalPapel} />
-            <Bloco valor={`+${t('pouso.dolares', { dolares: s.dolares })}`} rotulo={t('pouso.paraSouvenirs')} destaque />
+            <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} destaque />
           </View>
         </View>
 
