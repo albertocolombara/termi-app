@@ -10,8 +10,10 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import type { SessaoGravada } from '@/data/sessoes/repositorio';
 import { useMotivoDaSessao, useSessaoEmAndamento } from '@/data/sessoes/useSessaoEmAndamento';
@@ -196,6 +198,18 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
   const pousoMostrado = continuando ? voo.pousoPrevistoEm : pousoPrevistoEm;
   const prefixo = continuando ? '~' : '';
 
+  // Arrastar para cima na alça/rota do painel inferior abre "Sobre este voo" (04G).
+  const abrirInfo = () => setVendoInfo(true);
+  const gestoPainel = usePanGesture({
+    activeOffsetY: -10,
+    onDeactivate: (e) => {
+      'worklet';
+      if (e.translationY < -24 || e.velocityY < -350) {
+        scheduleOnRN(abrirInfo);
+      }
+    },
+  });
+
   return (
     <View style={styles.tela}>
       {/* Paisagem: janela ou globo. Desmontados em segundo plano. */}
@@ -373,17 +387,26 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
         </View>
       </View>
 
-      {/* Painel inferior ("Em voo / Cabine Limpa") */}
+      {/* Painel inferior ("Em voo / Cabine Limpa") — tocar ou puxar a alça/rota para cima abre Sobre este voo */}
       <View
-        style={{ paddingHorizontal: screenGutter, paddingTop: space[12], paddingBottom: insets.bottom + space[20], gap: space[16] }}
+        style={{ paddingHorizontal: screenGutter, paddingTop: space[8], paddingBottom: insets.bottom + space[20], gap: space[14] }}
         onLayout={(e) => setAlturaDoPainel(e.nativeEvent.layout.height)}
       >
-        <View style={styles.alcaCabine} />
-        <View style={styles.linha}>
-          <Lugar cidade={origem} codigo={codigoDoLugar(voo.origem)} />
-          <EmVooRota progresso={progressoDaRota} />
-          <Lugar cidade={destino} codigo={codigoDoLugar(voo.destino)} direita />
-        </View>
+        <GestureDetector gesture={gestoPainel}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('infoDoVoo.abrir', { voo: voo.callsign })}
+            onPress={abrirInfo}
+            style={({ pressed }) => [{ gap: space[12], paddingTop: space[4] }, pressed && { opacity: 0.85 }]}
+          >
+            <View style={styles.alcaCabine} />
+            <View style={styles.linha}>
+              <Lugar cidade={origem} codigo={codigoDoLugar(voo.origem)} />
+              <EmVooRota progresso={progressoDaRota} />
+              <Lugar cidade={destino} codigo={codigoDoLugar(voo.destino)} direita />
+            </View>
+          </Pressable>
+        </GestureDetector>
         <View style={[styles.linha, { minHeight: 40 }]}>
           <Button
             variant="secondary"
