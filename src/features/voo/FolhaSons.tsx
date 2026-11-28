@@ -5,12 +5,21 @@
  * "Sem som" não está no Figma: sem ele, só dava para silenciar baixando o volume a zero.
  */
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { SOM_PREMIUM, SOM_PRONTO, SONS, somLiberado, type Som } from '@/domain/sons/catalogo';
 import type { Classe } from '@/domain/sessao/duracao';
-import { BottomSheet, ListOption, Slider, space, Text } from '@/ds';
+import { BottomSheet, color, Icon, Plus, radius, Slider, space, Text, type IconName } from '@/ds';
 import { t, type ChaveDeTexto } from '@/i18n';
+
+const ICONE_SOM: Record<Som, IconName> = {
+  cruzeiro: 'plane',
+  'ruido-branco': 'soundWhiteNoise',
+  motores: 'soundEngine',
+  cabine: 'soundCabin',
+  chuva: 'soundRain',
+  lofi: 'soundLofi',
+};
 
 export function FolhaSons({
   visivel,
@@ -33,6 +42,10 @@ export function FolhaSons({
   onFechar: () => void;
 }) {
   const [aviso, setAviso] = useState<ChaveDeTexto | null>(null);
+  const gratis = SONS.filter((s) => !SOM_PREMIUM[s]);
+  const plusSons = SONS.filter((s) => SOM_PREMIUM[s]);
+  const mudo = emUso === null;
+
   const tocar = (s: Som) => {
     if (!SOM_PRONTO[s]) return setAviso('sons.emBreveAviso');
     if (!somLiberado(s, classe)) {
@@ -42,6 +55,37 @@ export function FolhaSons({
     setAviso(null);
     onEscolher(s);
   };
+
+  const renderSom = (s: Som) => {
+    const selecionado = emUso === s;
+    const bloqueado = SOM_PREMIUM[s] && classe !== 'primeira';
+    return (
+      <Pressable
+        key={s}
+        accessibilityRole="radio"
+        accessibilityState={{ selected: selecionado }}
+        accessibilityHint={bloqueado ? 'Plus' : undefined}
+        onPress={() => tocar(s)}
+        style={({ pressed }) => [styles.linha, selecionado && styles.linhaAtiva, pressed && { opacity: 0.8 }]}
+      >
+        <Icon name={ICONE_SOM[s]} size={20} color={selecionado ? color.accent.default : color.text.tertiary} />
+        <View style={{ flex: 1, gap: space[2] }}>
+          <Text variant="Body/Large Medium 16" tone={selecionado ? 'primary' : 'secondary'}>
+            {t(`sons.${s}.nome` as ChaveDeTexto)}
+          </Text>
+          <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1}>
+            {SOM_PRONTO[s] ? t(`sons.${s}.descricao` as ChaveDeTexto) : t('sons.emBreve')}
+          </Text>
+        </View>
+        {bloqueado ? (
+          <Icon name="lock" size={16} color={color.text.muted} />
+        ) : selecionado ? (
+          <Icon name="confirmacao" size={16} color={color.accent.default} />
+        ) : null}
+      </Pressable>
+    );
+  };
+
   return (
     <BottomSheet
       visible={visivel}
@@ -50,20 +94,27 @@ export function FolhaSons({
         onFechar();
       }}
       title={t('sons.titulo')}
-      subtitle={t('sons.subtitulo')}
+      headerRight={
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: mudo }}
+          onPress={() => onEscolher('nenhum')}
+          style={({ pressed }) => [styles.mudo, mudo && styles.mudoAtivo, pressed && { opacity: 0.8 }]}
+        >
+          <Icon name="speaker" size={14} color={mudo ? color.accent.default : color.text.secondary} />
+          <Text variant="Caption/Medium 12" tone={mudo ? 'accent' : 'secondary'}>
+            Mudo
+          </Text>
+        </Pressable>
+      }
     >
-      <View accessibilityRole="radiogroup">
-        {SONS.map((s) => (
-          <ListOption
-            key={s}
-            title={t(`sons.${s}.nome` as ChaveDeTexto)}
-            description={SOM_PRONTO[s] ? t(`sons.${s}.descricao` as ChaveDeTexto) : t('sons.emBreve')}
-            selected={emUso === s}
-            locked={SOM_PREMIUM[s] && classe !== 'primeira'}
-            onPress={() => tocar(s)}
-          />
-        ))}
-        <ListOption title={t('sons.nenhum')} selected={emUso === null} onPress={() => onEscolher('nenhum')} />
+      <View accessibilityRole="radiogroup" style={{ gap: space[4] }}>
+        {gratis.map(renderSom)}
+        <View style={styles.divisorPlus}>
+          <Plus tamanho="pequeno" />
+          <View style={styles.linhaDivisor} />
+        </View>
+        {plusSons.map(renderSom)}
       </View>
       {aviso ? (
         <Text variant="Caption/Regular 12" accessibilityLiveRegion="polite">
@@ -76,3 +127,43 @@ export function FolhaSons({
     </BottomSheet>
   );
 }
+
+const styles = StyleSheet.create({
+  mudo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    paddingVertical: space[6],
+    paddingHorizontal: space[12],
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: color.border.pillOutline,
+  },
+  mudoAtivo: {
+    borderColor: color.border.accent,
+    backgroundColor: color.accent.container,
+  },
+  linha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[14],
+    paddingVertical: space[10],
+    paddingHorizontal: space[12],
+    borderRadius: radius.cta,
+  },
+  linhaAtiva: {
+    backgroundColor: color.surface.card,
+  },
+  divisorPlus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[10],
+    paddingVertical: space[6],
+    paddingHorizontal: space[4],
+  },
+  linhaDivisor: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: color.border.subtle,
+  },
+});

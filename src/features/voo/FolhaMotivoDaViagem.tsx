@@ -186,12 +186,26 @@ export function FolhaMotivoDaViagem({
       visible={visivel}
       onClose={onFechar}
       title={t('motivo.titulo')}
-      subtitle={t('motivo.subtitulo')}
+      subtitle={noFormulario ? t('motivo.subtitulo') : undefined}
+      headerRight={
+        !noFormulario ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setNoFormulario(true)}
+            style={({ pressed }) => [styles.botaoEditar, pressed && { opacity: 0.8 }]}
+          >
+            <Icon name="editar" size={14} color={color.text.secondary} />
+            <Text variant="Caption/Medium 12" tone="secondary">
+              Editar
+            </Text>
+          </Pressable>
+        ) : undefined
+      }
       footer={
         tecladoAberto ? null : noFormulario ? (
           <Button size="medium" icon={null} label={t('motivo.salvar')} onPress={salvar} />
         ) : (
-          <Button size="medium" icon={null} label={t('motivo.fecharResumo')} onPress={onFechar} />
+          <Button variant="secondary" size="medium" icon={null} label={t('motivo.fecharResumo')} onPress={onFechar} />
         )
       }
     >
@@ -350,4 +364,14 @@ const styles = StyleSheet.create({
   acoesDaTarefa: { flexDirection: 'row', alignItems: 'center', gap: space[16] },
   acao: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
   objetivo: { gap: space[6], padding: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
+  botaoEditar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    paddingVertical: space[6],
+    paddingHorizontal: space[12],
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: color.border.pillOutline,
+  },
 });

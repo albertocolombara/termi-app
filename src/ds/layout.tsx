@@ -109,6 +109,8 @@ export type BottomSheetProps = {
   title: string;
   /** Ícone à esquerda do título (Figma v3: folha do serviço de bordo). */
   icone?: React.ReactNode;
+  /** Elemento à direita do título (ex.: pílula "Mudo", "Editar", "Radar ao vivo"). */
+  headerRight?: React.ReactNode;
   subtitle?: string;
   children?: React.ReactNode;
   /** Ação fixa no rodapé (normalmente um <Button size="medium" />). */
@@ -124,7 +126,7 @@ export type BottomSheetProps = {
  * continua montado até a sheet terminar de descer, então a saída aparece inteira. O fundo da sheet
  * continua abaixo da borda da tela, para nunca aparecer um vão embaixo dela.
  */
-export function BottomSheet({ visible, onClose, title, icone, subtitle, children, footer, alturaMaxima }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, icone, headerRight, subtitle, children, footer, alturaMaxima }: BottomSheetProps) {
   // A barra de navegação do Android (gestos ou 3 botões) fica por cima da sheet: o rodapé sobe a altura dela.
   const insets = useSafeAreaInsets();
   const { height: alturaDaTela } = useWindowDimensions();
@@ -200,11 +202,14 @@ export function BottomSheet({ visible, onClose, title, icone, subtitle, children
               <View style={{ gap: space[12] }}>
                 <View style={styles.handle} />
                 <View style={{ gap: space[4] }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
-                    {icone}
-                    <Text variant="Heading/Sheet 22" accessibilityRole="header" style={{ flexShrink: 1 }}>
-                      {title}
-                    </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12], flex: 1 }}>
+                      {icone}
+                      <Text variant="Heading/Sheet 22" accessibilityRole="header" style={{ flexShrink: 1 }}>
+                        {title}
+                      </Text>
+                    </View>
+                    {headerRight}
                   </View>
                   {subtitle ? (
                     <Text variant="Body/Medium 14" tone="tertiary">

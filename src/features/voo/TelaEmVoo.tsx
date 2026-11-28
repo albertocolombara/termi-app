@@ -227,9 +227,8 @@ function EmVoo({ sessao }: { sessao: SessaoGravada }) {
             height={alturaDaPaisagem}
             aviao={posicao}
             trilha={trilha}
-            // "Centralizar" no lugar do botão de vistas da janela, embaixo do horário do pouso: o painel
-            // superior reserva esse espaço nas duas vistas (build-77: o botão tinha descido).
-            topoDosControles={alturaDoTopo - TAMANHO_DO_BOTAO}
+            // Abaixo do topo compacto para nunca sobrepor o relógio regressivo.
+            topoDosControles={alturaDoTopo + space[12]}
             origem={{ lat: voo.origem.lat, lon: voo.origem.lon, nome: origem }}
             destino={{ lat: voo.destino.lat, lon: voo.destino.lon, nome: destino }}
             modo={modoGlobo}
@@ -644,10 +643,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[8],
-    height: 38,
+    height: 40,
     paddingHorizontal: space[14],
     borderRadius: radius.full,
-    backgroundColor: 'rgba(20, 22, 28, 0.85)',
+    backgroundColor: 'rgba(20, 22, 28, 0.84)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
   },
   pontoVista: { width: 6, height: 6, borderRadius: 3, backgroundColor: color.accent.default },
   alcaCabine: { width: 32, height: 3, borderRadius: radius.full, backgroundColor: color.surface.strong, alignSelf: 'center' },
@@ -656,7 +657,16 @@ const styles = StyleSheet.create({
   relogio: { fontVariant: ['tabular-nums'] },
   trilhoDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.track, overflow: 'hidden' },
   barraDaPausa: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
-  modosDoGlobo: { flexDirection: 'row', alignItems: 'center', gap: space[2], padding: 3, borderRadius: radius.full, backgroundColor: 'rgba(20, 22, 28, 0.85)' },
+  modosDoGlobo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    padding: 3,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(20, 22, 28, 0.84)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+  },
   modo: { flexDirection: 'row', alignItems: 'center', gap: space[6], height: 34, paddingHorizontal: space[12], borderRadius: radius.full, justifyContent: 'center' },
   modoAtivo: { backgroundColor: color.surface.strong },
 });

@@ -22,8 +22,8 @@ export function EmVooRota({ progresso }: { progresso: number }) {
   return (
     <View style={{ flex: 1, height: ALTURA }} onLayout={(e) => setLargura(e.nativeEvent.layout.width)} importantForAccessibility="no-hide-descendants">
       <Svg width={largura} height={ALTURA}>
-        <Line x1={0} y1={10.5} x2={x} y2={10.5} stroke={C.accent.default} strokeDasharray="2 2" />
-        <Line x1={x} y1={10.5} x2={largura} y2={10.5} stroke={C.text.tertiary} strokeDasharray="2 2" />
+        <Line x1={0} y1={10.5} x2={largura} y2={10.5} stroke={C.surface.strong} strokeWidth={2} strokeLinecap="round" />
+        <Line x1={0} y1={10.5} x2={x} y2={10.5} stroke={C.accent.default} strokeWidth={2} strokeLinecap="round" />
         <G transform={`translate(${xAviao} 0)`}>
           <Path d={AVIAO} fill={C.accent.default} />
         </G>

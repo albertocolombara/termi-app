@@ -58,11 +58,20 @@ export function FolhaVistaDaJanela({
         onFechar();
       }}
       title={t('vista.titulo')}
+      headerRight={
+        classe !== 'primeira' ? (
+          <View style={styles.badgePlus}>
+            <Text variant="Caption/Medium 12" tone="accent" style={{ fontSize: 11.5 }}>
+              2 vistas no Plus
+            </Text>
+          </View>
+        ) : undefined
+      }
     >
       <View
         style={styles.grade}
         accessibilityRole="radiogroup"
-        onLayout={(e) => setLargura((e.nativeEvent.layout.width - space[12] * (VISTAS.length - 1)) / VISTAS.length)}
+        onLayout={(e) => setLargura((e.nativeEvent.layout.width - space[10] * (VISTAS.length - 1)) / VISTAS.length)}
       >
         {VISTAS.map((v) => {
           const selecionada = v === emUso;
@@ -76,13 +85,11 @@ export function FolhaVistaDaJanela({
               accessibilityState={{ selected: selecionada, disabled: !pronta }}
               accessibilityLabel={`${t(NOME[v])}${!pronta ? `, ${t('vista.emBreve')}` : cadeado ? `, ${t('vista.primeiraClasse')}` : ''}`}
               onPress={() => tocar(v)}
-              style={({ pressed }) => [styles.opcao, pressed && { opacity: 0.8 }]}
+              style={({ pressed }) => [styles.opcao, pressed && { opacity: 0.85 }]}
             >
               <View style={[styles.miniatura, { width: largura, height: (largura * 4) / 3 }, selecionada && styles.selecionada]}>
                 {mini && largura > 0 ? (
-                  // Tamanho em números: com largura em % o Android desenhava a imagem no tamanho
-                  // original, cortada no canto (build-53).
-                  <Image source={mini} style={{ width: largura - 4, height: ((largura - 4) * 4) / 3 }} resizeMode="cover" />
+                  <Image source={mini} style={{ width: largura, height: (largura * 4) / 3 }} resizeMode="cover" />
                 ) : (
                   <View style={styles.semMiniatura}>
                     <Text variant="Caption/Medium 12" tone="tertiary">
@@ -90,10 +97,17 @@ export function FolhaVistaDaJanela({
                     </Text>
                   </View>
                 )}
-              </View>
-              <View style={styles.rotulo}>
-                {cadeado ? <Icon name="lock" size={12} color={selecionada ? color.accent.default : color.text.secondary} /> : null}
-                <Text variant="Caption/Medium 12" style={{ color: selecionada ? color.text.accent : color.text.secondary }} numberOfLines={1}>
+                <View pointerEvents="none" style={styles.degradeMini} />
+                {selecionada ? (
+                  <View style={styles.checkBadge}>
+                    <Icon name="confirmacao" size={12} color={color.accent.on} />
+                  </View>
+                ) : cadeado ? (
+                  <View style={styles.lockBadge}>
+                    <Icon name="lock" size={12} color={color.text.primary} />
+                  </View>
+                ) : null}
+                <Text variant="Caption/Medium 12" style={styles.rotuloMini} numberOfLines={1}>
                   {t(NOME[v])}
                 </Text>
               </View>
@@ -101,7 +115,6 @@ export function FolhaVistaDaJanela({
           );
         })}
       </View>
-      {/* Figma v3: sem rodapé fixo; o texto só aparece para avisar de uma vista que ainda não está pronta. */}
       {aviso ? (
         <Text variant="Caption/Regular 12" style={{ paddingTop: space[8] }} accessibilityLiveRegion="polite">
           {t(aviso)}
@@ -112,12 +125,52 @@ export function FolhaVistaDaJanela({
 }
 
 const styles = StyleSheet.create({
-  // Três vistas ocupando a largura toda, em partes iguais (pedido do Alberto, build-51: estavam
-  // pequenas e encostadas à esquerda).
-  grade: { flexDirection: 'row', gap: space[12], paddingTop: space[4] },
-  opcao: { flex: 1, gap: space[8], alignItems: 'center' },
-  miniatura: { borderRadius: radius.tile, overflow: 'hidden', backgroundColor: color.surface.default, borderWidth: 2, borderColor: 'transparent' },
+  badgePlus: {
+    paddingVertical: space[4],
+    paddingHorizontal: space[10],
+    borderRadius: radius.full,
+    backgroundColor: color.accent.container,
+  },
+  grade: { flexDirection: 'row', gap: space[10], paddingTop: space[4] },
+  opcao: { flex: 1, alignItems: 'center' },
+  miniatura: { borderRadius: radius.cta, overflow: 'hidden', backgroundColor: color.surface.card, borderWidth: 2, borderColor: 'transparent' },
   selecionada: { borderColor: color.accent.default },
   semMiniatura: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  rotulo: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
+  degradeMini: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
+    backgroundImage: 'linear-gradient(180deg, transparent 0%, rgba(11, 13, 18, 0.85) 100%)',
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: space[8],
+    right: space[8],
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: color.accent.default,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: space[8],
+    right: space[8],
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(11, 13, 18, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rotuloMini: {
+    position: 'absolute',
+    left: space[8],
+    right: space[8],
+    bottom: space[8],
+    color: color.text.primary,
+  },
 });

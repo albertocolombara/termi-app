@@ -596,9 +596,12 @@ export function Icon({ name, size, color }: IconProps) {
   const fg = color ?? def.color;
   const v2 = name === 'arrowLeft' ? ICONES_V2.arrowRight : ICONES_V2[name];
   if (v2 && v2.length > 0) {
+    // O ícone `Avião` do DS v2 aponta para cima (↑); o app inteiro (Globo, Cartão, Embarque, Rota) espera apontando para a direita (→).
+    const transform =
+      name === 'arrowLeft' ? 'matrix(-1 0 0 1 24 0)' : name === 'plane' ? 'rotate(90 12 12)' : undefined;
     return (
       <Svg width={s} height={s} viewBox="0 0 24 24">
-        <G transform={name === 'arrowLeft' ? 'matrix(-1 0 0 1 24 0)' : undefined}>
+        <G transform={transform}>
           {v2.map((d, i) => (
             <Path key={i} d={d} fill={fg} fillRule="evenodd" clipRule="evenodd" />
           ))}
