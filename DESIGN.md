@@ -20,7 +20,7 @@
 1. **Poucos passos até embarcar.** Caminho rápido no dial; animações de ritual sempre puláveis.
 2. **Nunca punir.** "Pousar antes" e "Pousou antes" usam cor neutra e linguagem sem fracasso. Nada de vermelho para o usuário que encerrou o voo.
 3. **Uma ação principal por tela.** O botão amarelo aparece só onde há uma próxima ação clara.
-4. **Foco em voo.** Durante a sessão, nenhuma oferta, nenhum paywall, interface mínima.
+4. **Foco em voo.** A interface fica mínima durante a sessão. Na Econômica, o paywall abre quando a pessoa toca em um recurso Plus, e o voo segue no horário. Fechar o paywall volta ao voo.
 5. **Honestidade visual.** Preços, período grátis e datas sempre visíveis; nenhum selo sem dado real ("mais escolhido", "melhor valor").
 6. **Respeitar o sistema.** "Reduzir movimento" desliga animações e pulsos; avisos explicados antes das permissões.
 
@@ -300,3 +300,7 @@ Telas no Figma: "Estados do voo · v2" (E1–E8 e E5b) e "Erros e estados vazios
 4. **Registrar diferenças** entre Figma e código no `src/ds/README.md` (hoje: desfoque sem expo-blur, mala vetorial simplificada, curvas simplificadas em alguns ícones).
 5. **Composições de tela** (Avatar, Paywall, Menu lateral) entram no código junto com as telas que as usam.
 6. **Mudança de identidade** (ex.: laranja oficial, nome final) é decisão de produto: atualizar PRD, DESIGN e Figma juntos.
+
+## Registro de decisões
+
+- **2026-11-27** — Confirmado o comportamento do PRD (RF-25 e RN-20). Ao tocar num recurso Plus durante o voo, o paywall abre na hora e o voo segue no horário.

@@ -21,22 +21,44 @@ export const palette = {
   'ink/800': '#26242A',
   'white/100': '#FFFFFF',
   'black/100': '#000000',
+  'white/a03': 'rgba(255,255,255,0.03)',
   'white/a05': 'rgba(255,255,255,0.05)',
+  'white/a06': 'rgba(255,255,255,0.06)',
   'white/a08': 'rgba(255,255,255,0.08)',
   'white/a10': 'rgba(255,255,255,0.10)',
+  'white/a12': 'rgba(255,255,255,0.12)',
+  'white/a14': 'rgba(255,255,255,0.14)',
   'white/a15': 'rgba(255,255,255,0.15)',
   'white/a20': 'rgba(255,255,255,0.20)',
   'white/a25': 'rgba(255,255,255,0.25)',
   'white/a40': 'rgba(255,255,255,0.40)',
+  'white/a50': 'rgba(255,255,255,0.50)',
   'white/a60': 'rgba(255,255,255,0.60)',
   'white/a65': 'rgba(255,255,255,0.65)',
   'white/a80': 'rgba(255,255,255,0.80)',
+  'white/a95': 'rgba(255,255,255,0.95)',
   'black/a25': 'rgba(0,0,0,0.25)',
   'black/a55': 'rgba(0,0,0,0.55)',
   'yellow/a05': 'rgba(255,198,41,0.05)',
+  'yellow/a10': 'rgba(255,198,41,0.10)',
+  'yellow/a14': 'rgba(255,198,41,0.14)',
   'yellow/a20': 'rgba(255,198,41,0.20)',
+  'green/a14': 'rgba(68,206,50,0.14)',
   'orange-intl/a05': 'rgba(244,74,34,0.05)',
   'orange-intl/a08': 'rgba(219,70,35,0.08)',
+  /** Papel físico marfim quente (03 Cartão de embarque, 05 Pouso, M2 Passaporte). */
+  'paper/ivory': '#F1EFEA',
+  'paper/ink': '#1C1A15',
+  /** Tintas arquivais de carimbo do passaporte (Design System v2). */
+  'ink/amber': '#B37B16',
+  'ink/forest': '#2B7A4B',
+  'ink/navy': '#365E8D',
+  'ink/terracotta': '#B3543A',
+  'ink/plum': '#9E4061',
+  /** Gradiente pôr do sol do card de sequência diária (Design System v2). */
+  'sunset/top': '#EB7324',
+  'sunset/mid': '#CC4F14',
+  'sunset/deep': '#A3380D',
 } as const;
 
 const p = palette;
@@ -57,10 +79,15 @@ export const color = {
     sunken: p['black/a25'], // linhas de tabela, segmento ativo
     track: p['white/a15'], // trilho do slider, toggle desligado
     inverse: p['white/100'], // knob, progresso inativo
+    card: p['white/a05'], // card v4 Clean sem borda externa
+    cardMuted: p['white/a03'], // card recuado (itens já conquistados)
+    paper: p['paper/ivory'], // material físico marfim (embarque, pouso, passaporte)
   },
   accent: {
     default: p['yellow/500'], // CTAs, seleção, progresso
     subtle: p['yellow/900'], // fundo de selos
+    container: p['yellow/a10'], // fundo suave de opção/plano selecionado
+    badge: p['yellow/a14'], // pílula Plus e badges quentes
     on: p['brown/950'], // conteúdo sobre o amarelo
   },
   /** Laranja do Termi: personagem, marca e ícones de voo. Nunca para avisos. */
@@ -70,8 +97,9 @@ export const color = {
   status: {
     warning: p['orange-intl/500'],
     success: p['green/500'],
-    /** Fundo da etiqueta "Pousou" (Figma M3b): verde a 16%. */
-    successSubtle: 'rgba(68,206,50,0.16)',
+    /** Fundo da etiqueta "Pousou" e "Radar ao vivo": verde a 14%. */
+    successSubtle: p['green/a14'],
+    successContainer: p['green/a14'],
   },
   text: {
     primary: p['white/100'],
@@ -80,20 +108,22 @@ export const color = {
     muted: p['white/a60'],
     accent: p['yellow/500'],
     onAccent: p['brown/950'],
+    onPaper: p['paper/ink'],
     /** Figma `text/disabled` (branco a 38%): itens indisponíveis, como a loja de cidade sem souvenir. */
     disabled: 'rgba(255,255,255,0.38)',
   },
-  /** Figma `state/disabled-container` (branco a 12%): ícones e fundos de itens indisponíveis. */
+  /** Figma `state/*`: estados interativos de superfície e itens indisponíveis. */
   state: {
     disabledContainer: 'rgba(255,255,255,0.12)',
+    pressedSurface: p['white/a14'],
   },
-  /** Cartão de embarque (papel branco, Figma "03 · Cartão de embarque"). */
+  /** Cartão de embarque (papel marfim quente `#F1EFEA`, Figma v4 Clean). */
   cartao: {
-    papel: p['white/100'],
-    texto: p['ink/900'],
-    textoMedio: 'rgba(20,18,24,0.80)',
-    textoSecundario: 'rgba(20,18,24,0.65)',
-    tracejado: 'rgba(20,18,24,0.45)',
+    papel: p['paper/ivory'],
+    texto: p['paper/ink'],
+    textoMedio: 'rgba(28,26,21,0.80)',
+    textoSecundario: 'rgba(28,26,21,0.62)',
+    tracejado: 'rgba(28,26,21,0.28)',
     cabecalho: p['white/a05'],
     bordaDoCabecalho: p['white/a65'],
     /** Sombra da fenda da impressora sobre o bilhete sendo impresso. */
@@ -122,11 +152,17 @@ export const color = {
   },
   /** Carimbo não ganho na tela de pouso (Figma E7): branco a 30%. */
   carimboApagado: 'rgba(255,255,255,0.30)',
-  /** Tintas dos carimbos do passaporte (Figma M2): ouro, laranja, rosa, verde e azul. */
+  /** Tintas arquivais dos carimbos do passaporte (Design System v2 · papel marfim `#F1EFEA`). */
   carimbo: {
-    papel: '#EFEDD6',
-    bordaDoPapel: '#C4C4C4',
-    tintas: ['#C99B1D', '#FF9F1C', '#FF7A9C', '#44CE32', '#7FB2FF'],
+    papel: p['paper/ivory'],
+    bordaDoPapel: 'rgba(28,26,21,0.10)',
+    tintas: [p['ink/amber'], p['ink/forest'], p['ink/navy'], p['ink/terracotta'], p['ink/plum']],
+  },
+  /** Gradiente pôr do sol do card de sequência diária (Design System v2). */
+  streak: {
+    sunsetTop: p['sunset/top'],
+    sunsetMid: p['sunset/mid'],
+    sunsetDeep: p['sunset/deep'],
   },
   /** Esteira de bagagem da tela de embarque (Figma "05 · Embarcando"; cores locais da ilustração). */
   esteira: {
@@ -186,6 +222,7 @@ export const color = {
   },
   border: {
     subtle: p['white/a10'],
+    pillOutline: p['white/a12'],
     default: p['white/a15'],
     input: p['white/a20'],
     strong: p['white/a25'],
@@ -247,8 +284,10 @@ export const space = {
   16: 16,
   20: 20,
   24: 24,
+  28: 28,
   32: 32,
   40: 40,
+  48: 48,
 } as const;
 export type Space = keyof typeof space;
 
@@ -264,15 +303,18 @@ export const radius = {
   lg: 10,
   xl: 12,
   '2xl': 16,
-  '3xl': 24, // vitrine da loja (Figma v3: L1)
+  cta: 16,
+  card: 20,
+  '3xl': 24, // vitrine da loja e card de sequência
+  sheet: 28,
   screen: 28,
   full: 999,
 } as const;
 
 // ───────── Tipografia ─────────
 // As fontes são embutidas pelo plugin do expo-font (app.config.ts): "Geist" (400/500/600) e a Geist Pixel.
-// Da Geist Pixel o app usa só a forma Grid, a que mais lembra um painel físico de aeroporto
-// (decidido em 19/11/2026). Ela é um arquivo estático próprio, família "Geist Pixel Grid".
+// Regra v4 Clean (Design System v2): -3% de tracking em todos os títulos/textos grandes (>= 20px) em Geist;
+// 0% nos textos < 20px. Nunca usar Geist Mono.
 export const fontFamily = {
   sans: 'Geist',
   pixel: 'Geist Pixel Grid',
@@ -293,30 +335,37 @@ function type(family: string, weight: Weight, size: number, letterSpacingPct: nu
 
 const S = fontFamily.sans;
 
-/** Estilos de texto. Nomes iguais aos do Figma ("Grupo/Nome tamanho"). */
+/** Estilos de texto. Nomes iguais aos do Figma ("Grupo/Nome tamanho") + escala Material 3 (`M3/*`). */
 export const typography = {
   'Display/Pixel 32': type(fontFamily.pixel, '400', 32, -6, 120),
   'Display/Data 52': type(S, '600', 52, -3, 120),
-  'Heading/Screen 32': type(S, '600', 32, -6, 120),
+  'Heading/Screen 32': type(S, '600', 32, -3, 120),
   'Heading/Data 24': type(S, '500', 24, -3, 120),
-  'Heading/Sheet 22': type(S, '600', 22, 0, 130),
-  // Rótulos dos botões pelo tamanho, como no Material 3 Expressive (Alberto, 26/11/2026; antes,
-  // Button/Large 24 e Button/Medium 20 nos primários). Botões de 54–56 dp = "médio" do M3E:
-  // Title Medium (16/24, peso 500, espaçamento 0,15). Botão pequeno: Label Large (14/20, 0,1).
-  'Button/Label 16': type(S, '500', 16, 0.9375, 150),
-  // Primário grande, com ou sem seta: o mesmo 16, em peso 600 (Alberto, 26/11/2026).
-  'Button/Label Strong 16': type(S, '600', 16, 0.9375, 150),
-  'Button/Label 14': type(S, '500', 14, 0.714, 142.86),
+  'Heading/Sheet 22': type(S, '600', 22, -3, 130),
+  'Button/Label 16': type(S, '500', 16, 0, 125),
+  'Button/Label Strong 16': type(S, '600', 16, 0, 125),
+  'Button/Label 14': type(S, '500', 14, 0, 130),
   'Nav/Title 20': type(S, '400', 20, -3, 130),
-  'Body/Large 16': type(S, '400', 16, -3, 130),
-  'Body/Large Medium 16': type(S, '500', 16, 0, 130),
-  'Body/Medium 14': type(S, '400', 14, -3, 130),
+  'Body/Large 16': type(S, '400', 16, 0, 135),
+  'Body/Large Medium 16': type(S, '500', 16, 0, 135),
+  'Body/Medium 14': type(S, '400', 14, 0, 135),
   'Label/Medium 14': type(S, '500', 14, 0, 130),
   'Label/Strong 14': type(S, '600', 14, 0, 130),
-  'Body/Small 13': type(S, '400', 13, 0, 130),
-  'Caption/Medium 12': type(S, '500', 12, -3, 130),
-  'Caption/Regular 12': type(S, '400', 12, -3, 130),
+  'Body/Small 13': type(S, '400', 13, 0, 135),
+  'Caption/Medium 12': type(S, '500', 12, 0, 130),
+  'Caption/Regular 12': type(S, '400', 12, 0, 130),
   'Caption/Strong 12': type(S, '600', 12, 0, 130),
+  // Escala Material 3 (Design System v2 · 01B Typography & Type Scale)
+  'M3/Display Medium 48': type(S, '400', 48, -3, 112.5),
+  'M3/Display Small 36': type(S, '400', 36, -3, 116.7),
+  'M3/Headline Large 30': type(S, '500', 30, -3, 120),
+  'M3/Headline Small 24': type(S, '500', 24, -3, 125),
+  'M3/Title Large 20': type(S, '500', 20, -3, 130),
+  'M3/Title Medium 16': type(S, '500', 16, 0, 137.5),
+  'M3/Body Large 15': type(S, '400', 15, 0, 146.7),
+  'M3/Body Medium 13.5': type(S, '400', 13.5, 0, 140.7),
+  'M3/Label Large 16': type(S, '600', 16, 0, 125),
+  'M3/Label Small 12': type(S, '500', 12, 0, 133.3),
 } satisfies Record<string, TextStyle>;
 export type TypographyVariant = keyof typeof typography;
 
@@ -325,6 +374,10 @@ export type TypographyVariant = keyof typeof typography;
 export const effects = {
   'Glow/Accent': { boxShadow: `0 0 6px 0 ${p['yellow/500']}` },
   'Shadow/Small': { boxShadow: '0 1px 3px 0 rgba(0,0,0,0.6)' },
+  'Shadow/Medal': { boxShadow: '0 14px 28px 0 rgba(0,0,0,0.50)' },
+  'Shadow/Paper': { boxShadow: '0 10px 24px 0 rgba(0,0,0,0.35)' },
+  'Shadow/Streak Sunset': { boxShadow: '0 12px 28px 0 rgba(230,97,20,0.28)' },
+  'Shadow/Floating Card': { boxShadow: '0 10px 22px 0 rgba(0,0,0,0.45)' },
 } satisfies Record<string, ViewStyle>;
 
 // ───────── Tamanhos de toque ─────────
