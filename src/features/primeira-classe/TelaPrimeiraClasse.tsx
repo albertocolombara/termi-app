@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   oferta: { gap: space[12] },
   planos: { flexDirection: 'row', justifyContent: 'space-between', gap: space[12], paddingTop: space[12] },
   centro: { textAlign: 'center' },
-  ilustracao: { height: ALTURA_DA_ILUSTRACAO, borderRadius: radius['2xl'], overflow: 'hidden', backgroundColor: color.surface.sunken },
+  ilustracao: { height: ALTURA_DA_ILUSTRACAO, borderRadius: radius.card, overflow: 'hidden', backgroundColor: color.surface.sunken },
   degrade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: `linear-gradient(180deg, transparent 55%, ${color.bg.app} 100%)` },
   chip: {
     position: 'absolute',
@@ -235,5 +235,5 @@ const styles = StyleSheet.create({
     paddingVertical: space[6],
   },
   sons: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[10] },
-  som: { width: 80, height: 112, paddingHorizontal: space[4], borderRadius: radius.xl, backgroundColor: color.surface.default, alignItems: 'center', justifyContent: 'center', gap: space[10] },
+  som: { width: 80, height: 112, paddingHorizontal: space[4], borderRadius: radius.lg, backgroundColor: color.surface.card, alignItems: 'center', justifyContent: 'center', gap: space[10] },
 });

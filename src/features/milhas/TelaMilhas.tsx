@@ -111,11 +111,11 @@ function Linha({ etapa }: { etapa: EtapaDaProgressao }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
-  resumo: { gap: space[16], paddingVertical: space[16], paddingHorizontal: space[16], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
-  trilho: { height: 4, borderRadius: 2, backgroundColor: color.surface.strong, overflow: 'hidden' },
-  barra: { height: 4, borderRadius: 2, backgroundColor: color.accent.default },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[10], paddingHorizontal: space[12], borderRadius: radius.lg, minHeight: 56 },
-  linhaAtual: { backgroundColor: color.surface.default },
+  resumo: { gap: space[16], padding: space[20], borderRadius: radius.card, backgroundColor: color.surface.card },
+  trilho: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.default, overflow: 'hidden' },
+  barra: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.lg, minHeight: 56 },
+  linhaAtual: { backgroundColor: color.surface.card },
   marca: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: color.border.default, alignItems: 'center', justifyContent: 'center' },
   marcaAlcancada: { borderColor: color.accent.default },
   marcaAtual: { borderColor: color.accent.default, backgroundColor: color.accent.default },

@@ -166,22 +166,18 @@ export function TelaEstatisticas() {
         ) : null}
       </View>
 
-      {/* Resumo */}
-      <View style={{ gap: space[12] }}>
+      {/* Card 1 · Resumo do período (v4 Clean: hero + barra + 3 linhas suíças) */}
+      <View style={styles.cardSecao}>
         <Text variant="Label/Strong 14" accessibilityRole="header">
           {t(`estatisticas.resumo.${periodo}` as ChaveDeTexto)}
         </Text>
-        <View style={{ gap: space[8] }}>
-          <View style={styles.linhaDeBlocos}>
-            <Bloco valor={String(r.voos)} rotulo={t('estatisticas.voos')} />
-            <Bloco valor={String(r.pousos)} rotulo={t('estatisticas.pousosCompletos')} />
-            <Bloco valor={String(r.pousosAntes)} rotulo={t('estatisticas.pousaramAntes')} />
-          </View>
-          <View style={styles.linhaDeBlocos}>
-            <Bloco valor={r.voos ? duracaoTotal(r.sessaoMedia) : '—'} rotulo={t('estatisticas.sessaoMedia')} />
-            <Bloco valor={r.voos ? minutosCurtos(r.vooMaisLongo) : '—'} rotulo={t('estatisticas.vooMaisLongo')} />
-            <Bloco valor={String(e.servicos)} rotulo={t('estatisticas.servicos')} />
-          </View>
+        <View style={styles.linhaBase}>
+          <Text variant="Heading/Screen 32">
+            {r.voos ? `${r.pousos} / ${r.voos}` : '0'}
+          </Text>
+          <Text variant="Body/Small 13" tone="tertiary">
+            {t('estatisticas.pousosCompletos')}
+          </Text>
         </View>
         {r.voos ? (
           <View style={{ gap: space[6] }}>
@@ -194,17 +190,29 @@ export function TelaEstatisticas() {
             </Text>
           </View>
         ) : null}
+        <View style={styles.linhasSuicas}>
+          <LinhaSuica rotulo={t('estatisticas.pousaramAntes')} valor={String(r.pousosAntes)} />
+          <LinhaSuica rotulo={t('estatisticas.sessaoMedia')} valor={r.voos ? duracaoTotal(r.sessaoMedia) : '—'} />
+          <LinhaSuica rotulo={t('estatisticas.vooMaisLongo')} valor={r.voos ? minutosCurtos(r.vooMaisLongo) : '—'} />
+          <LinhaSuica rotulo={t('estatisticas.servicos')} valor={String(e.servicos)} ultima />
+        </View>
       </View>
 
-      {/* Sequência */}
+      {/* Card luminoso · Sequência (v4 Clean: Sunset Amber + bandeja escura translúcida) */}
       <View style={styles.sequencia}>
-        <View style={{ flex: 1, gap: space[2] }}>
-          <Text variant="Heading/Data 24">{t('estatisticas.seguidosTitulo', { dias: dias(e.sequencia) })}</Text>
-          <Text variant="Caption/Regular 12" tone="tertiary">
-            {t('estatisticas.recordeDe', { dias: dias(e.recorde) })}
-          </Text>
+        <View style={styles.sequenciaTopo}>
+          <View style={{ flex: 1, gap: space[2] }}>
+            <Text variant="Heading/Data 24" style={{ color: color.text.primary }}>
+              {t('estatisticas.seguidosTitulo', { dias: dias(e.sequencia) })}
+            </Text>
+            <Text variant="Caption/Regular 12" style={{ color: 'rgba(255, 255, 255, 0.78)' }}>
+              {t('estatisticas.recordeDe', { dias: dias(e.recorde) })}
+            </Text>
+          </View>
         </View>
-        <SemanaDaSequencia dias={semana} />
+        <View style={styles.sequenciaBandeja}>
+          <SemanaDaSequencia dias={semana} />
+        </View>
       </View>
 
       {/* Quando você foca */}
@@ -294,34 +302,41 @@ export function TelaEstatisticas() {
         )}
       </BlocoPlus>
 
-      {/* Pelo mundo (Plus) */}
+      {/* Card 2 · Pelo mundo (Plus, v4 Clean: hero km + barra Terra + linhas suíças) */}
       <BlocoPlus plus={plus} titulo={t('estatisticas.peloMundo')}>
-        <View style={styles.linhaDeBlocos}>
-          <Bloco valor={`${mundo.km.toLocaleString('pt-BR')} km`} rotulo={t('estatisticas.kmVoados')} />
-          <Bloco valor={String(mundo.paisesNovos)} rotulo={t('estatisticas.paisesNovos')} />
-          <Bloco valor={String(mundo.cidades)} rotulo={t('estatisticas.cidades')} />
-        </View>
-        {mundo.rotaMaisVoada ? (
-          <View style={styles.cartao}>
-            <Text variant="Caption/Regular 12" tone="tertiary">
-              {t('estatisticas.rotaMaisVoada')}
-            </Text>
-            <Text variant="Label/Medium 14">
-              {t('estatisticas.rota', {
-                origem: mundo.rotaMaisVoada.origem,
-                destino: mundo.rotaMaisVoada.destino,
-                voos: mundo.rotaMaisVoada.voos === 1 ? t('estatisticas.umVoo') : t('estatisticas.nVoos', { n: mundo.rotaMaisVoada.voos }),
-              })}
+        <View style={styles.cardSecao}>
+          <View style={styles.linhaBase}>
+            <Text variant="Heading/Screen 32">{`${mundo.km.toLocaleString('pt-BR')} km`}</Text>
+            <Text variant="Body/Small 13" tone="tertiary">
+              {t('estatisticas.kmVoados')}
             </Text>
           </View>
-        ) : null}
-        {mundo.km > 0 ? (
-          <Text variant="Caption/Regular 12" tone="tertiary">
-            {mundo.voltaDaTerra < 1
-              ? t('estatisticas.voltaDaTerra', { porcento: Math.max(1, Math.round(mundo.voltaDaTerra * 100)) })
-              : t('estatisticas.voltasDaTerra', { voltas: mundo.voltaDaTerra.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) })}
-          </Text>
-        ) : null}
+          {mundo.km > 0 ? (
+            <View style={{ gap: space[6] }}>
+              <Progresso fracao={Math.min(1, mundo.voltaDaTerra)} altura={4} />
+              <Text variant="Caption/Regular 12" tone="tertiary">
+                {mundo.voltaDaTerra < 1
+                  ? t('estatisticas.voltaDaTerra', { porcento: Math.max(1, Math.round(mundo.voltaDaTerra * 100)) })
+                  : t('estatisticas.voltasDaTerra', { voltas: mundo.voltaDaTerra.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) })}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.linhasSuicas}>
+            <LinhaSuica rotulo={t('estatisticas.paisesNovos')} valor={String(mundo.paisesNovos)} />
+            <LinhaSuica rotulo={t('estatisticas.cidades')} valor={String(mundo.cidades)} ultima={!mundo.rotaMaisVoada} />
+            {mundo.rotaMaisVoada ? (
+              <LinhaSuica
+                rotulo={t('estatisticas.rotaMaisVoada')}
+                valor={t('estatisticas.rota', {
+                  origem: mundo.rotaMaisVoada.origem,
+                  destino: mundo.rotaMaisVoada.destino,
+                  voos: mundo.rotaMaisVoada.voos === 1 ? t('estatisticas.umVoo') : t('estatisticas.nVoos', { n: mundo.rotaMaisVoada.voos }),
+                })}
+                ultima
+              />
+            ) : null}
+          </View>
+        </View>
       </BlocoPlus>
 
       {/* Milhas (Plus) */}
@@ -385,7 +400,7 @@ function Progresso({ fracao, altura }: { fracao: number; altura: number }) {
   );
 }
 
-/** Semana corrente no cartão da sequência (Figma v4: bolinhas S T Q Q S S D). */
+/** Semana corrente na bandeja translúcida do cartão de sequência (v4 Clean). */
 function SemanaDaSequencia({ dias: semana }: { dias: DiaDaSemana[] }) {
   const descricao = semana.map((d) => (d.estado === 'voou' || d.estado === 'hoje-voou' ? t('estatisticas.diaComFoco', { dia: d.rotulo }) : t('estatisticas.diaSemFoco', { dia: d.rotulo })));
   return (
@@ -393,18 +408,18 @@ function SemanaDaSequencia({ dias: semana }: { dias: DiaDaSemana[] }) {
       {semana.map((d, i) => {
         const hoje = d.estado === 'hoje' || d.estado === 'hoje-voou';
         return (
-          <View key={i} style={{ alignItems: 'center', gap: space[4] }}>
+          <View key={i} style={{ flex: 1, alignItems: 'center', gap: space[4] }}>
             <View
               style={[
                 styles.bolinha,
-                d.estado === 'voou' && { backgroundColor: color.text.muted },
+                d.estado === 'voou' && { backgroundColor: 'rgba(255, 255, 255, 0.85)' },
                 d.estado === 'hoje-voou' && { backgroundColor: color.accent.default },
                 d.estado === 'hoje' && { borderWidth: 1.5, borderColor: color.accent.default },
-                d.estado === 'vazio' && { backgroundColor: color.surface.strong },
-                d.estado === 'futuro' && { borderWidth: 1, borderColor: color.text.muted },
+                d.estado === 'vazio' && { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+                d.estado === 'futuro' && { borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
               ]}
             />
-            <Text variant="Caption/Medium 12" tone={hoje ? 'accent' : 'tertiary'}>
+            <Text variant="Caption/Medium 12" style={{ color: hoje ? color.accent.default : 'rgba(255, 255, 255, 0.78)' }}>
               {d.rotulo}
             </Text>
           </View>
@@ -447,12 +462,14 @@ function BlocoPlus({ plus, titulo, subtitulo, children }: { plus: boolean; titul
   );
 }
 
-function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
+function LinhaSuica({ rotulo, valor, ultima }: { rotulo: string; valor: string; ultima?: boolean }) {
   return (
-    <View style={styles.bloco} accessible accessibilityLabel={`${valor} ${rotulo}`}>
-      <Text variant="Label/Strong 14">{valor}</Text>
-      <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1}>
+    <View style={[styles.linhaSuica, !ultima && styles.linhaSuicaDivisor]} accessible accessibilityLabel={`${rotulo}: ${valor}`}>
+      <Text variant="Body/Small 13" tone="tertiary">
         {rotulo}
+      </Text>
+      <Text variant="Label/Medium 14" numberOfLines={1} style={{ flexShrink: 1, textAlign: 'right' }}>
+        {valor}
       </Text>
     </View>
   );
@@ -466,24 +483,41 @@ const styles = StyleSheet.create({
   barras: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: space[4], paddingTop: space[16], paddingBottom: space[12], minHeight: 148 },
   coluna: { flex: 1, maxWidth: 32, alignItems: 'center', gap: space[6] },
   barra: { width: '100%', borderRadius: radius.sm },
-  linhaDeBlocos: { flexDirection: 'row', gap: space[8] },
-  bloco: { flex: 1, gap: space[2], paddingVertical: space[10], paddingHorizontal: space[12], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  cardSecao: { gap: space[12], padding: space[20], borderRadius: radius.card, backgroundColor: color.surface.card },
+  linhasSuicas: { marginTop: space[4] },
+  linhaSuica: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12], paddingVertical: space[10] },
+  linhaSuicaDivisor: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.border.subtle },
   tituloDoBloco: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
   bloqueado: { opacity: 0.35, filter: 'blur(5px)' },
   linhaDaCategoria: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
   nomeDaCategoria: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[6] },
   porcento: { width: 36, textAlign: 'right' },
   trilho: { backgroundColor: color.surface.track, overflow: 'hidden' },
-  media: { flexDirection: 'row', justifyContent: 'space-between', gap: space[8] },
+  media: { flexDirection: 'row', justifyContent: 'space-between', gap: space[8], paddingTop: space[10], borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border.subtle },
   rotulado: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
-  divisao: { flexDirection: 'row', gap: space[2], height: 6 },
-  parte: { height: 6, borderRadius: radius.xs },
-  sequencia: { flexDirection: 'row', alignItems: 'center', gap: space[16], padding: space[16], borderRadius: radius.xl, backgroundColor: color.surface.subtle },
-  semana: { flexDirection: 'row', gap: space[6] },
+  divisao: { flexDirection: 'row', gap: space[2], height: 5 },
+  parte: { height: 5, borderRadius: radius.xs },
+  sequencia: {
+    gap: space[14],
+    padding: space[20],
+    borderRadius: radius.card,
+    backgroundColor: color.streak.sunsetMid,
+    backgroundImage: `linear-gradient(155deg, ${color.streak.sunsetTop} 0%, ${color.streak.sunsetMid} 52%, ${color.streak.sunsetDeep} 100%)`,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  sequenciaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
+  sequenciaBandeja: {
+    paddingVertical: space[10],
+    paddingHorizontal: space[12],
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(11, 13, 18, 0.28)',
+  },
+  semana: { flexDirection: 'row', justifyContent: 'space-between', gap: space[4] },
   bolinha: { width: 14, height: 14, borderRadius: 7 },
   horario: { flexDirection: 'row', alignItems: 'flex-end', gap: space[6], height: ALTURA_DO_HORARIO },
   faixa: { flex: 1, borderRadius: radius.xs },
   eixo: { flexDirection: 'row', justifyContent: 'space-between' },
   linhaBase: { flexDirection: 'row', alignItems: 'baseline', gap: space[8] },
-  cartao: { gap: space[2], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle },
+  cartao: { gap: space[2], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
 });

@@ -86,11 +86,13 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           ) : null}
         </View>
 
-        {/* O que o voo rendeu (E7: com a linha de carimbo e loja logo abaixo, sem caixa) */}
+        {/* O que o voo rendeu (v4 Clean: faixa unboxed de 3 colunas com hairlines) */}
         <View style={{ gap: space[12] }}>
           <View style={styles.grade}>
             <Bloco valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
+            <View style={styles.divisor} />
             <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
+            <View style={styles.divisor} />
             <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} />
           </View>
           {pousou ? null : (
@@ -190,15 +192,23 @@ const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app, paddingHorizontal: screenGutter },
   conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: screenGutter, gap: space[32] },
   areaDoCarimbo: { paddingVertical: space[8], alignItems: 'center' },
-  grade: { flexDirection: 'row', gap: space[8] },
-  bloco: { flex: 1, gap: space[2], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.lg, backgroundColor: color.surface.subtle },
+  grade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border.subtle,
+    paddingVertical: space[14],
+  },
+  divisor: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: color.border.subtle },
+  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[6] },
   aviso: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[12], paddingHorizontal: space[14], borderRadius: radius.xl, borderWidth: 1, borderColor: color.border.subtle, backgroundColor: color.surface.default },
-  // E7 (Figma 443:11349): a linha do diário fica no fundo da tela, só com a borda.
-  linhaApagada: { backgroundColor: color.bg.app },
-  // E6 (Figma 443:11469): a loja do destino com a borda amarela e fundo âmbar bem leve.
-  // Figma 570:13515: borda tracejada, sem fundo, textos e ícones desabilitados.
-  linhaIndisponivel: { borderStyle: 'dashed', borderColor: color.border.default, backgroundColor: 'transparent' },
-  linhaLoja: { borderColor: color.border.accent, backgroundColor: color.accent.subtle },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
+  // E7: linha do diário mais discreta, sem borda pesada.
+  linhaApagada: { backgroundColor: color.surface.cardMuted },
+  // País sem souvenir: fosco e calmo, sem tracejado agressivo.
+  linhaIndisponivel: { backgroundColor: color.surface.cardMuted },
+  // E6: loja do destino em destaque âmbar suave.
+  linhaLoja: { borderWidth: 1, borderColor: color.border.accent, backgroundColor: color.accent.container },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
 });

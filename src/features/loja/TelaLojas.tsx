@@ -22,7 +22,6 @@ import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
 import { Medalha } from './Medalha';
-import { Toldo } from './Toldo';
 
 const POR_PAGINA = 4;
 
@@ -51,7 +50,7 @@ export function TelaLojas() {
   return (
     <View style={styles.tela}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[16] }}>
-        <View style={{ paddingHorizontal: screenGutter, paddingBottom: space[12] }}>
+        <View style={{ paddingHorizontal: screenGutter, paddingBottom: space[8] }}>
           <TopBar
             title={t('mala.titulo')}
             onBack={() => router.back()}
@@ -59,15 +58,11 @@ export function TelaLojas() {
             saldoAcessivel={t('loja.saldoAcessivel', { valor: saldo })}
           />
         </View>
-        <Toldo />
 
         <View style={styles.corpo}>
           <View style={{ gap: space[20] }}>
             <View style={styles.letreiro}>
-              <Text variant="Caption/Strong 12" tone="accent" style={{ letterSpacing: 3 }}>
-                {t('loja.letreiroLojas')}
-              </Text>
-              <Text variant="Heading/Sheet 22" accessibilityRole="header">
+              <Text variant="Heading/Screen 32" accessibilityRole="header" style={{ textAlign: 'center' }}>
                 {t('loja.lojasTitulo')}
               </Text>
               <Text variant="Body/Small 13" tone="secondary" style={{ textAlign: 'center' }}>
@@ -128,7 +123,7 @@ function Cartao({ loja, naMala, plus, agora, largura }: { loja: LojaDoPouso; naM
         <Text variant="Label/Medium 14" tone="secondary">{`✓ ${t('loja.naMalaCartao')}`}</Text>
       ) : plus ? (
         <View style={styles.preco}>
-          <Text variant="Label/Medium 14" tone="secondary">
+          <Text variant="Label/Strong 14" tone="accent">
             {t('loja.precoCartao', { valor: preco })}
           </Text>
         </View>
@@ -161,17 +156,17 @@ function Cartao({ loja, naMala, plus, agora, largura }: { loja: LojaDoPouso; naM
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
-  corpo: { flex: 1, justifyContent: 'space-between', gap: space[24], paddingHorizontal: screenGutter, paddingTop: space[24] },
-  letreiro: { alignItems: 'center', gap: space[4] },
+  corpo: { flex: 1, justifyContent: 'space-between', gap: space[24], paddingHorizontal: screenGutter, paddingTop: space[12] },
+  letreiro: { alignItems: 'center', gap: space[6] },
   grade: { flexDirection: 'row', flexWrap: 'wrap', gap: space[12], alignContent: 'flex-start' },
   cartao: {
     alignItems: 'center',
     gap: space[12],
-    paddingTop: space[14],
-    paddingBottom: space[12],
+    paddingTop: space[16],
+    paddingBottom: space[14],
     paddingHorizontal: space[12],
-    borderRadius: radius['2xl'],
-    backgroundColor: color.surface.subtle,
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
   },
-  preco: { paddingVertical: space[4], paddingHorizontal: space[12], borderRadius: radius.md, borderWidth: 1, borderColor: color.border.default },
+  preco: { paddingVertical: space[4], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: color.accent.badge },
 });

@@ -9,7 +9,7 @@ export function Secao({ titulo, children }: { titulo?: string; children: ReactNo
   return (
     <View style={{ gap: space[8] }}>
       {titulo ? (
-        <Text variant="Caption/Strong 12" tone="tertiary" style={{ textTransform: 'uppercase' }} accessibilityRole="header">
+        <Text variant="Caption/Medium 12" tone="tertiary" accessibilityRole="header">
           {titulo}
         </Text>
       ) : null}
@@ -77,7 +77,7 @@ export function LinhaComValor({ titulo, descricao, valor, onPress }: { titulo: s
 }
 
 const styles = StyleSheet.create({
-  grupo: { backgroundColor: color.surface.default, borderRadius: radius.xl, paddingHorizontal: space[16], paddingVertical: space[4] },
-  divisor: { height: 1, backgroundColor: color.surface.strong },
+  grupo: { backgroundColor: color.surface.card, borderRadius: radius.card, paddingHorizontal: space[16], paddingVertical: space[4] },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
   linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 56, paddingVertical: space[12] },
 });

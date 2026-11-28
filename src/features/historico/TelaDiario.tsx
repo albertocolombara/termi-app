@@ -122,7 +122,9 @@ function DiarioVazio({ carimbos }: { carimbos: number }) {
     <View style={{ gap: space[16] }}>
       <View style={styles.indicadores}>
         <Indicador valor="0 min" rotulo={t('diario.estaSemana')} />
+        <View style={styles.divisor} />
         <Indicador valor="0" rotulo={t('diario.voosRotulo')} />
+        <View style={styles.divisor} />
         <Indicador valor={String(carimbos)} rotulo={t('diario.carimbos')} />
       </View>
       <View importantForAccessibility="no-hide-descendants">
@@ -163,10 +165,26 @@ function Indicador({ valor, rotulo }: { valor: string; rotulo: string }) {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
   conteudo: { flexGrow: 1, justifyContent: 'space-between', gap: space[24], paddingHorizontal: screenGutter },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[10], minHeight: 62 },
+  linha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[12],
+    paddingVertical: space[12],
+    minHeight: 62,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: color.border.subtle,
+  },
   meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
-  indicadores: { flexDirection: 'row', gap: space[8] },
-  indicador: { flex: 1, gap: space[2], padding: space[12], borderRadius: radius.lg, backgroundColor: color.surface.default },
+  indicadores: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: color.border.subtle,
+    paddingVertical: space[14],
+  },
+  divisor: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: color.border.subtle },
+  indicador: { flex: 1, gap: space[2], paddingHorizontal: space[8] },
   exemplo: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[12] },
   bloco: { backgroundColor: color.surface.default },
 });
