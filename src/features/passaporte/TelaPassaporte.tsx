@@ -117,17 +117,14 @@ const styles = StyleSheet.create({
   resumo: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: color.border.subtle,
-    paddingVertical: space[14],
+    paddingVertical: space[6],
   },
   divisor: {
     width: StyleSheet.hairlineWidth,
     height: 28,
     backgroundColor: color.border.subtle,
   },
-  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[8] },
+  bloco: { flex: 1, alignItems: 'center', gap: space[2], paddingHorizontal: space[8] },
   pagina: {
     gap: space[14],
     paddingTop: space[16],

@@ -21,14 +21,14 @@ export function CabecalhoDoPainel({ voo, destino, tempo }: { voo: string; destin
     <View style={styles.cabecalho}>
       <View style={styles.colunas}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text variant="Body/Large Medium 16" tone="tertiary" style={{ width: LARGURA_DO_VOO }}>
+          <Text variant="Caption/Regular 12" tone="muted" style={{ width: LARGURA_DO_VOO, fontSize: 11.5 }}>
             {voo}
           </Text>
-          <Text variant="Body/Large Medium 16" tone="tertiary">
+          <Text variant="Caption/Regular 12" tone="muted" style={{ fontSize: 11.5 }}>
             {destino}
           </Text>
         </View>
-        <Text variant="Body/Large Medium 16" tone="tertiary">
+        <Text variant="Caption/Regular 12" tone="muted" style={{ fontSize: 11.5 }}>
           {tempo}
         </Text>
       </View>
@@ -67,16 +67,16 @@ export const LinhaDoPainel = memo(function LinhaDoPainel(p: LinhaDoPainelProps) 
         <View style={styles.identificacao}>
           <Cauda pais={p.pais} />
           <View style={{ width: LARGURA_DO_TEXTO, gap: 2 }}>
-            <Text style={[pixel(14), { color: C.text.primary }]} numberOfLines={1}>
+            <Text variant="Label/Medium 14" style={{ fontSize: 13, lineHeight: 16 }} numberOfLines={1}>
               {p.codigo}
             </Text>
             <LinhaQueAlterna companhia={p.companhia} rota={p.rota} />
           </View>
         </View>
         <View style={{ flex: 1 }}>
-          <Letreiro texto={p.destino} style={[pixel(20), { color: C.text.accent }]} correr />
+          <Letreiro texto={p.destino} style={[pixel(17), { color: C.text.accent }]} correr />
         </View>
-        <Text variant="Heading/Data 24" style={{ fontSize: 20, letterSpacing: -0.6 }}>
+        <Text variant="Body/Large Medium 16" style={{ fontSize: 16, letterSpacing: 0, fontVariant: ['tabular-nums'] }}>
           {p.tempo}
         </Text>
       </View>
@@ -95,7 +95,7 @@ function LinhaQueAlterna({ companhia, rota }: { companhia: string | null; rota?:
   const p = useStateProgress(mostraRota, 400);
   const estiloCompanhia = useAnimatedStyle(() => ({ opacity: 1 - p.get() }));
   const estiloRota = useAnimatedStyle(() => ({ opacity: p.get() }));
-  const estilo = [pixel(12), { color: C.text.secondary }];
+  const estilo = { fontFamily: fontFamily.sans, fontSize: 11, lineHeight: 14, color: C.text.tertiary };
   if (!companhia && !rota) return null;
   return (
     <View style={styles.revezamento}>

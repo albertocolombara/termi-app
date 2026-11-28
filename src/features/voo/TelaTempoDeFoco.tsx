@@ -11,7 +11,7 @@ import { useVoosDisponiveis } from '@/data/voos/useVoos';
 import { DURACAO_MAXIMA_ECONOMICA_MIN } from '@/domain/sessao/duracao';
 import { barrasDoDial } from '@/domain/voos/dial';
 import { voosElegiveis } from '@/domain/voos/elegibilidade';
-import { Button, color, InfoBanner, screenGutter, space, Text, TopBar } from '@/ds';
+import { Button, color, InfoBanner, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t } from '@/i18n';
 import { useClasse } from '@/services/compras';
 
@@ -48,12 +48,28 @@ export function TelaTempoDeFoco() {
   else if (elegiveis.length === 0) banner = <InfoBanner message={t('dial.nenhumVoo')} />;
   else
     banner = (
-      <InfoBanner
-        type="live"
-        title={t(elegiveis.length === 1 ? 'dial.umVoo' : 'dial.voosNoAr', { n: elegiveis.length })}
-        // Só o aviso do voo de ontem: a linha "pode pousar antes ou depois" saiu para o botão caber na tela (Alberto, build-46).
-        detail={q.data?.origem === 'ontem' ? t('dial.vooDeOntem') : undefined}
-      />
+      <View
+        style={{
+          alignSelf: 'center',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: space[8],
+          paddingVertical: space[8],
+          paddingHorizontal: space[14],
+          borderRadius: radius.full,
+          backgroundColor: color.surface.card,
+        }}
+      >
+        <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color.status.success }} />
+        <Text variant="Caption/Medium 12" style={{ fontSize: 12.5 }}>
+          {t(elegiveis.length === 1 ? 'dial.umVoo' : 'dial.voosNoAr', { n: elegiveis.length })}
+        </Text>
+        {q.data?.origem === 'ontem' ? (
+          <Text variant="Caption/Regular 12" tone="tertiary">
+            · {t('dial.vooDeOntem')}
+          </Text>
+        ) : null}
+      </View>
     );
 
   const podeSeguir = !daPrimeira && !q.isPending && !q.isError;
@@ -71,11 +87,11 @@ export function TelaTempoDeFoco() {
       >
         <View style={{ flex: 1, gap: space[16] }}>
           <TopBar title={t('comum.voltar')} onBack={() => router.back()} step={1} />
-          <View style={{ gap: space[12] }}>
-            <Text variant="Display/Pixel 32" style={{ color: color.text.accent }} accessibilityRole="header">
+          <View style={{ gap: space[6] }}>
+            <Text variant="Heading/Data 24" style={{ fontSize: 26, lineHeight: 32, letterSpacing: -0.78, fontWeight: '500' }} accessibilityRole="header">
               {t('dial.titulo')}
             </Text>
-            <Text variant="Body/Large 16" tone="secondary" style={{ maxWidth: 260 }}>
+            <Text variant="Body/Small 13" tone="tertiary">
               {t('dial.subtitulo')}
             </Text>
           </View>

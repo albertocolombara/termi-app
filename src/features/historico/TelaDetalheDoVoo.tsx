@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAtualizarMotivoDoVoo, useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { dataRelativa } from '@/domain/historico/historico';
 import { agendaDePausas, PAUSA_MAXIMA_MIN } from '@/domain/sessao/pausas';
-import { Cauda, CategoriaTag, Checkbox, color, InfoBanner, radius, screenGutter, space, Text, TopBar } from '@/ds';
+import { Cauda, CategoriaTag, Checkbox, color, Icon, InfoBanner, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { t, type ChaveDeTexto } from '@/i18n';
 
 import { CarimboDoPassaporte } from '../passaporte/CarimboDoPassaporte';
@@ -47,13 +47,23 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
       style={styles.tela}
       contentContainerStyle={{ paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[24], paddingHorizontal: screenGutter, gap: space[24] }}
     >
-      <TopBar title={voo.callsign} onBack={() => router.back()} />
+      <View style={styles.topoDetalhe}>
+        <View style={{ flex: 1 }}>
+          <TopBar title={voo.callsign} onBack={() => router.back()} />
+        </View>
+        <View style={[styles.situacao, pousou ? styles.situacaoPousou : styles.situacaoAntes]}>
+          <View style={[styles.pontoSituacao, { backgroundColor: pousou ? color.status.success : color.text.tertiary }]} />
+          <Text variant="Caption/Strong 12" style={{ color: pousou ? color.status.success : color.text.secondary }}>
+            {pousou ? t('diario.pousou') : t('diario.pousouAntes')}
+          </Text>
+        </View>
+      </View>
 
-      <View style={{ gap: space[14] }}>
+      <View style={{ gap: space[16] }}>
         <View style={styles.cabecalho}>
           <Cauda pais={voo.companhiaPais} />
           <View style={{ flex: 1, gap: space[2] }}>
-            <Text variant="Label/Strong 14" numberOfLines={1}>
+            <Text variant="Body/Large Medium 16" numberOfLines={1}>
               {nomeDoLugar(voo.origem)} → {nomeDoLugar(voo.destino)}
             </Text>
             {subtitulo ? (
@@ -62,19 +72,12 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
               </Text>
             ) : null}
           </View>
-          {/* Pousou em verde; Pousou antes em cor neutra (CLAUDE.md §9). */}
-          <View style={[styles.situacao, pousou ? styles.situacaoPousou : styles.situacaoAntes]}>
-            <Text variant="Caption/Strong 12" style={{ color: pousou ? color.status.success : color.text.secondary }}>
-              {pousou ? t('diario.pousou') : t('diario.pousouAntes')}
-            </Text>
-          </View>
         </View>
         <View style={styles.horarios}>
           <Horario rotulo={t('detalhe.embarque')} hora={horaLocal(s.embarcouEm)} onde={t('detalhe.ondeEQuando', { codigo: codigoDoLugar(voo.origem), data: dataRelativa(s.embarcouEm, agora) })} />
           <View style={styles.rotaLinha} pointerEvents="none">
-            <View style={[styles.rotaPonto, { backgroundColor: pousou ? color.accent.default : color.text.tertiary }]} />
             <View style={[styles.rotaTraco, { backgroundColor: pousou ? color.accent.default : color.surface.strong }]} />
-            <View style={[styles.rotaPonto, { backgroundColor: pousou ? color.accent.default : color.text.tertiary }]} />
+            <Icon name="plane" size={14} color={pousou ? color.accent.default : color.text.tertiary} />
           </View>
           <Horario
             rotulo={pousou ? t('detalhe.pouso') : t('detalhe.fimDoVoo')}
@@ -90,10 +93,15 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
         <View style={styles.divisorMetrica} />
         <Bloco valor={s.milhas.toLocaleString('pt-BR')} rotulo={t('detalhe.milhas')} />
         <View style={styles.divisorMetrica} />
-        <Bloco valor={t('detalhe.dolares', { valor: s.dolares })} rotulo={t('detalhe.paraSouvenirs')} />
+        <Bloco valor={`+${t('detalhe.dolares', { valor: s.dolares })}`} rotulo={t('detalhe.paraSouvenirs')} destaque />
       </View>
 
-      <View style={styles.linhaCarimbo}>
+      <Pressable
+        disabled={!pousou}
+        accessibilityRole={pousou ? 'button' : undefined}
+        onPress={() => router.push('/passaporte')}
+        style={({ pressed }) => [styles.linhaCarimbo, pressed && pousou && { opacity: 0.85 }]}
+      >
         {pousou ? (
           <View style={styles.miniaturaPapel} pointerEvents="none">
             <CarimboDoPassaporte cidade={nomeDoLugar(voo.destino)} codigo={destino} data={s.encerrouEm} tamanho={56} giro={-6} />
@@ -106,14 +114,15 @@ export function TelaDetalheDoVoo({ id }: { id: string | undefined }) {
           </View>
         )}
         <View style={{ flex: 1, gap: space[2] }}>
-          <Text variant="Heading/Data 24" tone={pousou ? 'primary' : 'muted'}>
-            {pousou ? destino : '—'}
+          <Text variant="Label/Strong 14" tone={pousou ? 'primary' : 'muted'}>
+            {pousou ? `${t('pouso.carimboDe', { cidade: nomeDoLugar(voo.destino) })} (${destino})` : t('detalhe.semCarimbo')}
           </Text>
           <Text variant="Caption/Regular 12" tone="tertiary">
-            {pousou ? t('detalhe.carimbo') : t('detalhe.semCarimbo')}
+            {pousou ? t('pouso.adicionadoAoPassaporte') : t('detalhe.semCarimbo')}
           </Text>
         </View>
-      </View>
+        {pousou ? <Icon name="chevronRight" size={16} color={color.text.tertiary} /> : null}
+      </Pressable>
 
       {temMotivo ? (
         <View style={styles.motivo}>
@@ -179,10 +188,12 @@ function Horario({ rotulo, hora, onde, direita }: { rotulo: string; hora: string
   );
 }
 
-function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
+function Bloco({ valor, rotulo, destaque }: { valor: string; rotulo: string; destaque?: boolean }) {
   return (
     <View style={styles.bloco}>
-      <Text variant="Heading/Data 24">{valor}</Text>
+      <Text variant="Heading/Data 24" tone={destaque ? 'accent' : 'primary'}>
+        {valor}
+      </Text>
       <Text variant="Caption/Regular 12" tone="tertiary">
         {rotulo}
       </Text>
@@ -192,24 +203,22 @@ function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app },
+  topoDetalhe: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  situacao: { paddingVertical: space[4], paddingHorizontal: space[10], borderRadius: radius.full },
+  situacao: { flexDirection: 'row', alignItems: 'center', gap: space[6], paddingVertical: space[4], paddingHorizontal: space[10], borderRadius: radius.full },
+  pontoSituacao: { width: 6, height: 6, borderRadius: 3 },
   situacaoPousou: { backgroundColor: color.status.successContainer },
   situacaoAntes: { backgroundColor: color.surface.default },
   horarios: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[12] },
-  rotaLinha: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[4] },
-  rotaPonto: { width: 6, height: 6, borderRadius: 3 },
+  rotaLinha: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[6], paddingHorizontal: space[4] },
   rotaTraco: { flex: 1, height: 2, borderRadius: 1 },
   faixaMetricas: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: color.border.subtle,
-    paddingVertical: space[14],
+    paddingVertical: space[10],
   },
   divisorMetrica: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: color.border.subtle },
-  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[6] },
+  bloco: { flex: 1, alignItems: 'center', gap: space[2], paddingHorizontal: space[6] },
   linhaCarimbo: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -13,17 +13,34 @@ import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
 
 // ───────── Step progress ─────────
-/** Progresso do fluxo de embarque em etapas (padrão: 3 — Tempo → Partidas → Cartão). */
+/** Progresso do fluxo de embarque em etapas (v4 Clean: feitas em branco, atual em amarelo, pendentes cinza + "1/3"). */
 export function StepProgress({ step, total = 3, style }: { step: number; total?: number; style?: StyleProp<ViewStyle> }) {
   return (
     <View
-      style={[styles.progress, style]}
+      style={[styles.progressRow, style]}
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: total, now: step }}
     >
-      {Array.from({ length: total }, (_, i) => (
-        <View key={i} style={[styles.progressBar, { backgroundColor: i < step ? C.accent.default : C.surface.inverse }]} />
-      ))}
+      <View style={styles.progress}>
+        {Array.from({ length: total }, (_, i) => {
+          const feita = i < step - 1;
+          const atual = i === step - 1;
+          return (
+            <View
+              key={i}
+              style={[
+                styles.progressBar,
+                {
+                  backgroundColor: atual ? C.accent.default : feita ? C.text.primary : C.surface.strong,
+                },
+              ]}
+            />
+          );
+        })}
+      </View>
+      <Text variant="Caption/Regular 12" tone="muted" style={{ fontSize: 11, lineHeight: 14 }}>
+        {`${step}/${total}`}
+      </Text>
     </View>
   );
 }
@@ -48,13 +65,15 @@ export function TopBar({ title, onBack, time, step, saldo, saldoAcessivel }: Top
     <View style={styles.topBar}>
       <View style={styles.topRow}>
         <Pressable accessibilityRole="button" accessibilityLabel={title === t('comum.voltar') ? title : t('comum.voltarDaTela', { tela: title })} hitSlop={hitSlop} onPress={onBack} style={styles.back}>
-          <Icon name="arrowLeft" />
-          <Text variant="Nav/Title 20">{title}</Text>
+          <Icon name="arrowLeft" size={18} color={C.text.secondary} />
+          <Text variant={step ? 'Body/Medium 14' : 'Nav/Title 20'} tone={step ? 'secondary' : 'primary'}>
+            {title}
+          </Text>
         </Pressable>
         {time ? (
           <View style={styles.time}>
-            <Icon name="timer" />
-            <Text variant="Body/Large 16" tone="tertiary">
+            <Icon name="timer" size={14} color={C.accent.default} />
+            <Text variant="Caption/Medium 12" tone="primary">
               {time}
             </Text>
           </View>
@@ -71,14 +90,12 @@ export function TopBar({ title, onBack, time, step, saldo, saldoAcessivel }: Top
 }
 
 // ───────── Section header ─────────
-/** Faixa amarela de painel de aeroporto para títulos de lista (ex.: Partidas). Ocupa a largura da tela. */
+/** Cabeçalho limpo de lista (v4 Clean: ícone amarelo + título Geist Medium 26 branco, sem faixa amarela). */
 export function SectionHeader({ title, icon = 'departures' }: { title: string; icon?: IconName }) {
   return (
     <View style={styles.sectionHeader} accessibilityRole="header">
-      <View style={styles.sectionIcon}>
-        <Icon name={icon} size={24} />
-      </View>
-      <Text variant="Heading/Screen 32" tone="onAccent">
+      <Icon name={icon} size={24} color={C.accent.default} />
+      <Text variant="Heading/Data 24" style={{ fontSize: 26, lineHeight: 32, letterSpacing: -0.78, fontWeight: '500' }}>
         {title}
       </Text>
     </View>
@@ -211,22 +228,28 @@ export function BottomSheet({ visible, onClose, title, icone, subtitle, children
 }
 
 const styles = StyleSheet.create({
-  progress: { flexDirection: 'row', gap: space[10] },
-  progressBar: { flex: 1, height: 2 },
-  topBar: { gap: space[20] },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  back: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  time: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
+  progress: { flex: 1, flexDirection: 'row', gap: space[6] },
+  progressBar: { flex: 1, height: 2.5, borderRadius: radius.full },
+  topBar: { gap: space[14] },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 32 },
+  back: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  time: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[6],
+    paddingVertical: space[4],
+    paddingHorizontal: space[10],
+    borderRadius: radius.full,
+    backgroundColor: C.surface.card,
+  },
   saldo: { paddingVertical: space[6], paddingHorizontal: space[12], borderRadius: radius.full, backgroundColor: C.accent.badge },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space[14],
-    paddingVertical: space[12],
+    gap: space[10],
     paddingHorizontal: space[16],
-    backgroundColor: C.accent.default,
   },
-  sectionIcon: { width: 32, height: 32, backgroundColor: C.accent.on, alignItems: 'center', justifyContent: 'center' },
   sheetRoot: { flex: 1, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: C.bg.sheet,

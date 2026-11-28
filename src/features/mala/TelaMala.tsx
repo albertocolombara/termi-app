@@ -30,16 +30,20 @@ export function TelaMala() {
       contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[24] }]}
     >
       <View style={{ gap: space[24] }}>
-        <TopBar title={t('mala.titulo')} onBack={() => router.back()} />
+        <TopBar
+          title={t('mala.titulo')}
+          onBack={() => router.back()}
+          saldo={t('mala.saldo', { valor: saldo.toLocaleString('pt-BR') })}
+        />
         <View style={{ gap: space[20] }}>
           <View style={{ gap: space[10] }}>
             <View style={styles.linha}>
               <Text variant="Label/Medium 14" tone="secondary">
                 {t('mala.contagem', { n: naMala.size, total: catalogo.length })}
               </Text>
-              <View style={styles.saldo}>
-                <Text variant="Label/Strong 14" tone="accent">{t('mala.saldo', { valor: saldo.toLocaleString('pt-BR') })}</Text>
-              </View>
+              <Text variant="Caption/Regular 12" tone="tertiary">
+                {`${Math.round(progresso * 100)}%`}
+              </Text>
             </View>
             <View style={styles.trilho}>
               <View style={[styles.trilhoPreenchido, { width: `${Math.round(progresso * 100)}%` }]} />

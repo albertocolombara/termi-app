@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCatalogo } from '@/data/colecao/catalogo';
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
-import { Button, CategoriaTag, color, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
+import { Button, Cauda, color, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
 import { Carimbo } from './Carimbo';
@@ -57,18 +57,26 @@ export function TelaPouso({ id }: { id: string | undefined }) {
       style={{ backgroundColor: color.bg.app }}
       contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[24], paddingBottom: insets.bottom + space[24] }]}
     >
-      <View style={{ gap: space[24] }}>
-        <View style={{ gap: space[12] }}>
-          <Text variant="Caption/Medium 12" tone="tertiary">
-            {t('pouso.cabecalho', { voo: s.voo.callsign, origem: nomeDoLugar(s.voo.origem), destino: cidade })}
-          </Text>
-          {/* Geist (Heading/Screen 32), não a Pixel: pedido do Alberto no build-47. */}
-          <Text variant="Heading/Screen 32" tone="accent" accessibilityRole="header">
+      <View style={{ gap: space[20] }}>
+        <View style={{ gap: space[10] }}>
+          <View style={styles.cabecalhoLinha}>
+            <Cauda pais={s.voo.companhiaPais} tamanho={20} />
+            <View style={styles.callsignBadge}>
+              <Text variant="Caption/Regular 12" tone="secondary" style={{ fontSize: 11 }}>
+                {s.voo.callsign}
+              </Text>
+            </View>
+            <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1} style={{ flex: 1 }}>
+              {`${nomeDoLugar(s.voo.origem)} → ${cidade}`}
+            </Text>
+          </View>
+          <Text variant="Heading/Screen 32" style={{ fontSize: 28, lineHeight: 34, fontWeight: '500' }} accessibilityRole="header">
             {pousou ? t('pouso.titulo', { cidade }) : t('pouso.tituloAntes')}
           </Text>
         </View>
 
-        <View style={{ gap: space[6] }}>
+        {/* Cartão de papel marfim quente 1:1 (Figma 05 · Pouso · Clean) */}
+        <View style={styles.cartaoPapel}>
           <View
             style={styles.areaDoCarimbo}
             accessible
@@ -78,110 +86,79 @@ export function TelaPouso({ id }: { id: string | undefined }) {
           </View>
           {pousou ? (
             <View style={{ alignItems: 'center', gap: space[4] }}>
-              <Text variant="Body/Large 16">{t('pouso.carimboDe', { cidade })}</Text>
-              <Text variant="Caption/Regular 12" tone="tertiary">
+              <Text variant="Body/Large Medium 16" tone="onPaper">
+                {t('pouso.carimboDe', { cidade })}
+              </Text>
+              <Text variant="Caption/Regular 12" tone="onPaper" style={{ opacity: 0.6 }}>
                 {t('pouso.adicionadoAoPassaporte')}
               </Text>
             </View>
           ) : null}
-        </View>
 
-        {/* O que o voo rendeu (v4 Clean: faixa unboxed de 3 colunas com hairlines) */}
-        <View style={{ gap: space[12] }}>
+          <View style={styles.divisorPapel} />
+
           <View style={styles.grade}>
             <Bloco valor={t('pouso.minutos', { tempo: duracao(s.minutosFoco) })} rotulo={t('pouso.focados')} />
-            <View style={styles.divisor} />
+            <View style={styles.divisorVerticalPapel} />
             <Bloco valor={t('pouso.milhas', { milhas: s.milhas.toLocaleString('pt-BR') })} rotulo={t('pouso.milhasRotulo')} />
-            <View style={styles.divisor} />
-            <Bloco valor={t('pouso.dolares', { dolares: s.dolares })} rotulo={t('pouso.paraSouvenirs')} />
+            <View style={styles.divisorVerticalPapel} />
+            <Bloco valor={`+${t('pouso.dolares', { dolares: s.dolares })}`} rotulo={t('pouso.paraSouvenirs')} destaque />
           </View>
-          {pousou ? null : (
-            <View style={styles.aviso}>
-              <Icon name="info" size={16} color={color.text.muted} />
-              <Text variant="Caption/Regular 12" tone="tertiary" style={{ flex: 1 }}>
-                {t('pouso.carimboELoja', { cidade })}
-              </Text>
-            </View>
-          )}
         </View>
 
-        <View style={{ gap: space[12] }}>
-          {pousou && temMotivo ? (
-            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, pressed && { opacity: 0.85 }]}>
-              {tudoFeito ? <Icon name="incluido" size={20} /> : <Icon name="logbook" />}
-              <View style={{ flex: 1, gap: space[4] }}>
-                <Text variant="Label/Medium 14" numberOfLines={1}>
-                  {motivo.foco || t('pouso.salvoNoDiario')}
-                </Text>
-                <View style={styles.meta}>
-                  {motivo.categoria ? <CategoriaTag categoria={motivo.categoria} rotulo={t(`motivo.categorias.${motivo.categoria}`)} /> : null}
-                  {motivo.tarefas.length ? (
-                    <Text variant="Caption/Regular 12" tone="tertiary">
-                      {t('pouso.tarefasFeitas', { feitas, total: motivo.tarefas.length })}
-                    </Text>
-                  ) : null}
-                </View>
-              </View>
-              <Icon name="chevronRight" />
-            </Pressable>
-          ) : (
-            <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linha, styles.linhaApagada, pressed && { opacity: 0.85 }]}>
-              <Icon name="logbook" />
-              <Text variant="Label/Medium 14" style={{ flex: 1 }}>
-                {t('pouso.vooSalvoNoDiario')}
-              </Text>
-              <Icon name="chevronRight" />
-            </Pressable>
-          )}
-          {souvenir ? (
-            <Pressable accessibilityRole="button" onPress={abrirLoja} style={({ pressed }) => [styles.linha, styles.linhaLoja, pressed && { opacity: 0.85 }]}>
-              <Icon name="store" />
-              <View style={{ flex: 1, gap: space[4] }}>
-                <Text variant="Label/Medium 14">{t('loja.abrirLoja', { cidade })}</Text>
-                <Text variant="Caption/Regular 12" tone="tertiary">
-                  {t('loja.abrirLojaDescricao')}
-                </Text>
-              </View>
-              <Icon name="chevronRight" color={color.accent.default} />
-            </Pressable>
-          ) : pousou ? (
-            <View
-              style={[styles.linha, styles.linhaIndisponivel]}
-              accessible
-              accessibilityState={{ disabled: true }}
-              accessibilityLabel={`${t('loja.indisponivelTitulo', { cidade })}. ${t('loja.indisponivelTexto')}`}
-            >
-              <Icon name="store" color={color.state.disabledContainer} />
-              <View style={{ flex: 1, gap: space[4] }}>
-                <Text variant="Label/Medium 14" tone="disabled">
-                  {t('loja.indisponivelTitulo', { cidade })}
-                </Text>
-                <Text variant="Caption/Regular 12" tone="disabled">
-                  {t('loja.indisponivelTexto')}
-                </Text>
-              </View>
-              <Icon name="chevronRight" color={color.state.disabledContainer} />
-            </View>
-          ) : null}
-        </View>
+        {pousou ? null : (
+          <View style={styles.aviso}>
+            <Icon name="info" size={16} color={color.text.muted} />
+            <Text variant="Caption/Regular 12" tone="tertiary" style={{ flex: 1 }}>
+              {t('pouso.carimboELoja', { cidade })}
+            </Text>
+          </View>
+        )}
+
+        {/* Linha silenciosa do diário abaixo do cartão (Figma 05 · Pouso · Clean) */}
+        <Pressable accessibilityRole="button" onPress={verNoDiario} style={({ pressed }) => [styles.linhaDiario, pressed && { opacity: 0.75 }]}>
+          <View style={[styles.checkCirculo, !tudoFeito && styles.checkNeutro]}>
+            <Icon name={tudoFeito ? 'confirmacao' : 'logbook'} size={12} color={tudoFeito ? color.status.success : color.text.secondary} />
+          </View>
+          <Text variant="Body/Small 13" tone="secondary" numberOfLines={1} style={{ flex: 1 }}>
+            {pousou && temMotivo
+              ? [motivo.foco || t('pouso.salvoNoDiario'), motivo.tarefas.length ? t('pouso.tarefasFeitas', { feitas, total: motivo.tarefas.length }) : null].filter(Boolean).join(' · ')
+              : t('pouso.vooSalvoNoDiario')}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[2] }}>
+            <Text variant="Caption/Regular 12" tone="tertiary">Diário</Text>
+            <Icon name="chevronRight" size={14} color={color.text.tertiary} />
+          </View>
+        </Pressable>
       </View>
 
       <View style={{ gap: space[4] }}>
-        {/* "Pousou antes" sem destaque amarelo (CLAUDE.md §9): voltar ao início é a ação secundária. */}
-        <Button variant={pousou ? 'primary' : 'secondary'} label={t('pouso.voltarAoInicio')} onPress={() => router.dismissTo('/')} />
-        {pousou ? null : (
-          <Button variant="link" size="medium" label={t('pouso.novoVoo')} onPress={() => router.replace('/voo')} style={{ alignSelf: 'center' }} />
+        {souvenir ? (
+          <>
+            <Button label={t('loja.abrirLoja', { cidade })} onPress={abrirLoja} />
+            <Button variant="link" size="medium" label={t('pouso.voltarAoInicio')} onPress={() => router.dismissTo('/')} style={{ alignSelf: 'center' }} />
+          </>
+        ) : (
+          <>
+            {/* "Pousou antes" sem destaque amarelo (CLAUDE.md §9): voltar ao início é a ação secundária. */}
+            <Button variant={pousou ? 'primary' : 'secondary'} label={t('pouso.voltarAoInicio')} onPress={() => router.dismissTo('/')} />
+            {pousou ? null : (
+              <Button variant="link" size="medium" label={t('pouso.novoVoo')} onPress={() => router.replace('/voo')} style={{ alignSelf: 'center' }} />
+            )}
+          </>
         )}
       </View>
     </ScrollView>
   );
 }
 
-function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
+function Bloco({ valor, rotulo, destaque }: { valor: string; rotulo: string; destaque?: boolean }) {
   return (
     <View style={styles.bloco}>
-      <Text variant="Nav/Title 20">{valor}</Text>
-      <Text variant="Caption/Regular 12" tone="tertiary">
+      <Text variant="Nav/Title 20" tone="onPaper" style={destaque ? { color: '#B57B14' } : undefined}>
+        {valor}
+      </Text>
+      <Text variant="Caption/Regular 12" tone="onPaper" style={{ opacity: 0.55 }}>
         {rotulo}
       </Text>
     </View>
@@ -190,25 +167,29 @@ function Bloco({ valor, rotulo }: { valor: string; rotulo: string }) {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.app, paddingHorizontal: screenGutter },
-  conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: screenGutter, gap: space[32] },
-  areaDoCarimbo: { paddingVertical: space[8], alignItems: 'center' },
-  grade: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: color.border.subtle,
-    paddingVertical: space[14],
+  conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: screenGutter, gap: space[24] },
+  cabecalhoLinha: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  callsignBadge: { paddingVertical: 2, paddingHorizontal: space[6], borderRadius: radius.xs, backgroundColor: color.surface.card },
+  cartaoPapel: {
+    backgroundColor: color.surface.paper,
+    borderRadius: radius.sheet,
+    padding: space[24],
+    gap: space[16],
   },
-  divisor: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: color.border.subtle },
-  bloco: { flex: 1, gap: space[2], paddingHorizontal: space[6] },
+  areaDoCarimbo: { paddingVertical: space[6], alignItems: 'center' },
+  divisorPapel: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(11, 13, 18, 0.12)' },
+  grade: { flexDirection: 'row', alignItems: 'center', paddingTop: space[4] },
+  divisorVerticalPapel: { width: StyleSheet.hairlineWidth, height: 28, backgroundColor: 'rgba(11, 13, 18, 0.12)' },
+  bloco: { flex: 1, alignItems: 'center', gap: space[2], paddingHorizontal: space[4] },
   aviso: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: space[12], paddingVertical: space[14], paddingHorizontal: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
-  // E7: linha do diário mais discreta, sem borda pesada.
-  linhaApagada: { backgroundColor: color.surface.cardMuted },
-  // País sem souvenir: fosco e calmo, sem tracejado agressivo.
-  linhaIndisponivel: { backgroundColor: color.surface.cardMuted },
-  // E6: loja do destino em destaque âmbar suave.
-  linhaLoja: { borderWidth: 1, borderColor: color.border.accent, backgroundColor: color.accent.container },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: space[6], flexWrap: 'wrap' },
+  linhaDiario: { flexDirection: 'row', alignItems: 'center', gap: space[10], paddingVertical: space[8] },
+  checkCirculo: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: color.status.successContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkNeutro: { backgroundColor: color.surface.card },
 });

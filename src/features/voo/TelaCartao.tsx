@@ -12,7 +12,7 @@ import { minutosAtePouso } from '@/domain/voos/elegibilidade';
 import { distanciaKm } from '@/domain/voos/geo';
 import { projetar } from '@/domain/voos/projecao';
 import { motivoVazio, type MotivoDaViagem } from '@/domain/sessao/motivo';
-import { ActionRow, Button, color, Icon, InfoBanner, LinhaTracejada, radius, screenGutter, space, Suitcase, Text, TopBar, type IconName } from '@/ds';
+import { ActionRow, Button, Cauda, color, Icon, InfoBanner, LinhaTracejada, radius, screenGutter, space, Suitcase, Text, TopBar, type IconName } from '@/ds';
 import { t } from '@/i18n';
 
 import { CodigoDeBarras } from './CodigoDeBarras';
@@ -70,16 +70,21 @@ export function TelaCartao() {
       >
         <View style={{ gap: space[12] }}>
           <TopBar title={t('partidas.titulo')} onBack={() => router.back()} time={duracaoCompacta(tempoMin)} step={3} />
-          <Text variant="Display/Pixel 32" style={{ color: color.text.accent, paddingTop: space[8] }} accessibilityRole="header">
+          <Text variant="Heading/Data 24" style={{ fontSize: 26, lineHeight: 32, letterSpacing: -0.78, fontWeight: '500', paddingTop: space[4] }} accessibilityRole="header">
             {t('cartao.titulo')}
           </Text>
 
           <View accessible accessibilityLabel={t('cartao.acessivel', { voo: voo.callsign, origem: nomeDoLugar(voo.origem), destino: cidade, min })}>
             <View style={styles.cabecalho}>
-              <Text variant="Body/Large 16">{t('cartao.cartao')}</Text>
-              <Text variant="Body/Medium 14" tone="tertiary">
-                {voo.callsign}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[10] }}>
+                <Cauda pais={voo.companhiaPais} tamanho={24} />
+                <Text variant="Body/Small 13" tone="secondary">{t('cartao.cartao')}</Text>
+              </View>
+              <View style={styles.callsignBadge}>
+                <Text variant="Caption/Regular 12" tone="secondary" style={{ fontSize: 11 }}>
+                  {voo.callsign}
+                </Text>
+              </View>
             </View>
             <ImpressaoDoBilhete dica={t('cartao.pularImpressao')}>
             <View style={[styles.papel, styles.papelDeCima]}>
@@ -97,13 +102,25 @@ export function TelaCartao() {
                 <Dado rotulo={t('cartao.tempoDeFoco')} valor={duracao(min)} grande direita />
               </View>
               <View style={styles.linha}>
-                <Dado rotulo={t('cartao.status')} valor={t('cartao.confirmado')} />
+                <View style={{ gap: space[4] }}>
+                  <Text variant="Caption/Regular 12" style={{ color: color.cartao.textoSecundario, fontSize: 11 }}>
+                    {t('cartao.status')}
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[4] }}>
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color.status.success }} />
+                    <Text variant="Label/Medium 14" style={{ color: color.cartao.texto, fontSize: 13 }}>
+                      {t('cartao.confirmado')}
+                    </Text>
+                  </View>
+                </View>
                 <Dado rotulo={t('cartao.aeronave')} valor={voo.aeronave ?? '—'} />
                 <Dado rotulo={t('cartao.assento')} valor="23A" />
                 <Dado rotulo={t('cartao.data')} valor={hoje} />
               </View>
               {/* Picote entre as duas partes do bilhete */}
               <LinhaTracejada cor={color.cartao.tracejado} traco={5} espaco={4} style={styles.picote} />
+              <View style={[styles.recorte, styles.recorteEsq]} pointerEvents="none" />
+              <View style={[styles.recorte, styles.recorteDir]} pointerEvents="none" />
             </View>
             <View style={[styles.papel, styles.papelDeBaixo]} onLayout={(e) => setLargura(e.nativeEvent.layout.width - 2 * space[16])}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[12] }}>
@@ -197,14 +214,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: space[16],
+    paddingVertical: space[12],
+    paddingHorizontal: space[16],
     backgroundColor: color.cartao.cabecalho,
     borderTopLeftRadius: radius.card,
     borderTopRightRadius: radius.card,
   },
+  callsignBadge: {
+    paddingVertical: space[4],
+    paddingHorizontal: space[8],
+    borderRadius: radius.sm,
+    backgroundColor: color.surface.default,
+  },
   papel: { backgroundColor: color.cartao.papel, paddingHorizontal: space[16], paddingVertical: space[20] },
   papelDeCima: { gap: space[24], borderBottomLeftRadius: radius.lg, borderBottomRightRadius: radius.lg },
-  picote: { position: 'absolute', left: 12, right: 12, bottom: 0 },
+  picote: { position: 'absolute', left: 16, right: 16, bottom: 0 },
+  recorte: { position: 'absolute', bottom: -8, width: 16, height: 16, borderRadius: 8, backgroundColor: color.bg.app },
+  recorteEsq: { left: -8 },
+  recorteDir: { right: -8 },
   papelDeBaixo: { gap: space[16], borderRadius: radius.lg },
   motivo: { flexDirection: 'row', alignItems: 'center', gap: space[12], padding: space[16], borderRadius: radius.card, backgroundColor: color.surface.card },
   iconeDoMotivo: { width: 28, height: 28, borderRadius: 14, backgroundColor: color.surface.subtle, alignItems: 'center', justifyContent: 'center' },

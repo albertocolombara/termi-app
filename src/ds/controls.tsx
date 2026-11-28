@@ -34,16 +34,17 @@ export type ChipProps = {
   onPress?: () => void;
 };
 
-/** Filtro/categoria de seleção única. Fundo e texto mudam juntos em 200 ms + press scale 120 ms. */
+/** Filtro/categoria de seleção única (v4 Clean: selecionado = surface.strong + branco; não selecionado = outline pill). */
 export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
   const [pressed, setPressed] = useState(false);
   const reduced = useReducedMotion();
   const p = useStateProgress(!!selected);
   const fundo = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(p.get(), [0, 1], [C.surface.default, C.accent.default]),
+    backgroundColor: interpolateColor(p.get(), [0, 1], ['transparent', C.surface.strong]),
+    borderColor: interpolateColor(p.get(), [0, 1], [C.border.pillOutline, 'transparent']),
   }));
   const texto = useAnimatedStyle(() => ({
-    color: interpolateColor(p.get(), [0, 1], [C.text.secondary, C.text.onAccent]),
+    color: interpolateColor(p.get(), [0, 1], [C.text.tertiary, C.text.primary]),
   }));
   return (
     <Pressable
@@ -56,7 +57,7 @@ export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
       style={styles.chipHit}
     >
       <Animated.View style={[styles.chip, CHIP_PRESS_TRANSITION, !reduced && pressed && styles.chipPressed, size === 'large' ? styles.chipLarge : styles.chipSmall, fundo]}>
-        <Animated.Text style={[typography[selected ? 'Label/Strong 14' : 'Label/Medium 14'], texto]}>{label}</Animated.Text>
+        <Animated.Text style={[typography[selected ? 'Label/Medium 14' : 'Body/Small 13'], { fontSize: 12.5, lineHeight: 16 }, texto]}>{label}</Animated.Text>
       </Animated.View>
     </Pressable>
   );
@@ -399,10 +400,10 @@ const styles = StyleSheet.create({
   },
   categoriaPadrao: { borderColor: C.border.pillOutline },
   categoriaSelecionada: { borderColor: C.border.accent, backgroundColor: C.accent.container },
-  chip: { borderRadius: radius.full },
+  chip: { borderRadius: radius.full, borderWidth: 1 },
   chipPressed: { transform: [{ scale: 0.97 }] },
-  chipLarge: { paddingVertical: 9, paddingHorizontal: space[14] },
-  chipSmall: { paddingVertical: 7, paddingHorizontal: space[12] },
+  chipLarge: { paddingVertical: 8, paddingHorizontal: space[14] },
+  chipSmall: { paddingVertical: 6, paddingHorizontal: space[12] },
   segmented: { flexDirection: 'row', alignSelf: 'flex-start', backgroundColor: C.surface.strong, borderRadius: radius.md },
   segment: {
     flexDirection: 'row',

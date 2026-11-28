@@ -110,21 +110,19 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
           contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[32] }]}
           bounces={false}
         >
-          <View style={{ gap: space[32] }}>
-            {/* Perfil e status de viajante */}
-            <View style={{ gap: space[12] }}>
+          <View style={{ gap: space[20] }}>
+            {/* Perfil e status de viajante (Figma I1 · Menu lateral · Clean) */}
+            <View style={{ gap: space[14] }}>
               <View style={styles.perfil}>
                 <Avatar tamanho="grande" />
-                <View style={{ flex: 1, gap: space[6] }}>
-                  <Text variant="Heading/Sheet 22">{status.atual.nome}</Text>
+                <View style={{ flex: 1, gap: space[2] }}>
+                  <Text variant="Nav/Title 20">{status.atual.nome}</Text>
                   {plus ? (
-                    <Plus />
+                    <Plus tamanho="pequeno" />
                   ) : (
-                    <View style={styles.classe}>
-                      <Text variant="Body/Small 13" tone="muted">
-                        {t('menu.economica')}
-                      </Text>
-                    </View>
+                    <Text variant="Caption/Regular 12" tone="tertiary">
+                      {t('menu.economica')}
+                    </Text>
                   )}
                 </View>
               </View>
@@ -132,44 +130,68 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                 accessibilityRole="button"
                 accessibilityHint={t('menu.verProgressao')}
                 onPress={() => ir('/milhas')}
-                style={({ pressed }) => [{ gap: space[8], paddingVertical: space[4] }, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [{ gap: space[8], paddingVertical: space[2] }, pressed && { opacity: 0.75 }]}
               >
                 <View style={styles.linhaDasMilhas}>
-                  <Text variant="Body/Small 13" tone="tertiary">
+                  <Text variant="Body/Small 13" style={{ fontWeight: '500' }}>
                     {t('menu.milhasAcumuladas', { milhas: milhas.toLocaleString('pt-BR') })}
                   </Text>
-                  <Icon name="chevronRight" size={16} />
+                  <View style={styles.proximoNivel}>
+                    <Text variant="Caption/Regular 12" tone="tertiary" style={{ fontSize: 11 }}>
+                      {status.proximo
+                        ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
+                        : t('menu.nivelMaximo')}
+                    </Text>
+                    <Icon name="chevronRight" size={14} color={color.text.tertiary} />
+                  </View>
                 </View>
                 <View style={styles.trilho} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(status.progresso * 100) }}>
                   <View style={[styles.barra, { width: `${Math.round(status.progresso * 100)}%` }]} />
                 </View>
-                <Text variant="Body/Small 13" tone="secondary">
-                  {status.proximo
-                    ? t('menu.faltam', { milhas: status.faltam.toLocaleString('pt-BR'), nivel: status.proximo.nome })
-                    : t('menu.nivelMaximo')}
-                </Text>
               </Pressable>
+
+              {/* Card Termi Plus no topo do drawer para econômica (Figma I1 · Menu lateral · Clean) */}
+              {!plus ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('menu.termiPlus')}, ${t('menu.termiPlusDescricao')}`}
+                  onPress={() => ir('/primeira-classe')}
+                  style={({ pressed }) => [styles.cartaoPlus, pressed && { opacity: 0.85 }]}
+                >
+                  <View style={{ flex: 1, gap: space[2] }}>
+                    <Text variant="Body/Medium 14" style={styles.tituloPlus}>
+                      {t('menu.termiPlus')}
+                    </Text>
+                    <Text variant="Caption/Regular 12" tone="tertiary">
+                      {t('menu.termiPlusDescricao')}
+                    </Text>
+                  </View>
+                  <Icon name="chevronRight" size={16} color={color.accent.default} />
+                </Pressable>
+              ) : null}
             </View>
 
-            <View style={{ gap: space[8] }}>
+            <View style={{ gap: space[12] }}>
               <Secao titulo={t('menu.seuProgresso')}>
                 <Item
                   icone="suitcaseLine"
                   titulo={t('menu.suaMala')}
-                  detalhe={souvenirs ? (souvenirs === 1 ? t('menu.umSouvenir') : t('menu.souvenirs', { n: souvenirs })) : undefined}
+                  detalhe={souvenirs ? String(souvenirs) : undefined}
                   onPress={() => ir('/mala')}
                 />
                 <Item
                   icone="passport"
                   titulo={t('menu.passaporte')}
-                  detalhe={carimbos ? (carimbos === 1 ? t('menu.umCarimbo') : t('menu.carimbos', { n: carimbos })) : undefined}
+                  detalhe={carimbos ? String(carimbos) : undefined}
                   onPress={() => ir('/passaporte')}
                 />
                 <Item icone="logbook" titulo={t('menu.diarioDeBordo')} onPress={() => ir('/diario')} />
                 <Item icone="stats" titulo={t('menu.estatisticas')} onPress={() => ir('/estatisticas')} />
               </Secao>
 
-              <Secao titulo={t('menu.contaECompras')}>
+              <View style={styles.divisor} />
+
+              <View>
                 <Item
                   icone="userAdd"
                   titulo={plus ? t('menu.criarConta') : t('menu.criarContaESincronizar')}
@@ -178,20 +200,24 @@ export function MenuLateral({ visivel, onFechar, classe, milhas, souvenirs, cari
                 />
                 {plus ? (
                   <Item icone="gerenciarAssinatura" titulo={t('menu.gerenciarAssinatura')} onPress={gerenciarAssinatura} />
-                ) : (
-                  <Item icone="plus" titulo={t('menu.termiPlus')} descricao={t('menu.termiPlusDescricao')} plus onPress={() => ir('/primeira-classe')} />
-                )}
-              </Secao>
-              <Secao titulo={t('menu.app')}>
+                ) : null}
+              </View>
+
+              <View style={styles.divisor} />
+
+              <View>
                 <Item icone="settings" titulo={t('menu.ajustes')} onPress={() => ir('/ajustes')} />
                 <Item icone="info" titulo={t('menu.sobre')} onPress={() => ir('/sobre')} />
                 <Item icone="help" titulo={t('menu.ajuda')} onPress={() => ir('/ajuda')} />
-              </Secao>
+              </View>
 
               {mostrarFerramentasDev ? (
-                <Secao titulo={t('inicio.ferramentas')}>
-                  <Item icone="settings" titulo={t('inicio.ferramentas')} onPress={() => ir('/dev')} />
-                </Secao>
+                <>
+                  <View style={styles.divisor} />
+                  <Secao titulo={t('inicio.ferramentas')}>
+                    <Item icone="settings" titulo={t('inicio.ferramentas')} onPress={() => ir('/dev')} />
+                  </Secao>
+                </>
               ) : null}
             </View>
           </View>
@@ -270,20 +296,34 @@ function Item({
 }
 
 const styles = StyleSheet.create({
-  menu: { position: 'absolute', top: 0, bottom: 0, left: 0, backgroundColor: color.bg.system },
-  conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: space[16] },
-  perfil: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
-  classe: {
-    alignSelf: 'flex-start',
-    paddingVertical: space[2],
-    paddingHorizontal: space[10],
-    borderRadius: radius.full,
-    backgroundColor: color.surface.subtle,
+  menu: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: color.bg.system,
+    borderTopRightRadius: radius.sheet,
+    borderBottomRightRadius: radius.sheet,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderRightColor: color.border.subtle,
   },
-  linhaDasMilhas: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
+  conteudo: { flexGrow: 1, justifyContent: 'space-between', paddingHorizontal: space[20] },
+  perfil: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
+  linhaDasMilhas: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[8] },
+  proximoNivel: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
   trilho: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.default, overflow: 'hidden' },
   barra: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
-  item: { flexDirection: 'row', alignItems: 'center', gap: space[14], padding: space[12], borderRadius: radius.lg, minHeight: 48 },
+  cartaoPlus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[12],
+    paddingVertical: space[14],
+    paddingHorizontal: space[16],
+    borderRadius: radius.cta,
+    backgroundColor: color.accent.container,
+  },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
+  item: { flexDirection: 'row', alignItems: 'center', gap: space[14], paddingVertical: space[10], paddingHorizontal: space[8], borderRadius: radius.lg, minHeight: 44 },
   itemVertical: { paddingVertical: space[8] },
   tituloPlus: { fontFamily: fontFamily.pixel, fontWeight: '400', letterSpacing: 0, color: color.text.accent },
 });
