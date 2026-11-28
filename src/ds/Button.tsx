@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated';
+import { haptic } from './haptics';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 import { color as C, hitSlop, radius, space } from './tokens';
@@ -57,6 +58,7 @@ export function Button({ label, variant = 'primary', size = 'large', icon = 'arr
       disabled={isDisabled}
       onPressIn={(e) => {
         setPressed(true);
+        if (isPrimary && !isDisabled) haptic.toque();
         onPressIn?.(e);
       }}
       onPressOut={(e) => {

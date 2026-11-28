@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Animated, { cubicBezier, interpolate, interpolateColor, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
+import { haptic } from './haptics';
 import { Icon, type IconName } from './Icon';
 import { motion, timing, useStateProgress } from './motion';
 import { Text } from './Text';
@@ -51,7 +52,10 @@ export function Chip({ label, selected, size = 'large', onPress }: ChipProps) {
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       pressRetentionOffset={16}
-      onPress={onPress}
+      onPress={() => {
+        haptic.selecao();
+        onPress?.();
+      }}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       style={styles.chipHit}
@@ -76,7 +80,10 @@ export function CategoriaFiltro({ label, icon, selected, onPress }: CategoriaFil
       accessibilityRole="radio"
       accessibilityState={{ selected: !!selected }}
       accessibilityLabel={label}
-      onPress={onPress}
+      onPress={() => {
+        haptic.selecao();
+        onPress?.();
+      }}
       // Alvo de 48: 32 do chip + 4 de margem + 4 de hitSlop em cima e embaixo. A margem curta deixa o
       // espaço entre as linhas igual ao espaço entre os chips (8), como pediu o Alberto (20/11/2026).
       hitSlop={{ top: 4, bottom: 4 }}
@@ -167,7 +174,10 @@ function SegmentItem<T extends string>({
     <Pressable
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
-      onPress={onPress}
+      onPress={() => {
+        haptic.selecao();
+        onPress?.();
+      }}
       onLayout={onLayout}
       style={styles.segment}
     >
@@ -230,7 +240,10 @@ export function CheckboxItem({
       accessibilityState={{ checked: !!checked }}
       accessibilityActions={onRemove ? [{ name: 'delete', label: removeLabel ?? 'Remover' }] : undefined}
       onAccessibilityAction={(e) => e.nativeEvent.actionName === 'delete' && onRemove?.()}
-      onPress={() => onChange?.(!checked)}
+      onPress={() => {
+        haptic.selecao();
+        onChange?.(!checked);
+      }}
       onLongPress={onRemove}
       style={({ pressed }) => [styles.checkItem, pressed && { opacity: 0.8 }]}
     >
@@ -260,7 +273,10 @@ export function Toggle({ value, onChange }: { value: boolean; onChange?: (v: boo
       accessibilityRole="switch"
       accessibilityState={{ checked: value }}
       hitSlop={hitSlop}
-      onPress={() => onChange?.(!value)}
+      onPress={() => {
+        haptic.selecao();
+        onChange?.(!value);
+      }}
     >
       <Animated.View style={[styles.toggle, trilho]}>
         <Animated.View style={[styles.knob, bolinha]} />

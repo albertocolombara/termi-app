@@ -4,7 +4,8 @@
  * cauda com a bandeira do país da companhia. Estados: carregando, erro, nenhum voo (tempos próximos), voo de ontem.
  */
 import { useMemo, useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -71,14 +72,9 @@ export function TelaPartidas() {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.bg.app }}>
-      <FlatList
+      <FlashList
         data={vazio ? [] : lista}
         keyExtractor={(e) => e.voo.hex}
-        // Lista longa (às vezes centenas de voos): monta aos poucos e solta o que sai da tela.
-        initialNumToRender={14}
-        maxToRenderPerBatch={10}
-        windowSize={9}
-        removeClippedSubviews
         contentContainerStyle={{ paddingTop: insets.top + space[6], paddingBottom: insets.bottom + 160 }}
         ListHeaderComponent={
           <View style={{ gap: space[20] }}>

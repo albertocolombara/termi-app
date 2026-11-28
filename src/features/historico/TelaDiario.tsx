@@ -5,6 +5,7 @@
  */
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -34,16 +35,36 @@ export function TelaDiario() {
   const grupos = voosPorDia(filtrados, agora);
   const vazio = q.isSuccess && voos.length === 0;
 
+  if (vazio) {
+    return (
+      <View style={styles.tela}>
+        <ScrollView
+          contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[24] }]}
+        >
+          <View style={{ gap: space[20] }}>
+            <TopBar title={t('diario.titulo')} onBack={() => router.back()} />
+            <DiarioVazio carimbos={contagens.data?.carimbos ?? 0} />
+          </View>
+          <Button variant="secondary" label={t('diario.encontrarVoos')} onPress={() => router.push('/voo')} />
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.tela}>
-      <ScrollView
-        contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + space[6], paddingBottom: insets.bottom + space[24] }]}
-      >
-        <View style={{ gap: space[20] }}>
-          <TopBar title={t('diario.titulo')} onBack={() => router.back()} />
-          {vazio ? (
-            <DiarioVazio carimbos={contagens.data?.carimbos ?? 0} />
-          ) : (
+      <FlashList
+        data={grupos}
+        keyExtractor={(g) => g.dia}
+        contentContainerStyle={{
+          paddingTop: insets.top + space[6],
+          paddingBottom: insets.bottom + space[24],
+          paddingHorizontal: screenGutter,
+        }}
+        ItemSeparatorComponent={() => <View style={{ height: space[16] }} />}
+        ListHeaderComponent={
+          <View style={{ gap: space[20], paddingBottom: space[16] }}>
+            <TopBar title={t('diario.titulo')} onBack={() => router.back()} />
             <View style={{ gap: space[16] }}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[6] }} style={{ marginHorizontal: -screenGutter }}>
                 <View style={{ width: screenGutter - space[6] }} />
@@ -96,23 +117,22 @@ export function TelaDiario() {
                   {t('diario.nenhumNaCategoria')}
                 </Text>
               ) : null}
-              {grupos.map((g) => (
-                <View key={g.dia} style={{ gap: space[8] }}>
-                  <Text variant="Caption/Strong 12" tone="tertiary" accessibilityRole="header">
-                    {g.dia}
-                  </Text>
-                  <View style={styles.tabelaCard}>
-                    {g.voos.map((v, idx) => (
-                      <LinhaDoDiario key={v.id} voo={v} ultima={idx === g.voos.length - 1} />
-                    ))}
-                  </View>
-                </View>
+            </View>
+          </View>
+        }
+        renderItem={({ item: g }) => (
+          <View style={{ gap: space[8] }}>
+            <Text variant="Caption/Strong 12" tone="tertiary" accessibilityRole="header">
+              {g.dia}
+            </Text>
+            <View style={styles.tabelaCard}>
+              {g.voos.map((v, idx) => (
+                <LinhaDoDiario key={v.id} voo={v} ultima={idx === g.voos.length - 1} />
               ))}
             </View>
-          )}
-        </View>
-        {vazio ? <Button variant="secondary" label={t('diario.encontrarVoos')} onPress={() => router.push('/voo')} /> : null}
-      </ScrollView>
+          </View>
+        )}
+      />
     </View>
   );
 }

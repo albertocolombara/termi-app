@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, { interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 
-import { color, Icon, radius, space, Text, type IconName } from '@/ds';
+import { color, haptic, Icon, radius, space, Text, type IconName } from '@/ds';
 
 export function CartaoDeOpcoes({ children }: { children: ReactNode[] }) {
   return (
@@ -26,7 +26,10 @@ export function OpcaoMarcavel({ icone, rotulo, marcada, onPress }: { icone: Icon
       accessibilityRole="checkbox"
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={rotulo}
-      onPress={onPress}
+      onPress={() => {
+        haptic.selecao();
+        onPress();
+      }}
       style={({ pressed }) => [styles.linha, { minHeight: 58 }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
       <Icon name={icone} size={22} />
@@ -45,7 +48,10 @@ export function OpcaoUnica({ titulo, descricao, marcada, onPress }: { titulo: st
       accessibilityRole="radio"
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={`${titulo}. ${descricao}`}
-      onPress={onPress}
+      onPress={() => {
+        haptic.selecao();
+        onPress();
+      }}
       style={({ pressed }) => [styles.linha, { minHeight: 78, paddingVertical: space[14] }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
       <View style={{ flex: 1, gap: space[4] }}>

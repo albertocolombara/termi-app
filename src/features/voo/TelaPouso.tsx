@@ -8,7 +8,7 @@
  * na coleção (UC-08 passo 4). País sem souvenir: o bloco aparece desabilitado, "Loja indisponível
  * nessa cidade" (Figma 570:13515, Alberto em 25/11/2026; UC-08 E1).
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCatalogo } from '@/data/colecao/catalogo';
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
-import { Button, Cauda, color, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
+import { Button, Cauda, color, haptic, Icon, InfoBanner, radius, screenGutter, space, Text } from '@/ds';
 import { t } from '@/i18n';
 
 import { Carimbo } from './Carimbo';
@@ -31,6 +31,14 @@ export function TelaPouso({ id }: { id: string | undefined }) {
   const s = q.data;
   const catalogo = useCatalogo();
   const [agora] = useState(() => Date.now());
+  const vibrouPouso = useRef(false);
+
+  useEffect(() => {
+    if (s?.resultado === 'pousou' && !vibrouPouso.current) {
+      vibrouPouso.current = true;
+      haptic.sucesso();
+    }
+  }, [s?.resultado]);
 
   if (!s) {
     return (

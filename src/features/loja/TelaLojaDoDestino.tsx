@@ -20,7 +20,7 @@ import { useContagens, useSouvenirsNaMala } from '@/data/historico/useHistorico'
 import { useSessaoEncerrada } from '@/data/sessoes/useSessaoEmAndamento';
 import { souvenirDoPais } from '@/domain/colecao/catalogo';
 import { pousouNoPais, precoNaLoja, situacaoDaCompra } from '@/domain/colecao/loja';
-import { Button, color, Icon, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
+import { Button, color, haptic, Icon, InfoBanner, loja, Plus, radius, screenGutter, space, Text, TopBar } from '@/ds';
 import { motion } from '@/ds/motion';
 import { nomeDoLugar } from '@/features/voo/formato';
 import { t } from '@/i18n';
@@ -69,6 +69,7 @@ export function TelaLojaDoDestino({ pais, sessaoId }: { pais: string; sessaoId?:
   const naMalaAgora = situacao?.tipo === 'na_mala';
   useEffect(() => {
     if (jaTinhaNaMala.current === false && naMalaAgora) {
+      haptic.sucesso();
       escalaMedalha.set(
         withSequence(
           withTiming(1.06, { duration: 140, easing: motion.easing.easeOut, reduceMotion: ReduceMotion.System }),

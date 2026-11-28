@@ -14,7 +14,7 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { Classe } from '@/domain/sessao/duracao';
 import { DURACAO_MAXIMA_ECONOMICA_MIN, DURACAO_MAXIMA_PRIMEIRA_MIN, DURACAO_MINIMA_MIN } from '@/domain/sessao/duracao';
 import { anguloDoTempo, PASSO_DIAL_MIN, rotuloDoTempo, tempoDoAngulo, type BarraDoDial } from '@/domain/voos/dial';
-import { color, gold, Plus, space, Text } from '@/ds';
+import { color, gold, haptic, Plus, space, Text } from '@/ds';
 import { TermiAnimado } from '@/features/termi/TermiAnimado';
 import { t } from '@/i18n';
 
@@ -88,7 +88,10 @@ export function DialDeTempo({ minutos, barras, classe, onChange, onToqueNoCentro
     const y = yNaTela / k;
     const g = (Math.atan2(x - C, C - y) * 180) / Math.PI;
     const novo = tempoDoAngulo(g, minutos);
-    if (novo !== minutos) onChange(novo);
+    if (novo !== minutos) {
+      haptic.selecao();
+      onChange(novo);
+    }
   };
 
   const giro = usePanGesture({

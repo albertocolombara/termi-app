@@ -1,4 +1,5 @@
 export * from './tokens';
+export { haptic } from './haptics';
 export { Text, type TextProps } from './Text';
 export { Icon, PainelDePartidas, Suitcase, iconNames, type IconName, type IconProps } from './Icon';
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
