@@ -63,7 +63,7 @@ export function TelaDiario() {
                   {statsMes.sequencia > 0 ? (
                     <View style={styles.streakBadge}>
                       <Text variant="Caption/Medium 12" style={{ fontSize: 11 }}>
-                        {`🔥 ${statsMes.sequencia}d seguidos`}
+                        {`${statsMes.sequencia >= 3 ? '🔥 ' : ''}${statsMes.sequencia}d ${statsMes.sequencia === 1 ? 'seguido' : 'seguidos'}`}
                       </Text>
                     </View>
                   ) : null}

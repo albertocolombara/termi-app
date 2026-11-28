@@ -105,7 +105,7 @@ export function TelaInicio() {
             <View style={styles.resumoItens}>
               <View style={styles.resumoPar}>
                 <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>{String(resumo.concluidos)}</Text>
-                <Text variant="Caption/Regular 12" tone="tertiary">voos</Text>
+                <Text variant="Caption/Regular 12" tone="tertiary">{resumo.concluidos === 1 ? 'voo' : 'voos'}</Text>
               </View>
               <View style={styles.resumoPar}>
                 <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>{duracaoTotal(resumo.minutos)}</Text>
@@ -113,8 +113,12 @@ export function TelaInicio() {
               </View>
               {hojeStats.sequencia > 0 ? (
                 <View style={styles.resumoPar}>
-                  <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>{`🔥 ${hojeStats.sequencia}d`}</Text>
-                  <Text variant="Caption/Regular 12" tone="tertiary">seguidos</Text>
+                  <Text variant="Caption/Strong 12" style={{ fontSize: 12.5 }}>
+                    {`${hojeStats.sequencia >= 3 ? '🔥 ' : ''}${hojeStats.sequencia}d`}
+                  </Text>
+                  <Text variant="Caption/Regular 12" tone="tertiary">
+                    {hojeStats.sequencia === 1 ? 'seguido' : 'seguidos'}
+                  </Text>
                 </View>
               ) : null}
             </View>
