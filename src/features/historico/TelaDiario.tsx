@@ -165,7 +165,11 @@ function LinhaDoDiario({ voo, ultima }: { voo: VooDoDiario; ultima?: boolean }) 
           </Text>
         </View>
       </View>
-      {voo.categoria ? <CategoriaTag categoria={voo.categoria} rotulo={t(`motivo.categorias.${voo.categoria}` as ChaveDeTexto)} /> : null}
+      {voo.categoria ? (
+        <View style={{ alignSelf: 'center' }}>
+          <CategoriaTag categoria={voo.categoria} rotulo={t(`motivo.categorias.${voo.categoria}` as ChaveDeTexto)} />
+        </View>
+      ) : null}
       <View style={{ alignItems: 'flex-end', gap: space[4], minWidth: 48 }}>
         <Text variant="Label/Medium 14" style={{ fontSize: 13 }}>{duracaoComMin(voo.minutosFoco)}</Text>
         <View style={styles.miniBarraTrilho}>

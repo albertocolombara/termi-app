@@ -12,10 +12,14 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { apagarDados, exportarDados, nomeDoArquivo } from '@/data/privacidade/dados';
-import { BottomSheet, Button, color, Icon, InfoBanner, radius, space, Text } from '@/ds';
+import { BottomSheet, Button, color, haptic, Icon, InfoBanner, radius, space, Text } from '@/ds';
 import { t } from '@/i18n';
 import { cancelarAvisos } from '@/services/avisos';
 import { useClasse } from '@/services/compras';
+
+const DESTRUTIVO = '#F05252';
+const DESTRUTIVO_FUNDO = 'rgba(240, 82, 82, 0.14)';
+const DESTRUTIVO_BOTAO = '#D9383A';
 
 /** Chaves do aparelho ligadas ao voo em andamento (as preferências ficam). */
 const CHAVES_DO_VOO = ['voo.continuarAtePouso', 'servico.voltouAoFoco'];
@@ -82,15 +86,21 @@ export function FolhaDados({ visivel, onFechar }: { visivel: boolean; onFechar: 
         subtitle={t('dados.confirmarTexto')}
         footer={
           <View style={{ gap: space[4] }}>
-            <Button
-              variant="secondary"
-              size="medium"
-              icon={null}
-              label={ocupado ? t('dados.apagando') : t('dados.apagarTudo')}
-              loading={ocupado}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: ocupado, busy: ocupado }}
               disabled={ocupado}
-              onPress={apagar}
-            />
+              onPress={() => {
+                haptic.toque();
+                apagar();
+              }}
+              style={({ pressed }) => [styles.botaoDestrutivo, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }, ocupado && { opacity: 0.6 }]}
+            >
+              {ocupado ? <ActivityIndicator size="small" color={color.text.primary} /> : <Icon name="excluir" size={16} color={color.text.primary} />}
+              <Text variant="Button/Label 16" style={{ color: color.text.primary }}>
+                {ocupado ? t('dados.apagando') : t('dados.apagarTudo')}
+              </Text>
+            </Pressable>
             <Button variant="link" size="medium" label={t('dados.cancelar')} onPress={() => setEstado({ tipo: 'escolha' })} style={{ alignSelf: 'center' }} />
           </View>
         }
@@ -147,18 +157,18 @@ export function FolhaDados({ visivel, onFechar }: { visivel: boolean; onFechar: 
             onPress={() => setEstado({ tipo: 'confirmar' })}
             style={({ pressed }) => [styles.linha, pressed && { opacity: 0.78 }]}
           >
-            <View style={styles.iconeWrap}>
-              <Icon name="excluir" size={18} color={color.text.secondary} />
+            <View style={[styles.iconeWrap, styles.iconeDestrutivo]}>
+              <Icon name="excluir" size={18} color={DESTRUTIVO} />
             </View>
             <View style={{ flex: 1, gap: space[2] }}>
-              <Text variant="Body/Large Medium 16" style={styles.tituloLinha}>
+              <Text variant="Body/Large Medium 16" style={[styles.tituloLinha, { color: DESTRUTIVO }]}>
                 {t('dados.apagar')}
               </Text>
               <Text variant="Caption/Regular 12" tone="tertiary">
                 {t('dados.apagarDescricao')}
               </Text>
             </View>
-            <Icon name="chevronRight" size={16} color={color.text.tertiary} />
+            <Icon name="chevronRight" size={16} color={DESTRUTIVO} />
           </Pressable>
         </View>
       </View>
@@ -185,6 +195,19 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface.sunken,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  iconeDestrutivo: {
+    backgroundColor: DESTRUTIVO_FUNDO,
+  },
+  botaoDestrutivo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space[8],
+    minHeight: 50,
+    paddingHorizontal: space[20],
+    borderRadius: radius.cta,
+    backgroundColor: DESTRUTIVO_BOTAO,
   },
   tituloLinha: { fontSize: 15, lineHeight: 20, fontWeight: '500' },
   divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
