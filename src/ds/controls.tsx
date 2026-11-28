@@ -324,9 +324,7 @@ export type SliderProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const KNOB = 22;
-
-export function Slider({ label, value, onChange, format = (v) => `${Math.round(v * 100)}%`, surface = C.bg.sheet, style }: SliderProps) {
+export function Slider({ label, value, onChange, format = (v) => `${Math.round(v * 100)}%`, style }: SliderProps) {
   const [width, setWidth] = useState(0);
 
   // Recriado quando a largura ou o callback mudam; o sistema de toque usa sempre os handlers atuais.
@@ -345,33 +343,32 @@ export function Slider({ label, value, onChange, format = (v) => `${Math.round(v
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
   const v = Math.min(1, Math.max(0, value));
+  const preenchido = width * v;
 
   return (
     <View style={[styles.slider, style]}>
       {label ? (
-        <View style={styles.sliderLabel}>
-          <Text variant="Label/Medium 14" tone="tertiary">
-            {label}
-          </Text>
-          <Text variant="Label/Medium 14" tone="tertiary">
-            {format(v)}
-          </Text>
-        </View>
+        <Text variant="Caption/Regular 12" tone="tertiary">
+          {label}
+        </Text>
       ) : null}
       <View
         onLayout={onLayout}
         style={styles.sliderHit}
+        accessible
         accessibilityRole="adjustable"
+        accessibilityLabel={label}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(v * 100) }}
         {...pan.panHandlers}
       >
-        <View pointerEvents="none" style={styles.track}>
-          <View style={[styles.fill, { width: width * v }]} />
+        <View pointerEvents="none" style={[styles.fill, { width: preenchido }]}>
+          {preenchido >= 18 ? <View style={styles.thumb} /> : null}
         </View>
-        <View
-          pointerEvents="none"
-          style={[styles.thumb, { borderColor: surface, left: Math.max(0, Math.min(width - KNOB, width * v - KNOB / 2)) }]}
-        />
+        <View pointerEvents="none" style={styles.sliderPct}>
+          <Text variant="Caption/Medium 12" tone="secondary">
+            {format(v)}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -462,19 +459,33 @@ const styles = StyleSheet.create({
   knob: { width: 22, height: 22, borderRadius: 11 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space[16] },
   texts: { flex: 1, gap: space[2] },
-  slider: { gap: space[10] },
-  sliderLabel: { flexDirection: 'row', justifyContent: 'space-between' },
-  sliderHit: { height: KNOB, justifyContent: 'center' },
-  track: { height: 6, borderRadius: 3, backgroundColor: C.surface.track, overflow: 'hidden' },
-  fill: { height: 6, borderRadius: 3, backgroundColor: C.accent.default },
-  thumb: {
+  slider: { gap: space[8] },
+  sliderHit: {
+    height: 42,
+    borderRadius: radius.cta,
+    backgroundColor: C.surface.card,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  fill: {
     position: 'absolute',
+    left: 0,
     top: 0,
-    width: KNOB,
-    height: KNOB,
-    borderRadius: KNOB / 2,
-    borderWidth: 3,
-    backgroundColor: C.accent.default,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 8,
+  },
+  thumb: {
+    width: 3,
+    height: 18,
+    borderRadius: 2,
+    backgroundColor: C.text.primary,
+  },
+  sliderPct: {
+    position: 'absolute',
+    right: 14,
   },
   field: {
     ...typography['Body/Large 16'],

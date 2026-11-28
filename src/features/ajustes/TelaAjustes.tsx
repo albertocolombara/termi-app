@@ -14,13 +14,13 @@ import { useAjustes, type QualidadeDaJanela } from '@/data/preferencias/ajustes'
 import { useSomDeFundo } from '@/data/preferencias/somDeFundo';
 import type { IntervaloServicoDeBordo } from '@/domain/sessao/pausas';
 import { somEmUso } from '@/domain/sons/catalogo';
-import { BottomSheet, color, ListOption, screenGutter, space, TopBar } from '@/ds';
+import { BottomSheet, color, ListOption, screenGutter, Slider, space, TopBar } from '@/ds';
 import { FolhaSons } from '@/features/voo/FolhaSons';
 import { t, type ChaveDeTexto } from '@/i18n';
 import { useClasse, useTrocarClasseDeTeste } from '@/services/compras';
 
 import { FolhaDados } from './FolhaDados';
-import { LinhaComInterruptor, LinhaComValor, ScrubberDeVolume, Secao } from './Grupo';
+import { LinhaComInterruptor, LinhaComValor, Secao } from './Grupo';
 import { MedidorDeDados } from './MedidorDeDados';
 
 const QUALIDADES: { valor: QualidadeDaJanela; nome: ChaveDeTexto; descricao: ChaveDeTexto }[] = [
@@ -78,7 +78,7 @@ export function TelaAjustes() {
             valor={a.somDoServico}
             onMudar={(v) => a.mudar({ somDoServico: v })}
           />
-          <ScrubberDeVolume label={t('ajustes.volumeDosAvisos')} value={a.volumeDosAvisos} onChange={(v) => a.mudar({ volumeDosAvisos: v })} />
+          <Slider label={t('ajustes.volumeDosAvisos')} value={a.volumeDosAvisos} onChange={(v) => a.mudar({ volumeDosAvisos: v })} style={{ paddingVertical: space[12] }} />
         </Secao>
 
         <Secao titulo={t('ajustes.telaEBateria')}>
