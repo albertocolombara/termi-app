@@ -64,7 +64,7 @@ function Progresso({ etapa }: { etapa: number }) {
       accessibilityValue={{ min: 0, max: 3, now: etapa }}
     >
       {[1, 2, 3].map((i) => (
-        <View key={i} style={[styles.traco, { backgroundColor: i <= etapa ? color.text.primary : color.border.default }]} />
+        <View key={i} style={[styles.traco, { backgroundColor: i <= etapa ? color.accent.default : color.surface.strong }]} />
       ))}
     </View>
   );

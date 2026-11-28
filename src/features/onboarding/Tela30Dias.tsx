@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useOnboarding } from '@/data/preferencias/onboarding';
 import { comparacaoComOMundo, projecao } from '@/domain/onboarding/plano';
 import { rotasDeExemplo } from '@/domain/onboarding/voos';
-import { color, radius, space, Text } from '@/ds';
+import { color, Icon, radius, space, Text, type IconName } from '@/ds';
 import { GloboAoVivo } from '@/globo-rotas/GloboAoVivo';
 import { t } from '@/i18n';
 
@@ -57,7 +57,7 @@ export function Tela30Dias() {
 
       <View style={styles.cartao}>
         <Item
-          emoji="🌍"
+          icone="globe"
           titulo={
             mundo.tipo === 'parte'
               ? t('onboarding.parteDaVolta', { pct: mundo.porcento })
@@ -67,25 +67,27 @@ export function Tela30Dias() {
           }
           texto={t('onboarding.circunferencia')}
         />
-        <Item emoji="🛂" titulo={t('onboarding.carimbos')} texto={t('onboarding.carimbosTexto')} />
-        <Item emoji="🧳" titulo={t('onboarding.status', { nome: p.status.nome })} texto={t('onboarding.statusTexto', { nome: p.status.nome, h: p.horasAteOStatus })} />
+        <View style={styles.divisor} />
+        <Item icone="passport" titulo={t('onboarding.carimbos')} texto={t('onboarding.carimbosTexto')} />
+        <View style={styles.divisor} />
+        <Item icone="suitcaseLine" titulo={t('onboarding.status', { nome: p.status.nome })} texto={t('onboarding.statusTexto', { nome: p.status.nome, h: p.horasAteOStatus })} />
       </View>
-      <Text variant="Caption/Regular 12" tone="tertiary" style={{ paddingTop: space[16] }}>
+      <Text variant="Caption/Regular 12" tone="tertiary" style={{ paddingTop: space[16], textAlign: 'center' }}>
         {t('onboarding.conta', { h: p.horas })}
       </Text>
     </TelaDoOnboarding>
   );
 }
 
-function Item({ emoji, titulo, texto }: { emoji: string; titulo: string; texto: string }) {
+function Item({ icone, titulo, texto }: { icone: IconName; titulo: string; texto: string }) {
   return (
     <View style={styles.item} accessible accessibilityLabel={`${titulo}. ${texto}`}>
-      <Text variant="Heading/Sheet 22" style={{ width: 30 }} importantForAccessibility="no">
-        {emoji}
-      </Text>
-      <View style={{ flex: 1 }}>
-        <Text variant="Body/Large Medium 16">{titulo}</Text>
-        <Text variant="Body/Small 13" tone="secondary">
+      <View style={styles.emblema}>
+        <Icon name={icone} size={18} color={color.accent.default} />
+      </View>
+      <View style={{ flex: 1, gap: space[2] }}>
+        <Text variant="Label/Medium 14">{titulo}</Text>
+        <Text variant="Caption/Regular 12" tone="tertiary">
           {texto}
         </Text>
       </View>
@@ -95,13 +97,19 @@ function Item({ emoji, titulo, texto }: { emoji: string; titulo: string; texto: 
 
 const styles = StyleSheet.create({
   cartao: {
-    gap: space[24],
+    gap: space[14],
     padding: space[16],
-    borderRadius: radius['2xl'] + 4,
-    borderWidth: 1,
-    borderColor: color.border.subtle,
-    // Opaco, por cima do globo (Figma #1D1B20; o cartão do globo do Início).
-    backgroundColor: color.globo.cartao,
+    borderRadius: radius.card,
+    backgroundColor: color.surface.card,
   },
-  item: { flexDirection: 'row', alignItems: 'center', gap: space[10] },
+  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
+  item: { flexDirection: 'row', alignItems: 'center', gap: space[12] },
+  emblema: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: color.accent.container,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

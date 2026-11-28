@@ -78,7 +78,7 @@ export function TelaJanela() {
       }
     >
       <View style={styles.etiqueta}>
-        <Text variant="Caption/Medium 12">{t('onboarding.vistaDoPlus')}</Text>
+        <Text variant="Caption/Medium 12" tone="accent">{t('onboarding.vistaDoPlus')}</Text>
       </View>
       <Text variant="Heading/Sheet 22" accessibilityRole="header">
         {voo ? t('onboarding.janelaTitulo', { destino: nomeDoLugar(voo.destino) }) : t('onboarding.janelaTituloSemVoo')}
@@ -126,11 +126,10 @@ const styles = StyleSheet.create({
   degrade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '35%', backgroundImage: `linear-gradient(180deg, transparent 0%, ${color.bg.app} 100%)` },
   etiqueta: {
     alignSelf: 'flex-start',
-    paddingHorizontal: space[10],
+    paddingHorizontal: space[12],
     paddingVertical: space[4],
     borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: color.onboarding.vistaDoPlus,
+    backgroundColor: color.accent.container,
     marginBottom: space[8],
   },
 });

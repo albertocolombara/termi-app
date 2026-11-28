@@ -13,16 +13,13 @@ export function CartaoDeOpcoes({ children }: { children: ReactNode[] }) {
   return (
     <View style={styles.cartao}>
       {children.map((c, i) => (
-        <Fragment key={i}>
-          {i ? <View style={styles.divisor} /> : null}
-          {c}
-        </Fragment>
+        <Fragment key={i}>{c}</Fragment>
       ))}
     </View>
   );
 }
 
-/** Opção de múltipla escolha (OB3): ícone da categoria, rótulo e caixa amarela marcada. */
+/** Opção de múltipla escolha (OB3 · v4 Clean): cartão individual com destaque âmbar e check circular. */
 export function OpcaoMarcavel({ icone, rotulo, marcada, onPress }: { icone: IconName; rotulo: string; marcada: boolean; onPress: () => void }) {
   return (
     <Pressable
@@ -30,9 +27,9 @@ export function OpcaoMarcavel({ icone, rotulo, marcada, onPress }: { icone: Icon
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={rotulo}
       onPress={onPress}
-      style={({ pressed }) => [styles.linha, { minHeight: 70 }, pressed && styles.pressionada]}
+      style={({ pressed }) => [styles.linha, { minHeight: 62 }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
-      <Icon name={icone} size={24} />
+      <Icon name={icone} size={22} />
       <Text variant="Body/Large Medium 16" style={styles.rotulo}>
         {rotulo}
       </Text>
@@ -41,7 +38,7 @@ export function OpcaoMarcavel({ icone, rotulo, marcada, onPress }: { icone: Icon
   );
 }
 
-/** Opção de escolha única (OB4): duração, descrição e rádio. A marcada ganha um fundo amarelo leve. */
+/** Opção de escolha única (OB4 · v4 Clean): cartão individual com destaque âmbar e rádio. */
 export function OpcaoUnica({ titulo, descricao, marcada, onPress }: { titulo: string; descricao: string; marcada: boolean; onPress: () => void }) {
   return (
     <Pressable
@@ -49,13 +46,13 @@ export function OpcaoUnica({ titulo, descricao, marcada, onPress }: { titulo: st
       accessibilityState={{ checked: marcada }}
       accessibilityLabel={`${titulo}. ${descricao}`}
       onPress={onPress}
-      style={({ pressed }) => [styles.linha, { minHeight: 88, paddingVertical: space[16] }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
+      style={({ pressed }) => [styles.linha, { minHeight: 78, paddingVertical: space[14] }, marcada && styles.fundoMarcado, pressed && styles.pressionada]}
     >
-      <View style={{ flex: 1, gap: space[6] }}>
+      <View style={{ flex: 1, gap: space[4] }}>
         <Text variant="Body/Large Medium 16" style={styles.titulo}>
           {titulo}
         </Text>
-        <Text variant="Body/Medium 14" tone="secondary">
+        <Text variant="Body/Small 13" tone="tertiary">
           {descricao}
         </Text>
       </View>
@@ -96,15 +93,22 @@ function Radio({ marcada }: { marcada: boolean }) {
 }
 
 const styles = StyleSheet.create({
-  cartao: { borderRadius: radius.card, backgroundColor: color.surface.card, overflow: 'hidden' },
-  divisor: { height: StyleSheet.hairlineWidth, backgroundColor: color.border.subtle },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: space[20], paddingHorizontal: space[20] },
-  pressionada: { opacity: 0.8 },
-  fundoMarcado: { backgroundColor: color.onboarding.opcaoMarcada },
-  // Figma: 18 SemiBold (sem estilo de texto próprio no arquivo).
-  rotulo: { flex: 1, fontSize: 18, lineHeight: 24, fontWeight: '600' },
-  titulo: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
-  caixa: { width: 26, height: 26, borderRadius: radius.md, borderWidth: 1.6, alignItems: 'center', justifyContent: 'center' },
-  radio: { width: 23, height: 23, borderRadius: 12, borderWidth: 1.6, alignItems: 'center', justifyContent: 'center' },
-  mioloDoRadio: { width: 11, height: 11, borderRadius: 6, backgroundColor: color.accent.default },
+  cartao: { gap: space[10] },
+  linha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[14],
+    paddingHorizontal: space[16],
+    borderRadius: radius.cta,
+    backgroundColor: color.surface.card,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  pressionada: { opacity: 0.85 },
+  fundoMarcado: { backgroundColor: color.accent.container, borderColor: color.accent.default },
+  rotulo: { flex: 1, fontSize: 16, lineHeight: 22, fontWeight: '500' },
+  titulo: { fontSize: 16, lineHeight: 22, fontWeight: '500' },
+  caixa: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  mioloDoRadio: { width: 10, height: 10, borderRadius: 5, backgroundColor: color.accent.default },
 });

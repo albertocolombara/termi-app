@@ -75,7 +75,7 @@ function Notificacao({ titulo, texto, ha }: { titulo: string; texto: string; ha:
 }
 
 const styles = StyleSheet.create({
-  notificacao: { flexDirection: 'row', alignItems: 'center', gap: space[14], padding: space[16], borderRadius: radius.sm, backgroundColor: color.onboarding.notificacao },
+  notificacao: { flexDirection: 'row', alignItems: 'center', gap: space[14], padding: space[16], borderRadius: radius.lg, backgroundColor: color.surface.card },
   icone: { width: 24, height: 24, borderRadius: radius.sm, backgroundColor: color.bg.app, alignItems: 'center', justifyContent: 'center' },
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   expandir: { width: 24, height: 24, borderRadius: 12, backgroundColor: color.surface.strong, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '90deg' }] },

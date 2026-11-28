@@ -120,8 +120,8 @@ function Item({ pronto, texto }: { pronto: boolean; texto: string }) {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg.flight, gap: space[24] },
   espacoDoTermi: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  trilho: { height: 6, borderRadius: radius.sm, backgroundColor: color.border.default, overflow: 'hidden' },
-  barra: { height: 6, borderRadius: radius.sm, backgroundColor: color.accent.default },
+  trilho: { height: 3, borderRadius: radius.full, backgroundColor: color.surface.default, overflow: 'hidden' },
+  barra: { height: 3, borderRadius: radius.full, backgroundColor: color.accent.default },
   item: { flexDirection: 'row', alignItems: 'center', gap: space[4] },
   marca: { width: 20 },
   rodape: { textAlign: 'center', paddingHorizontal: screenGutter, paddingTop: space[24] },

@@ -36,11 +36,20 @@ export function TelaMeta() {
           ))}
         </View>
 
-        <View style={{ gap: space[16], paddingTop: space[8] }}>
-          <Text variant="Nav/Title 20">{t('onboarding.voosComEssaDuracao')}</Text>
+        <View style={{ gap: space[12], paddingTop: space[4] }}>
+          <View style={styles.cabecalhoVoos}>
+            <Text variant="Body/Small 13" tone="tertiary">
+              {t('onboarding.voosComEssaDuracao')}
+            </Text>
+            <Text variant="Caption/Medium 12" tone="accent">
+              {t('onboarding.milhasPorDia', { milhas: milhasPorDia(meta).toLocaleString('pt-BR') })}
+            </Text>
+          </View>
           <View>
             {exemplos.length ? (
-              exemplos.map((v, i) => <LinhaDoVoo key={`${meta}-${v.hex}`} voo={v} minutos={minutosAtePouso(v, agora)} indice={i} />)
+              exemplos.map((v, i) => (
+                <LinhaDoVoo key={`${meta}-${v.hex}`} voo={v} minutos={minutosAtePouso(v, agora)} indice={i} ultima={i === exemplos.length - 1} />
+              ))
             ) : (
               <Text variant="Body/Medium 14" tone="tertiary">
                 {t('onboarding.semVoosDeExemplo')}
@@ -48,9 +57,6 @@ export function TelaMeta() {
             )}
           </View>
         </View>
-        <Text variant="Body/Medium 14" tone="secondary" style={{ textAlign: 'center' }}>
-          {t('onboarding.milhasPorDia', { milhas: milhasPorDia(meta).toLocaleString('pt-BR') })}
-        </Text>
       </View>
     </TelaDoOnboarding>
   );
@@ -72,48 +78,39 @@ function ChipDaMeta({ h, marcada, onPress }: { h: MetaDiariaH; marcada: boolean;
       onPress={onPress}
       style={({ pressed }) => [styles.chip, h === 6 && { flexGrow: 1.45 }, marcada && styles.chipMarcado, pressed && { opacity: 0.8 }]}
     >
-      <Text variant="Body/Large Medium 16" numberOfLines={1}>
+      <Text variant="Body/Large Medium 16" tone={marcada ? 'accent' : 'primary'} numberOfLines={1}>
         {t(ROTULO_DA_META[h])}
       </Text>
     </Pressable>
   );
 }
 
-/** Voo de exemplo (Figma "Voo NH 251"): cauda com bandeira, voo e companhia, duração e a rota. */
-function LinhaDoVoo({ voo, minutos, indice }: { voo: Voo; minutos: number; indice: number }) {
+/** Voo de exemplo (OB5 · v4 Clean): cauda, callsign · companhia em cima, rota embaixo, duração à direita. */
+function LinhaDoVoo({ voo, minutos, indice, ultima }: { voo: Voo; minutos: number; indice: number; ultima?: boolean }) {
   const origem = nomeDoLugar(voo.origem);
   const destino = nomeDoLugar(voo.destino);
   return (
     <Animated.View
       entering={FadeInDown.delay(indice * 90).duration(320)}
       exiting={FadeOut.duration(120)}
-      style={styles.voo}
+      style={[styles.voo, !ultima && styles.vooDivisor]}
       accessible
       accessibilityLabel={`${voo.callsign}, ${voo.companhiaNome ?? ''}. ${origem} → ${destino}. ${duracaoPorExtenso(Math.max(0, minutos))}`}
     >
-      <Cauda pais={voo.companhiaPais} tamanho={36} />
-      <View style={{ flex: 1, gap: space[6] }}>
-        <View style={styles.linhaDeCima}>
-          <Text variant="Label/Strong 14" numberOfLines={1} style={{ flexShrink: 1 }}>
-            {voo.callsign}
-            <Text variant="Body/Medium 14" tone="tertiary">
-              {voo.companhiaNome ? `  ${voo.companhiaNome}` : ''}
-            </Text>
-          </Text>
-          <Text variant="Label/Strong 14" tone="tertiary">
-            {duracao(Math.max(0, minutos))}
-          </Text>
-        </View>
+      <Cauda pais={voo.companhiaPais} tamanho={32} />
+      <View style={{ flex: 1, gap: space[2] }}>
+        <Text variant="Caption/Regular 12" tone="tertiary" numberOfLines={1} style={{ fontSize: 11.5 }}>
+          {voo.companhiaNome ? `${voo.callsign} · ${voo.companhiaNome}` : voo.callsign}
+        </Text>
         <View style={styles.rota}>
           <Text variant="Body/Large Medium 16" style={styles.cidade} numberOfLines={1}>
-            {origem}
-          </Text>
-          <Icon name="arrowRight" size={16} color={color.text.tertiary} />
-          <Text variant="Body/Large Medium 16" style={styles.cidade} numberOfLines={1}>
-            {destino}
+            {`${origem} → ${destino}`}
           </Text>
         </View>
       </View>
+      <Text variant="Label/Medium 14" tone="secondary">
+        {duracao(Math.max(0, minutos))}
+      </Text>
     </Animated.View>
   );
 }
@@ -123,19 +120,19 @@ const styles = StyleSheet.create({
   chip: {
     flexGrow: 1,
     flexBasis: 0,
-    height: 49,
-    paddingHorizontal: space[14],
+    height: 48,
+    paddingHorizontal: space[12],
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.xl,
+    borderRadius: radius.cta,
     borderWidth: 1,
-    borderColor: color.border.default,
-    backgroundColor: color.surface.default,
+    borderColor: 'transparent',
+    backgroundColor: color.surface.card,
   },
-  chipMarcado: { backgroundColor: color.accent.subtle, borderColor: color.accent.default, borderWidth: 1.5 },
-  voo: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 72, paddingHorizontal: space[2], borderBottomWidth: 1, borderBottomColor: color.border.default },
-  linhaDeCima: { flexDirection: 'row', justifyContent: 'space-between', gap: space[8] },
-  rota: { flexDirection: 'row', alignItems: 'center', gap: space[8] },
-  // Figma: 19 SemiBold no componente do voo (sem estilo de texto próprio).
-  cidade: { flexShrink: 1, fontSize: 19, lineHeight: 22, fontWeight: '600' },
+  chipMarcado: { backgroundColor: color.accent.container, borderColor: color.accent.default },
+  cabecalhoVoos: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[8] },
+  voo: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: 64, paddingVertical: space[10] },
+  vooDivisor: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.border.subtle },
+  rota: { flexDirection: 'row', alignItems: 'center', gap: space[6] },
+  cidade: { flexShrink: 1, fontSize: 15, lineHeight: 20, fontWeight: '500' },
 });
