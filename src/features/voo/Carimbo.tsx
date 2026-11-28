@@ -9,13 +9,15 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from 'react-native-reanimated';
 
-import { color, Text } from '@/ds';
+import { palette, Text } from '@/ds';
 
 const LADO = 150;
 const GIRO = -8;
+const TINTA_APAGADA = 'rgba(28, 26, 21, 0.34)';
+const TINTA_CARIMBO = palette['ink/amber'];
 
 export function Carimbo({ cidade, codigo, data, apagado, legenda }: { cidade: string; codigo: string; data: string; apagado?: boolean; legenda?: string }) {
-  const cor = apagado ? color.carimboApagado : color.accent.default;
+  const cor = apagado ? TINTA_APAGADA : TINTA_CARIMBO;
   const batida = useSharedValue(apagado ? 1 : 0);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function Carimbo({ cidade, codigo, data, apagado, legenda }: { cidade: st
   });
 
   return (
-    <Animated.View style={[styles.externo, { borderColor: cor }, estilo]}>
+    <Animated.View style={[styles.externo, { borderColor: cor, borderStyle: apagado ? 'dashed' : 'solid' }, estilo]}>
       <View style={[styles.interno, { borderColor: cor }]}>
         {/* Cidade e código encolhem para caber no círculo (ex.: "MANCHESTER", códigos ICAO de 4 letras). */}
         <Text variant="Caption/Strong 12" style={{ color: cor }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
@@ -61,6 +63,6 @@ export function Carimbo({ cidade, codigo, data, apagado, legenda }: { cidade: st
 }
 
 const styles = StyleSheet.create({
-  externo: { width: LADO, height: LADO, borderRadius: LADO / 2, borderWidth: 1, padding: 11, alignSelf: 'center' },
+  externo: { width: LADO, height: LADO, borderRadius: LADO / 2, borderWidth: 1.5, padding: 11, alignSelf: 'center' },
   interno: { flex: 1, borderRadius: LADO / 2, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, gap: 2 },
 });
